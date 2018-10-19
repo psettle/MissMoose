@@ -1,0 +1,11 @@
+﻿RELEASE NOTES
+
+*****************************
+ANT BLAZE Gateway Library v1.0.0
+May 29, 2017
+
+SoftDevice Compatibility: 
+   s212 4.0.2
+   s332 4.0.2
+
+* Initial release
