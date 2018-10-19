@@ -1,2 +1,3 @@
 _build/
-nrf_firmware/nRF5_SDK/components/toolchain/gcc/Makefile.*
+nrf_firmware/nRF5_SDK/components/toolchain/gcc/Makefile.windows
+nrf_firmware/nRF5_SDK/components/toolchain/gcc/Makefile.posix
