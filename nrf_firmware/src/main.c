@@ -66,6 +66,7 @@
 #include "nrf_delay.h"
 #include "nrf.h"
 #include "nrf_soc.h"
+#include "nrf_sdm.h"
 #include "bsp.h"
 #include "hardfault.h"
 #include "app_error.h"
@@ -139,6 +140,11 @@ static void softdevice_setup(void)
      APP_ERROR_CHECK(err_code);
 }
 
+void ant_blaze_rx_message_handler(ant_blaze_message_t msg)
+{
+
+}
+
 /**@brief Function for application main entry, does not return.
  */
 int main(void)
@@ -148,52 +154,24 @@ int main(void)
     utils_setup();
     softdevice_setup();
 
-    err_code = ant_blaze_node_start();
-    //APP_ERROR_CHECK(err_code); //TODO: this returns error code 6, not supported on this hardware.
-
-	/*  17 20  */
-	// Start LED here
-    uint16_t leds = 0x0000;
-    while(true)
+    err_code = ant_blaze_node_init(ant_blaze_rx_message_handler, NULL, NULL, ANT_BLAZE_EVALUATION_LICENSE_KEY);
+    if(NRF_ERROR_INVALID_LICENSE_KEY == err_code)
     {
-    	if( leds & 0x01 )
-    	{
-    		bsp_board_led_on(0);
-    	}
-    	else
-    	{
-    		bsp_board_led_off(0);
-    	}
+    	bsp_board_led_on(0);
+    }
+    else
+    {
+    	bsp_board_led_on(1);
+    }
 
-    	if( leds & 0x02 )
-    	{
-    		bsp_board_led_on(1);
-    	}
-    	else
-    	{
-    		bsp_board_led_off(1);
-    	}
-
-    	if( leds & 0x04 )
-    	{
-    		bsp_board_led_on(2);
-    	}
-    	else
-    	{
-    		bsp_board_led_off(2);
-    	}
-
-    	if( leds & 0x08 )
-    	{
-    		bsp_board_led_on(3);
-    	}
-    	else
-    	{
-    		bsp_board_led_off(3);
-    	}
-
-    	leds++;
-    	nrf_delay_ms(100);
+    err_code = ant_blaze_node_start();
+    if(NRF_ERROR_NOT_SUPPORTED == err_code)
+    {
+    	bsp_board_led_on(2);
+    }
+    else
+    {
+    	bsp_board_led_on(3);
     }
 
      for (;; )

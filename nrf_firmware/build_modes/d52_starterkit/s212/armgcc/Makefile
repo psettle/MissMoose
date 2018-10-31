@@ -5,7 +5,7 @@ OUTPUT_DIRECTORY := _build
 SDK_ROOT := ../../../../NRF5_SDK
 PROJ_DIR := ../../../..
 
-SOFTDEVICE :=$(SDK_ROOT)/components/softdevice/s212/hex/ANT_s212_nrf52_5.0.0.hex
+SOFTDEVICE :=$(SDK_ROOT)/components/softdevice/s212/hex/ANT_s212_nrf52_4.0.5.hex
 
 $(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
   LINKER_SCRIPT  := ant_hrm_tx_gcc_nrf52.ld
