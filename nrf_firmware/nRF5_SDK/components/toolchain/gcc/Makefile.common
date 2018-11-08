@@ -7,7 +7,7 @@
 # Licensees are granted free, non-transferable use of the information. NO
 # WARRANTY of ANY KIND is provided. This heading must NOT be removed from
 # the file.
-SHELL=C:/Windows/System32/cmd.exe
+
 PLATFORM_SUFFIX := $(if $(filter Windows%,$(OS)),windows,posix)
 TOOLCHAIN_CONFIG_FILE := $(TEMPLATE_PATH)/Makefile.$(PLATFORM_SUFFIX)
 include $(TOOLCHAIN_CONFIG_FILE)

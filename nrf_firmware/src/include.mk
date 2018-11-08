@@ -25,6 +25,8 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/bsp/bsp_btn_ant.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp_nfc.c \
   $(PROJ_DIR)/src/main.c \
+  $(PROJ_DIR)/src/pir_st_00081.c \
+  $(PROJ_DIR)/src/pir_28027.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
