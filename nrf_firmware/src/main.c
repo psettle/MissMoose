@@ -65,6 +65,7 @@
 #include <stdio.h>
 #include "nrf_delay.h"
 #include "nrf.h"
+#include "nrf_drv_gpiote.h"
 #include "nrf_soc.h"
 #include "nrf_sdm.h"
 #include "bsp.h"
@@ -81,6 +82,9 @@
 #define NRF_LOG_MODULE_NAME "APP"
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
+
+#include "pir_28027_pub.h"
+#include "pir_st_00081_pub.h"
 
 #define ANTPLUS_NETWORK_NUMBER   0 /**< Network number. */
 
@@ -111,6 +115,9 @@ void ant_evt_dispatch(ant_evt_t * p_ant_evt)
      APP_ERROR_CHECK(err_code);
 
      err_code = app_timer_init();
+     APP_ERROR_CHECK(err_code);
+
+     err_code = nrf_drv_gpiote_init();
      APP_ERROR_CHECK(err_code);
 
      bsp_board_leds_init();
@@ -154,34 +161,17 @@ int main(void)
     utils_setup();
     softdevice_setup();
 
-    err_code = ant_blaze_node_init(ant_blaze_rx_message_handler, NULL, NULL, ANT_BLAZE_EVALUATION_LICENSE_KEY);
-    if(NRF_ERROR_INVALID_LICENSE_KEY == err_code)
-    {
-    	bsp_board_led_on(0);
-    }
-    else
-    {
-    	bsp_board_led_on(1);
-    }
+    pir_28027_init();
+    // pir_st_00081_init();
 
-    err_code = ant_blaze_node_start();
-    if(NRF_ERROR_NOT_SUPPORTED == err_code)
+    for (;; )
     {
-    	bsp_board_led_on(2);
+        if (NRF_LOG_PROCESS() == false)
+        {
+            err_code = sd_app_evt_wait();
+            APP_ERROR_CHECK(err_code);
+        }
     }
-    else
-    {
-    	bsp_board_led_on(3);
-    }
-
-     for (;; )
-     {
-         if (NRF_LOG_PROCESS() == false)
-         {
-             err_code = sd_app_evt_wait();
-             APP_ERROR_CHECK(err_code);
-         }
-     }
 }
 
 
