@@ -162,7 +162,7 @@ int main(void)
     softdevice_setup();
 
     pir_28027_init();
-    // pir_st_00081_init();
+    pir_st_00081_init();
 
     for (;; )
     {

@@ -24,7 +24,7 @@
 #include "boards.h"
 #include "pir_st_00081_pub.h"
 
-#define USE_ENABLE_PIN      true /* Whether or not the Enable pin of the sensor is to be used. */
+#define USE_ENABLE_PIN      false /* Whether or not the Enable pin of the sensor is to be used. */
 #define USE_LED_INDICATOR   true /* Whether or not a detected change should be indicated on an LED. */
 
 #if USE_ENABLE_PIN

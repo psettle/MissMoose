@@ -31,8 +31,8 @@
 
 /* Choose the pin to use for some output indicator of a sensing change */
 #if USE_LED_INDICATOR
-    #ifdef BSP_LED_2
-        #define PIR_PIN_OUT BSP_LED_2
+    #ifdef BSP_LED_1
+        #define PIR_PIN_OUT BSP_LED_1
     #endif
     #ifndef PIR_PIN_OUT
         #error "Please indicate output pin"
