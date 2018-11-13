@@ -19,20 +19,14 @@ SRC_FILES += \
   $(SDK_ROOT)/components/drivers_nrf/gpiote/nrf_drv_gpiote.c \
   $(SDK_ROOT)/components/drivers_nrf/uart/nrf_drv_uart.c \
   $(SDK_ROOT)/components/ant/ant_channel_config/ant_channel_config.c \
-  $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/ant_hrm.c \
-  $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/pages/ant_hrm_page_0.c \
-  $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/pages/ant_hrm_page_1.c \
-  $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/pages/ant_hrm_page_2.c \
-  $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/pages/ant_hrm_page_3.c \
-  $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/pages/ant_hrm_page_4.c \
-  $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/simulator/ant_hrm_simulator.c \
   $(SDK_ROOT)/components/ant/ant_key_manager/ant_key_manager.c \
   $(SDK_ROOT)/components/ant/ant_stack_config/ant_stack_config.c \
-  $(SDK_ROOT)/components/ant/ant_state_indicator/ant_state_indicator.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp_btn_ant.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp_nfc.c \
   $(PROJ_DIR)/src/main.c \
+  $(PROJ_DIR)/src/pir_st_00081.c \
+  $(PROJ_DIR)/src/pir_28027.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -46,7 +40,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/sensorsim \
   $(SDK_ROOT)/components/ant/ant_key_manager \
   $(SDK_ROOT)/components/libraries/hardfault/nrf52 \
-  $(SDK_ROOT)/components/softdevice/s212/headers/nrf52 \
+  $(SDK_ROOT)/components/softdevice/s212/headers/ANT_s212_nrf52832_4.0.5.API/include/nrf52 \
   $(SDK_ROOT)/components/toolchain/gcc \
   $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm \
   $(SDK_ROOT)/components/drivers_nrf/uart \
@@ -57,7 +51,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/strerror \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components/drivers_nrf/gpiote \
-  $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/simulator \
   $(SDK_ROOT)/components/softdevice/s212/headers \
   $(SDK_ROOT)/components/libraries/button \
   $(SDK_ROOT)/components/ant/ant_state_indicator \
