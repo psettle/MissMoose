@@ -27,6 +27,7 @@ SRC_FILES += \
   $(PROJ_DIR)/src/main.c \
   $(PROJ_DIR)/src/pir_st_00081.c \
   $(PROJ_DIR)/src/pir_28027.c \
+  $(PROJ_DIR)/src/drivers/ant/mm_ant_control.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -73,6 +74,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/toolchain/cmsis/include \
   $(SDK_ROOT)/components/libraries/timer \
   $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/pages \
+  $(PROJ_DIR)/src/drivers/ant \
 
 # Libraries common to all targets
 LIB_FILES += \
