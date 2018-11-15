@@ -41,7 +41,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/sensorsim \
   $(SDK_ROOT)/components/ant/ant_key_manager \
   $(SDK_ROOT)/components/libraries/hardfault/nrf52 \
-  $(SDK_ROOT)/components/softdevice/s212/headers/ANT_s212_nrf52832_4.0.5.API/include/nrf52 \
+  $(SDK_ROOT)/components/softdevice/s332/headers/nrf52 \
   $(SDK_ROOT)/components/toolchain/gcc \
   $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm \
   $(SDK_ROOT)/components/drivers_nrf/uart \
@@ -52,7 +52,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/strerror \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components/drivers_nrf/gpiote \
-  $(SDK_ROOT)/components/softdevice/s212/headers \
+  $(SDK_ROOT)/components/softdevice/s332/headers \
   $(SDK_ROOT)/components/libraries/button \
   $(SDK_ROOT)/components/ant/ant_state_indicator \
   $(SDK_ROOT)/components/libraries/log \

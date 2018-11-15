@@ -39,6 +39,12 @@ static void utils_setup(void);
                        DEFINITIONS
 **********************************************************/
 
+void ant_blaze_rx_message_handler(ant_blaze_message_t msg)
+{
+
+}
+
+#define KEY "4556-414c-5541-5449-4f4e-20ff-ffff-88d3"
 /**
  * Function for application main entry, does not return.
  */
@@ -58,6 +64,29 @@ int main(void)
     payload.data[3] = 4;
 
     mm_ant_set_payload(&payload);
+
+
+
+    err_code = ant_blaze_node_init(ant_blaze_rx_message_handler, NULL, NULL, KEY);
+    if(NRF_ERROR_INVALID_LICENSE_KEY == err_code)
+    {
+    	bsp_board_led_on(0);
+    }
+    else
+    {
+        bsp_board_led_on(1);
+    }
+
+	err_code = ant_blaze_node_start();
+	if(NRF_ERROR_NOT_SUPPORTED == err_code)
+	{
+		bsp_board_led_on(2);
+	}
+	else
+	{
+		bsp_board_led_on(3);
+	}
+
 
     while(true)
     {
