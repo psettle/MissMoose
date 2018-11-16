@@ -16,7 +16,7 @@ notes:
 **********************************************************/
 
 
-#define MM_CHANNEL_NUMBER	   ( 0x00 )
+#define MM_CHANNEL_NUMBER	   ( 0x05 )
 #define MM_CHANNEL_TYPE		   ( CHANNEL_TYPE_MASTER )
 #define MM_EXT_ASSIGN		   ( 0x00 )
 #define MM_RF_FREQ			   ( 66 )	//2566 Mhz

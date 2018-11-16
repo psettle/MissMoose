@@ -54,21 +54,11 @@ int main(void)
 
     utils_setup();
     mm_softdevice_init();
+
     mm_ant_init();
 
-    mm_ant_payload_t payload;
-    memset(&payload, 0, sizeof(payload));
-    payload.data[0] = 1;
-    payload.data[1] = 2;
-    payload.data[2] = 3;
-    payload.data[3] = 4;
-
-    mm_ant_set_payload(&payload);
-
-
-
     err_code = ant_blaze_node_init(ant_blaze_rx_message_handler, NULL, NULL, KEY);
-    if(NRF_ERROR_INVALID_LICENSE_KEY == err_code)
+    if(err_code)
     {
     	bsp_board_led_on(0);
     }
@@ -78,7 +68,7 @@ int main(void)
     }
 
 	err_code = ant_blaze_node_start();
-	if(NRF_ERROR_NOT_SUPPORTED == err_code)
+	if(err_code)
 	{
 		bsp_board_led_on(2);
 	}
@@ -86,6 +76,7 @@ int main(void)
 	{
 		bsp_board_led_on(3);
 	}
+
 
 
     while(true)
