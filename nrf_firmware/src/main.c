@@ -85,6 +85,8 @@
 
 #include "pir_28027_pub.h"
 #include "pir_st_00081_pub.h"
+#include "ir_led_transmit_pub.h"
+#include "ky_022_receive_pub.h"
 
 #define ANTPLUS_NETWORK_NUMBER   0 /**< Network number. */
 
@@ -161,13 +163,18 @@ int main(void)
     utils_setup();
     softdevice_setup();
 
-    pir_28027_init();
-    pir_st_00081_init();
+    ky_022_init(BSP_BUTTON_0, BSP_LED_3);
+    ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0);
+    //pir_28027_init();
+    //pir_st_00081_init();
+
+
 
     for (;; )
     {
         if (NRF_LOG_PROCESS() == false)
         {
+            ir_led_transmit_update();
             err_code = sd_app_evt_wait();
             APP_ERROR_CHECK(err_code);
         }
