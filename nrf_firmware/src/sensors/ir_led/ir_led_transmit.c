@@ -10,8 +10,8 @@
  * The purpose of this code is to make a GPIO pin pulse at 38kHz, which will control a MOSFET
  * that gives the LED lots of current from the Vcc line at 38kHz.
  *
- * A diagram of how to wire up this transmitter is available here:
- * //todo
+ * A diagram of how to wire up this transmitter and the receiver is available on the capstone google drive
+ * under Capstone > Sensors > IR-hookup.png
  */
 
 #include <stdio.h>

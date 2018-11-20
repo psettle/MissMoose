@@ -23,7 +23,7 @@ void ky_022_deinit(void);
  * (or array of several most recent timestamps?) and then setting some flag when the most
  * recent timestamps are too far apart. This would be more of an exercise in power saving,
  * and for now we're just interested in seeing how far apart this guy can receive the signal
- * from the ky-005*/
+ * from the transmitter.*/
 
 #ifdef __cplusplus
 }
