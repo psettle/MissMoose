@@ -20,10 +20,10 @@ notes:
                         PROJECT INCLUDES
 **********************************************************/
 
-#include "ant_blaze_node_interface.h"
 #include "pir_28027_pub.h"
 #include "pir_st_00081_pub.h"
 #include "mm_ant_control.h"
+#include "mm_blaze_control.h"
 
 /**********************************************************
                         CONSTANTS
@@ -39,12 +39,6 @@ static void utils_setup(void);
                        DEFINITIONS
 **********************************************************/
 
-void ant_blaze_rx_message_handler(ant_blaze_message_t msg)
-{
-
-}
-
-#define KEY "4556-414c-5541-5449-4f4e-20ff-ffff-88d3"
 /**
  * Function for application main entry, does not return.
  */
@@ -54,30 +48,12 @@ int main(void)
 
     utils_setup();
     mm_softdevice_init();
-
     mm_ant_init();
-
-    err_code = ant_blaze_node_init(ant_blaze_rx_message_handler, NULL, NULL, KEY);
-    if(err_code)
-    {
-    	bsp_board_led_on(0);
-    }
-    else
-    {
-        bsp_board_led_on(1);
-    }
-
-	err_code = ant_blaze_node_start();
-	if(err_code)
-	{
-		bsp_board_led_on(2);
-	}
-	else
-	{
-		bsp_board_led_on(3);
-	}
-
-
+#ifdef MM_BLAZE_NODE
+    mm_blaze_node_init();
+#else
+    mm_blaze_gateway_init();
+#endif
 
     while(true)
     {
