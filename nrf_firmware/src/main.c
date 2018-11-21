@@ -61,8 +61,8 @@ int main(void)
 
     mm_ant_set_payload(&payload);
 
-    ky_022_init(BSP_BUTTON_0, BSP_LED_3);
-    ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0);
+    ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
+    ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
     //pir_28027_init();
     //pir_st_00081_init();
 
