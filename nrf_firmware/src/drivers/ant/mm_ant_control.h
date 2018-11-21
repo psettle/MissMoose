@@ -12,6 +12,7 @@ notes:
 **********************************************************/
 
 #include "ant_parameters.h"
+#include "ant_stack_handler_types.h"
 
 /**********************************************************
                         CONSTANTS
@@ -25,6 +26,8 @@ typedef struct mm_ant_payload_struct {
 	uint8_t  data[ANT_STANDARD_DATA_PAYLOAD_SIZE];
 } mm_ant_payload_t;
 
+typedef ant_evt_handler_t mm_ant_evt_handler_t;
+
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
@@ -34,6 +37,9 @@ void mm_softdevice_init(void);
 
 /* Initialize required ANT channels */
 void mm_ant_init(void);
+
+/* Add ANT event listeners */
+void mm_ant_evt_handler_set(mm_ant_evt_handler_t mm_ant_evt_handler);
 
 /* Set a broadcast payload. Persistents until called again. */
 void mm_ant_set_payload(mm_ant_payload_t const * payload);

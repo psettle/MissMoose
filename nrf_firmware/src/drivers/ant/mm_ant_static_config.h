@@ -41,6 +41,7 @@ notes:
 #define MM_FREQ_C              ( (uint8_t) 33 )    /**< 2433MHz. */
 #define MM_USE_ENCRYPTION      ( ANT_BLAZE_PAYLOAD_ENCRYPTION_ENABLED )
 #define MM_NUM_GROUP_ADDRESSES ( (uint16_t) 32 )
+#define MM_GATEWAY_ID          ( (uint16_t) 246 )
 
 /**********************************************************
                        DECLARATIONS
