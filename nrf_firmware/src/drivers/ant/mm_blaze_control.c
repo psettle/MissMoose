@@ -95,14 +95,6 @@ static uint8_t m_encryption_key[] = {0x7D, 0x77, 0xBE, 0xE8, 0xD2, 0xE3, 0x2B, 0
 		// Start the ANT BLAZE library
 		err_code = ant_blaze_node_start();
 		APP_ERROR_CHECK(err_code);
-
-		ant_blaze_message_t* p_message;
-		p_message->address = MM_GATEWAY_ID;
-		p_message->index = 0;
-		p_message->length = 12;
-		p_message->data = "hello world";
-
-		ant_blaze_node_send_message(p_message);
 	}
 #else
 	void mm_blaze_gateway_init(void)
@@ -172,13 +164,22 @@ static void get_node_and_network_id(uint16_t* p_node_id, uint16_t* p_network_id)
 
 static void timer_event(void * p_context)
 {
-    ant_blaze_gateway_process_timeout();
-
 #ifdef MM_BLAZE_NODE
 		ant_blaze_node_process_timeout();
+		uint32_t err_code;
+
+		ant_blaze_message_t p_message;
+		p_message.address = 0;
+		p_message.index = 0;
+		p_message.length = 5;
+		p_message.p_data = (uint8_t*)"hello world";
+
+		err_code = ant_blaze_node_send_message(&p_message);
+		APP_ERROR_CHECK(err_code);
 #else
 		ant_blaze_gateway_process_timeout();
 #endif
+
 }
 
 static void mm_blaze_common_init(void)
