@@ -146,10 +146,10 @@ void ir_led_transmit_init(nrf_drv_gpiote_pin_t ctrl_pin, nrf_drv_gpiote_pin_t ou
     #endif
 
     /* 2-channel PWM, 38000Hz, output on selected pin. */
-    app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_1CH((1000000.0/38000.0), transmit_pin);
+    app_pwm_config_ns_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_1CH_NS((1000000000.0/38000.0), transmit_pin);
 
     /* Initialize and enable PWM. */
-    err_code = app_pwm_init(&PWM1, &pwm1_cfg, pwm_ready_callback);
+    err_code = app_pwm_init_ns(&PWM1, &pwm1_cfg, pwm_ready_callback);
     APP_ERROR_CHECK(err_code);
 
     #if CONTROL == BUTTON

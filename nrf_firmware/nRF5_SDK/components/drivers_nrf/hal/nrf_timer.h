@@ -1,30 +1,30 @@
 /**
  * Copyright (c) 2014 - 2017, Nordic Semiconductor ASA
- * 
+ *
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form, except as embedded into a Nordic
  *    Semiconductor ASA integrated circuit in a product or a software update for
  *    such product, must reproduce the above copyright notice, this list of
  *    conditions and the following disclaimer in the documentation and/or other
  *    materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
- * 
+ *
  * 4. This software, with or without modification, must only be used with a
  *    Nordic Semiconductor ASA integrated circuit.
- * 
+ *
  * 5. Any software provided in binary form under this license must not be reverse
  *    engineered, decompiled, modified and/or disassembled.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,7 +35,7 @@
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 /**
  * @defgroup nrf_timer_hal Timer HAL
@@ -440,6 +440,18 @@ __STATIC_INLINE nrf_timer_int_mask_t nrf_timer_compare_int_get(uint32_t channel)
 
 /**
  * @brief Function for calculating the number of timer ticks for a given time
+ *        (in nanoseconds) and timer frequency.
+ *
+ * @param[in] time_us   Time in nanoseconds.
+ * @param[in] frequency Timer frequency.
+ *
+ * @return Number of timer ticks.
+ */
+__STATIC_INLINE uint32_t nrf_timer_ns_to_ticks(uint32_t time_ns,
+                                               nrf_timer_frequency_t frequency);
+
+/**
+ * @brief Function for calculating the number of timer ticks for a given time
  *        (in microseconds) and timer frequency.
  *
  * @param[in] time_us   Time in microseconds.
@@ -596,6 +608,16 @@ __STATIC_INLINE nrf_timer_int_mask_t nrf_timer_compare_int_get(uint32_t channel)
 {
     return (nrf_timer_int_mask_t)
         ((uint32_t)NRF_TIMER_INT_COMPARE0_MASK << channel);
+}
+
+__STATIC_INLINE uint32_t nrf_timer_ns_to_ticks(uint32_t time_ns,
+                                               nrf_timer_frequency_t frequency)
+{
+    // The "frequency" parameter here is actually the prescaler value, and the
+    // timer runs at the following frequency: f = 0.016 GHz / 2^prescaler.
+    uint32_t prescaler = (uint32_t)frequency;
+    // ASSERT(time_ns <= (UINT32_MAX / 0.016 )); // I don't think this is necessary anymore!
+    return (((uint32_t)(time_ns * 0.016)) >> prescaler); // loss of precision from switching back to uint32 before applying prescaler
 }
 
 __STATIC_INLINE uint32_t nrf_timer_us_to_ticks(uint32_t time_us,

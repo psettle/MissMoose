@@ -1,30 +1,30 @@
 /**
  * Copyright (c) 2015 - 2017, Nordic Semiconductor ASA
- * 
+ *
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form, except as embedded into a Nordic
  *    Semiconductor ASA integrated circuit in a product or a software update for
  *    such product, must reproduce the above copyright notice, this list of
  *    conditions and the following disclaimer in the documentation and/or other
  *    materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
- * 
+ *
  * 4. This software, with or without modification, must only be used with a
  *    Nordic Semiconductor ASA integrated circuit.
- * 
+ *
  * 5. Any software provided in binary form under this license must not be reverse
  *    engineered, decompiled, modified and/or disassembled.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,7 +35,7 @@
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 #include "sdk_common.h"
 #if NRF_MODULE_ENABLED(APP_PWM)
@@ -57,6 +57,7 @@
 
 #define TIMER_PRESCALER_MAX                        9
 #define TIMER_MAX_PULSEWIDTH_US_ON_16M             4095
+#define TIMER_MAX_PULSEWIDTH_NS_ON_16M             4095000
 
 #ifndef GPIOTE_SET_CLEAR_TASKS
 #define APP_PWM_REQUIRED_PPI_CHANNELS_PER_INSTANCE 2
@@ -779,6 +780,33 @@ __STATIC_INLINE nrf_timer_frequency_t pwm_calculate_timer_frequency(uint32_t per
     return (nrf_timer_frequency_t) f;
 }
 
+/**
+ * @brief Function for calculating target timer frequency, which will allow to set given period length.
+ *
+ * @param[in] period_us       Desired period in nanoseconds.
+ *
+ * @retval    Timer frequency.
+ */
+__STATIC_INLINE nrf_timer_frequency_t pwm_calculate_timer_frequency_ns(uint32_t period_ns)
+{
+    uint32_t f   = (uint32_t) NRF_TIMER_FREQ_16MHz;
+    uint32_t min = (uint32_t) NRF_TIMER_FREQ_31250Hz;
+    while ((period_ns > TIMER_MAX_PULSEWIDTH_NS_ON_16M) && (f < min))
+    {
+        period_ns >>= 1;
+        ++f;
+    }
+
+#ifdef GPIOTE_SET_CLEAR_TASKS
+    if ((m_use_ppi_delay_workaround) && (f == (uint32_t) NRF_TIMER_FREQ_16MHz))
+    {
+        f = (uint32_t) NRF_TIMER_FREQ_8MHz;
+    }
+#endif // GPIOTE_SET_CLEAR_TASKS
+
+    return (nrf_timer_frequency_t) f;
+}
+
 
 ret_code_t app_pwm_init(app_pwm_t const * const p_instance, app_pwm_config_t const * const p_config,
                         app_pwm_callback_t p_ready_callback)
@@ -912,6 +940,137 @@ ret_code_t app_pwm_init(app_pwm_t const * const p_instance, app_pwm_config_t con
     return NRF_SUCCESS;
 }
 
+ret_code_t app_pwm_init_ns(app_pwm_t const * const p_instance, app_pwm_config_ns_t const * const p_config_ns,
+                        app_pwm_callback_t p_ready_callback)
+{
+    ASSERT(p_instance);
+
+    if (!p_config_ns)
+    {
+        return NRF_ERROR_INVALID_DATA;
+    }
+
+    app_pwm_cb_t * p_cb = p_instance->p_cb;
+
+    if (p_cb->state != NRF_DRV_STATE_UNINITIALIZED)
+    {
+        return NRF_ERROR_INVALID_STATE;
+    }
+
+    uint32_t err_code = nrf_drv_ppi_init();
+    if ((err_code != NRF_SUCCESS) && (err_code != NRF_ERROR_MODULE_ALREADY_INITIALIZED))
+    {
+        return NRF_ERROR_NO_MEM;
+    }
+
+
+    if (!nrf_drv_gpiote_is_init())
+    {
+        err_code = nrf_drv_gpiote_init();
+        if (err_code != NRF_SUCCESS)
+        {
+            return NRF_ERROR_INTERNAL;
+        }
+    }
+
+#ifdef GPIOTE_SET_CLEAR_TASKS
+    if (((*(uint32_t *)0xF0000FE8) & 0x000000F0) == 0x30)
+    {
+        m_use_ppi_delay_workaround = false;
+    }
+    else
+    {
+        m_use_ppi_delay_workaround = true;
+    }
+#endif
+
+    // Innitialize resource status:
+#ifdef GPIOTE_SET_CLEAR_TASKS
+    p_cb->ppi_channel = (nrf_ppi_channel_t)UNALLOCATED;
+#else
+    p_cb->ppi_channels[0] = (nrf_ppi_channel_t)UNALLOCATED;
+    p_cb->ppi_channels[1] = (nrf_ppi_channel_t)UNALLOCATED;
+    p_cb->ppi_group       = (nrf_ppi_channel_group_t)UNALLOCATED;
+#endif //GPIOTE_SET_CLEAR_TASKS
+
+    for (uint8_t i = 0; i < APP_PWM_CHANNELS_PER_INSTANCE; ++i)
+    {
+        p_cb->channels_cb[i].initialized     = APP_PWM_CHANNEL_UNINITIALIZED;
+        p_cb->channels_cb[i].ppi_channels[0] = (nrf_ppi_channel_t)UNALLOCATED;
+        p_cb->channels_cb[i].ppi_channels[1] = (nrf_ppi_channel_t)UNALLOCATED;
+        p_cb->channels_cb[i].gpio_pin        = UNALLOCATED;
+    }
+
+    // Allocate PPI channels and groups:
+
+#ifdef GPIOTE_SET_CLEAR_TASKS
+    if (nrf_drv_ppi_channel_alloc(&p_cb->ppi_channel) != NRF_SUCCESS)
+    {
+        pwm_dealloc(p_instance);
+        return NRF_ERROR_NO_MEM;
+    }
+#else //GPIOTE_SET_CLEAR_TASKS
+    if (nrf_drv_ppi_group_alloc(&p_cb->ppi_group) != NRF_SUCCESS)
+    {
+        pwm_dealloc(p_instance);
+        return NRF_ERROR_NO_MEM;
+    }
+
+    for (uint8_t i = 0; i < APP_PWM_REQUIRED_PPI_CHANNELS_PER_INSTANCE; ++i)
+    {
+        if (nrf_drv_ppi_channel_alloc(&p_cb->ppi_channels[i]) != NRF_SUCCESS)
+        {
+            pwm_dealloc(p_instance);
+            return NRF_ERROR_NO_MEM;
+        }
+    }
+#endif //GPIOTE_SET_CLEAR_TASKS
+    // Initialize channels:
+    for (uint8_t i = 0; i < APP_PWM_CHANNELS_PER_INSTANCE; ++i)
+    {
+        if (p_config_ns->pins[i] != APP_PWM_NOPIN)
+        {
+            err_code = app_pwm_channel_init(p_instance, i, p_config_ns->pins[i], p_config_ns->pin_polarity[i]);
+            if (err_code != NRF_SUCCESS)
+            {
+                pwm_dealloc(p_instance);
+                return err_code;
+            }
+            app_pwm_channel_duty_ticks_set(p_instance, i, 0);
+        }
+    }
+
+    // Initialize timer:
+    nrf_timer_frequency_t  timer_freq = pwm_calculate_timer_frequency_ns(p_config_ns->period_ns);
+    nrf_drv_timer_config_t timer_cfg  = {
+        .frequency          = timer_freq,
+        .mode               = NRF_TIMER_MODE_TIMER,
+        .bit_width          = NRF_TIMER_BIT_WIDTH_16,
+        .interrupt_priority = APP_IRQ_PRIORITY_LOWEST,
+        .p_context          = (void *) (uint32_t) p_instance->p_timer->instance_id
+    };
+    err_code = nrf_drv_timer_init(p_instance->p_timer, &timer_cfg,
+                                  pwm_ready_tick);
+    if (err_code != NRF_SUCCESS)
+    {
+        pwm_dealloc(p_instance);
+        return err_code;
+    }
+
+    uint32_t ticks = nrf_drv_timer_ns_to_ticks(p_instance->p_timer, p_config_ns->period_ns);
+    p_cb->period = ticks;
+    nrf_drv_timer_clear(p_instance->p_timer);
+    nrf_drv_timer_extended_compare(p_instance->p_timer, (nrf_timer_cc_channel_t) PWM_MAIN_CC_CHANNEL,
+                                    ticks, NRF_TIMER_SHORT_COMPARE2_CLEAR_MASK, true);
+    nrf_drv_timer_compare_int_disable(p_instance->p_timer, PWM_MAIN_CC_CHANNEL);
+
+    p_cb->p_ready_callback = p_ready_callback;
+    m_instances[p_instance->p_timer->instance_id] = p_instance;
+    m_pwm_busy[p_instance->p_timer->instance_id] = BUSY_STATE_IDLE;
+    p_cb->state = NRF_DRV_STATE_INITIALIZED;
+
+    return NRF_SUCCESS;
+}
 
 void app_pwm_enable(app_pwm_t const * const p_instance)
 {

@@ -1,30 +1,30 @@
 /**
  * Copyright (c) 2015 - 2017, Nordic Semiconductor ASA
- * 
+ *
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form, except as embedded into a Nordic
  *    Semiconductor ASA integrated circuit in a product or a software update for
  *    such product, must reproduce the above copyright notice, this list of
  *    conditions and the following disclaimer in the documentation and/or other
  *    materials provided with the distribution.
- * 
+ *
  * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
- * 
+ *
  * 4. This software, with or without modification, must only be used with a
  *    Nordic Semiconductor ASA integrated circuit.
- * 
+ *
  * 5. Any software provided in binary form under this license must not be reverse
  *    engineered, decompiled, modified and/or disassembled.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,7 +35,7 @@
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 /** @file
  *
@@ -100,6 +100,15 @@ extern "C" {
         .period_us       = period_in_us                                                \
     }
 
+/**@brief PWM instance default configuration using a period in ns (1 channel). */
+#define APP_PWM_DEFAULT_CONFIG_1CH_NS(period_in_ns, pin)                               \
+    {                                                                                  \
+        .pins            = {pin, APP_PWM_NOPIN},                                       \
+        .pin_polarity    = {APP_PWM_POLARITY_ACTIVE_LOW, APP_PWM_POLARITY_ACTIVE_LOW}, \
+        .num_of_channels = 1,                                                          \
+        .period_ns       = period_in_ns                                                \
+    }
+
 /**@brief PWM instance default configuration (2 channels). */
 #define APP_PWM_DEFAULT_CONFIG_2CH(period_in_us, pin0, pin1)                           \
     {                                                                                  \
@@ -135,6 +144,15 @@ typedef struct
     uint32_t           num_of_channels;                             //!< Number of channels that can be used.
     uint32_t           period_us;                                   //!< PWM signal output period to configure (in microseconds).
 } app_pwm_config_t;
+
+/**@brief PWM configuration structure used for initialization. - Using ns.*/
+typedef struct
+{
+    uint32_t           pins[APP_PWM_CHANNELS_PER_INSTANCE];         //!< Pins configured as PWM output.
+    app_pwm_polarity_t pin_polarity[APP_PWM_CHANNELS_PER_INSTANCE]; //!< Polarity of active state on pin.
+    uint32_t           num_of_channels;                             //!< Number of channels that can be used.
+    uint32_t           period_ns;                                   //!< PWM signal output period to configure (in nanoseconds).
+} app_pwm_config_ns_t;
 
 
 /**
@@ -218,6 +236,20 @@ bool app_pwm_busy_check(app_pwm_t const * const p_instance);
  * @retval    NRF_ERROR_INVALID_STATE If the timer/PWM is already in use or if initialization failed.
  */
 ret_code_t app_pwm_init(app_pwm_t const * const p_instance, app_pwm_config_t const * const p_config,
+                        app_pwm_callback_t p_ready_callback);
+/**
+ * @brief Function for initializing a PWM instance. - Using a period in ns.
+ *
+ * @param[in] p_instance        PWM instance.
+ * @param[in] p_config          Initial configuration.
+ * @param[in] p_ready_callback  Pointer to ready callback function (or NULL to disable).
+ *
+ * @retval    NRF_SUCCESS If initialization was successful.
+ * @retval    NRF_ERROR_NO_MEM If there were not enough free resources.
+ * @retval    NRF_ERROR_INVALID_PARAM If an invalid configuration structure was passed.
+ * @retval    NRF_ERROR_INVALID_STATE If the timer/PWM is already in use or if initialization failed.
+ */
+ret_code_t app_pwm_init_ns(app_pwm_t const * const p_instance, app_pwm_config_ns_t const * const p_config,
                         app_pwm_callback_t p_ready_callback);
 
 
