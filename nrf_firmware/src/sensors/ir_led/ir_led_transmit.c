@@ -19,28 +19,20 @@
 #include "boards.h"
 #include "ir_led_transmit_pub.h"
 #include "app_pwm.h"
-#include "nrf_delay.h"
-#include "nrf_timer.h"
-#include "nrf_drv_timer.h"
+#include "app_timer.h"
 
 #define CONTINUOUS 0
 #define BUTTON 1
 #define TIMED 2
 
-
 #define CONTROL TIMED
 
-APP_PWM_INSTANCE(PWM1,2);                   /**< Create the instance "PWM1" using TIMER2. */
+APP_PWM_INSTANCE(PWM1,2);                   ///< Create the instance "PWM1" using TIMER2.
 
 #if CONTROL == BUTTON
     static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 #elif CONTROL == TIMED
-    /**@brief Timer time-out handler type. */
-    typedef void (*simple_timer_timeout_handler_t)(void * p_context);                  /**< Registered timer mode. */
-    const nrf_drv_timer_t SIMPLE_TIMER = NRF_DRV_TIMER_INSTANCE(1);
-    static void simple_timer_event_handler(nrf_timer_event_t event_type, void * p_context);
-    uint32_t simple_timer_init(void);
-    uint32_t simple_timer_start(uint16_t timeout_ticks);
+    static void timer_event_handler(void * p_context);
 #endif
 
 static volatile bool        ready_flag = false; /**< A flag indicating PWM status. */
@@ -58,24 +50,15 @@ static uint32_t             duty_cycle = 0;     /**< The current duty cycle for 
         SET_TO_SHORT            ///< Timer has been changed to the short time.
     } timer_change_t;
 
-    /**
-     * @brief States of simple timer state machine.
-     */
-    typedef enum
-    {
-        TIMER_STATE_IDLE = 0,
-        TIMER_STATE_INITIALIZED,
-        TIMER_STATE_STOPPED,
-        TIMER_STATE_STARTED
-    }simple_timer_states_t;
+    #define BASE_PERIOD       ( 50 ) ///< How often we want our timer to send out an event
+    #define SHORT_TIME_CYCLES ( 1 )  ///< How many timer cycles we should make the LED transmit (1*50 = 50ms)
+    #define LONG_TIME_CYCLES  ( 9 )  ///< How many timer cycles we should make the LED be off (9*50 = 450ms)
+    static uint32_t         time_cycles = SHORT_TIME_CYCLES;
+    static uint32_t         timer_cycles_count = 0;
+    static timer_change_t   timer_change_flag;
 
-    static uint32_t              short_time = ( 50 );   /**< Technically in us, but we count it 1000 times so it becomes ms. */
-    static uint32_t              long_time =  ( 450 );  /**< Technically in us, but we count it 1000 times so it becomes ms. */
-    static uint32_t              timer_ticks_setting;
-    static uint32_t              timer_cycles = 0;
-    static timer_change_t        timer_change_flag;               /**< Registered time-out handler context. */
-    static simple_timer_states_t simple_timer_state = TIMER_STATE_IDLE; /** < State machine state. */
-
+    /* Timer instance. */
+    APP_TIMER_DEF(m_ir_led_timer);
 #endif
 
 static nrf_drv_gpiote_pin_t transmit_pin;
@@ -98,7 +81,7 @@ void pwm_ready_callback(uint32_t pwm_id)
  * that main could call, instead of main having to explicitly call this exact function.
  *
  */
-void ir_led_transmit_update(void)
+void ir_led_transmit_update_main(void)
 {
     if(!ready_flag)
     {
@@ -153,11 +136,10 @@ void ir_led_transmit_init(nrf_drv_gpiote_pin_t ctrl_pin, nrf_drv_gpiote_pin_t ou
     #endif
 
     #if CONTROL == TIMED
-        timer_change_flag = SET_TO_SHORT;
-        err_code = simple_timer_init();
+        err_code = app_timer_create(&m_ir_led_timer, APP_TIMER_MODE_REPEATED, timer_event_handler);
         APP_ERROR_CHECK(err_code);
-        timer_ticks_setting = short_time;
-        err_code = simple_timer_start(timer_ticks_setting);
+
+        err_code = app_timer_start(m_ir_led_timer, APP_TIMER_TICKS(BASE_PERIOD), NULL);
         APP_ERROR_CHECK(err_code);
     #endif
 
@@ -168,15 +150,10 @@ void ir_led_transmit_init(nrf_drv_gpiote_pin_t ctrl_pin, nrf_drv_gpiote_pin_t ou
     err_code = app_pwm_init(&PWM1, &pwm1_cfg, pwm_ready_callback);
     APP_ERROR_CHECK(err_code);
 
-    #if CONTROL == CONTINUOUS
-        duty_cycle = 50;
-        app_pwm_enable(&PWM1);
-        while(app_pwm_channel_duty_set(&PWM1, 0, duty_cycle) == NRF_ERROR_BUSY);
-        ready_flag = false;
-    #elif CONTROL == BUTTON
+    #if CONTROL == BUTTON
         app_pwm_disable(&PWM1);
         ready_flag = true;
-    #elif CONTROL == TIMED
+    #else
         duty_cycle = 50;
         ready_flag = false;
         app_pwm_enable(&PWM1);
@@ -185,90 +162,18 @@ void ir_led_transmit_init(nrf_drv_gpiote_pin_t ctrl_pin, nrf_drv_gpiote_pin_t ou
 
 #if CONTROL == TIMED
     /**
-     * @brief Handler for timer events. Roughly ganked from app_simple_timer.c
-     */
-    static void simple_timer_event_handler(nrf_timer_event_t event_type, void * p_context)
+    * @brief Handler for timer events.
+    */
+    static void timer_event_handler(void * p_context)
     {
-        uint32_t err_code;
-        switch (event_type)
+        timer_cycles_count++;
+        if(timer_cycles_count >= (time_cycles))
         {
-            case NRF_TIMER_EVENT_COMPARE0:
-                if( ++timer_cycles >= 1000) // 1Mhz timer counter only has 16 bits, so we do 1000 cycles so we can time stuff in ms.
-                {
-                    simple_timer_state = TIMER_STATE_STOPPED;
-                    timer_change_flag = timer_change_flag == SET_TO_LONG ? CHANGE_TO_SHORT_TIME : CHANGE_TO_LONG_TIME;
-                    timer_ticks_setting = timer_ticks_setting == long_time ? short_time : long_time;
-                    bsp_board_led_invert(1); // This is a helpful indicator bonus, but for some reason when i take out this line everything breaks.
-                    timer_cycles = 0;
-                }
-                err_code = simple_timer_start(timer_ticks_setting);
-                APP_ERROR_CHECK(err_code);
-                break;
-
-            default:
-                //Do nothing.
-                break;
+            timer_change_flag = timer_change_flag == SET_TO_LONG ? CHANGE_TO_SHORT_TIME : CHANGE_TO_LONG_TIME;
+            time_cycles = time_cycles == LONG_TIME_CYCLES ? SHORT_TIME_CYCLES : LONG_TIME_CYCLES;
+            timer_cycles_count = 0;
+            bsp_board_led_invert(0); // Flashy flashy every time we take a frame.
         }
-    }
-
-    /**
-     * @brief Function for initializing the timer. Roughly ganked from app_simple_timer.c
-     */
-    uint32_t simple_timer_init(void)
-    {
-        uint32_t err_code = NRF_SUCCESS;
-        nrf_drv_timer_config_t t_cfg = NRF_DRV_TIMER_DEFAULT_CONFIG;
-        t_cfg.mode = NRF_TIMER_MODE_TIMER;
-        t_cfg.bit_width = NRF_TIMER_BIT_WIDTH_16;
-        t_cfg.frequency = (nrf_timer_frequency_t)4;
-        err_code = nrf_drv_timer_init(&SIMPLE_TIMER, &t_cfg, simple_timer_event_handler);
-
-        if (NRF_SUCCESS == err_code)
-        {
-            simple_timer_state = TIMER_STATE_INITIALIZED;
-        }
-
-        return err_code;
-    }
-
-    /**
-     * @brief Function for starting the timer. Roughly ganked from app_simple_timer.c
-     */
-    uint32_t simple_timer_start(uint16_t timeout_ticks)
-    {
-        nrf_timer_short_mask_t timer_short = NRF_TIMER_SHORT_COMPARE0_STOP_MASK;
-
-        if (TIMER_STATE_IDLE == simple_timer_state)
-        {
-            return NRF_ERROR_INVALID_STATE;
-        }
-
-        if (TIMER_STATE_STARTED == simple_timer_state)
-        {
-            nrf_drv_timer_pause(&SIMPLE_TIMER);
-            simple_timer_state = TIMER_STATE_STOPPED;
-        }
-
-        if (TIMER_STATE_STOPPED == simple_timer_state)
-        {
-            nrf_drv_timer_clear(&SIMPLE_TIMER);
-        }
-
-        nrf_drv_timer_extended_compare(
-                &SIMPLE_TIMER, NRF_TIMER_CC_CHANNEL0, (uint32_t)timeout_ticks, timer_short, true);
-
-        if (simple_timer_state == TIMER_STATE_STOPPED)
-        {
-            nrf_drv_timer_resume(&SIMPLE_TIMER);
-        }
-        else
-        {
-            nrf_drv_timer_enable(&SIMPLE_TIMER);
-        }
-
-        simple_timer_state = TIMER_STATE_STARTED;
-
-        return NRF_SUCCESS;
     }
 #endif
 #if CONTROL == BUTTON
