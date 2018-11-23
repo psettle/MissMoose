@@ -27,6 +27,11 @@ notes:
                         CONSTANTS
 **********************************************************/
 
+#define LED_DEBUG 		( true )
+#if LED_DEBUG
+	#include "bsp.h"
+#endif
+
 #define DEFAULT_GROUP ((uint16_t) 511)
 #define TIMER_TICKS APP_TIMER_TICKS(ANT_BLAZE_TIMEOUT_INTERVAL)
 APP_TIMER_DEF(m_timer_id);
@@ -131,7 +136,9 @@ static uint8_t m_encryption_key[] = {0x7D, 0x77, 0xBE, 0xE8, 0xD2, 0xE3, 0x2B, 0
 
 static void rx_message_handler(ant_blaze_message_t msg)
 {
-
+#if LED_DEBUG
+	bsp_board_led_on( 0 );
+#endif
 }
 
 static void backchannel_msg_handler(ant_evt_t* p_ant_evt)

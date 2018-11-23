@@ -1,5 +1,5 @@
 #control constants
-IS_BLAZE_GATEWAY = 1
+IS_BLAZE_GATEWAY = 0
 
 ifeq ($(IS_BLAZE_GATEWAY),1)
   CFLAGS += -DMM_BLAZE_GATEWAY
