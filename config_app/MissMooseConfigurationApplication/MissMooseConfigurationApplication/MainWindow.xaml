@@ -7,6 +7,23 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="8*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="8*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="10*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Button Grid.Column="1" Grid.Row="1" Name="button_master" VerticalAlignment="Top" Background="LightGreen" Click="Start_Master">Start Master (Sending messages)</Button>
+        <Button Grid.Column="3" Grid.Row="1" Name="button_slave" VerticalAlignment="Top" Background="LightGreen" Click="Start_Slave">Start Slave (Listening for messages)</Button>
+        <TextBox Grid.Column="1" Grid.Row="3" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" Name="textBox_master" VerticalScrollBarVisibility="Auto"/>
+        <TextBox Grid.Column="3" Grid.Row="3" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" Name="textBox_slave" VerticalScrollBarVisibility="Auto"/>
     </Grid>
 </Window>
