@@ -68,7 +68,7 @@ int main(void)
 
     while(true)
     {
-        ir_led_transmit_update();
+        ir_led_transmit_update_main();
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }
