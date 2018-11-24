@@ -1,6 +1,7 @@
 ﻿using ANT_Managed_Library;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,109 +17,98 @@ using System.Windows.Shapes;
 
 namespace MissMooseConfigurationApplication
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         //This delegate is for using the dispatcher to avoid conflicts of the feedback thread referencing the UI elements
         delegate void dAppendText(String toAppend);
+        delegate void dScrollToEnd();
 
-        // devices
-        ANT_Device master;
-        ANT_Device slave;
+        // ANT Device which opens a slave channel to search for node devices
+        ANT_Device device;
 
-        Boolean master_running = false;
-        Boolean slave_running = false;
+        // Slave channel to search for node devices
+        ANT_Channel channel;
+
+        // Properties for the ANT slave channel
+        static readonly byte rfFrequency        = 66;           // 2466 MHz
+        byte transmissionType                   = 0;            // wildcard for search
+        static readonly byte deviceType         = 1;            // search for node master device (nodes have device type 1)
+        UInt16 deviceNumber                     = 0;            // wildcard for search
+        static readonly UInt16 channelPeriod    = 8192;         // same channel period as node master devices
+        static readonly ANT_ReferenceLibrary.ChannelType channelType = ANT_ReferenceLibrary.ChannelType.BASE_Slave_Receive_0x00;
+
+        Boolean deviceRunning = false;
+
+        Boolean nodeRequiresConfiguration = true;
+
+        // BLAZE node config properties
+        static readonly UInt16 maxNodeId = 512;
+        static UInt16 nextNodeId = 1;
+        static readonly UInt16 networkId = 1;
+
+        public NodeStatusPage NodeStatusPage { get; set; }
+
+        public ConfigurationCommandPage ConfigurationCommandPage { get; set; }
+
+        ushort masterDeviceNumber = 0;
+        public ushort MasterDeviceNumber
+        {
+            get { return masterDeviceNumber; }
+            set { masterDeviceNumber = value; OnPropertyChanged("MasterDeviceNumber"); }
+        }
 
         public MainWindow()
         {
             InitializeComponent();
+
+            this.DataContext = this;
+
+            NodeStatusPage = new NodeStatusPage();
+            ConfigurationCommandPage = new ConfigurationCommandPage();
         }
 
-        public void Start_Master(object sender, RoutedEventArgs e)
+        public void StartConfigDevice(object sender, RoutedEventArgs e)
         {
-            if (!master_running)
-            {
-                if (ANT_Master_Start())
-                {
-                    master_running = true;
-                    button_master.Background = System.Windows.Media.Brushes.Salmon;
-                    button_master.Content = "Stop Master";
-                    return;
-                }
-            }
-            //If we get here it means we failed startup or are stopping the demo
-            Shutdown_Master();
-            master_running = false;
-            button_master.Background = System.Windows.Media.Brushes.LightGreen;
-            button_master.Content = "Start Master";
-        }
-
-        public Boolean ANT_Master_Start()
-        {
-            try
-            {
-                master = new ANT_Device();
-                master.deviceResponse += new ANT_Device.dDeviceResponseHandler(master_deviceResponse);
-                master.getChannel(0).channelResponse += new dChannelResponseHandler(slave_channelResponse);
-
-                setupAndOpen(master, ANT_ReferenceLibrary.ChannelType.BASE_Master_Transmit_0x10);
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine("Can't start master: " + e.Message);
-                return false;
-            }
-            return true;
-        }
-
-        public void Shutdown_Master()
-        {
-            //If you need to manually disconnect from a ANTDevice call the shutdownDeviceInstance method,
-            //It releases all the resources, the device, and nullifies the object reference
-            ANT_Device.shutdownDeviceInstance(ref master);
-        }
-
-        public void Start_Slave(object sender, RoutedEventArgs e)
-        {
-            if (!slave_running)
+            if (!deviceRunning)
             {
                 if (ANT_Slave_Start())
                 {
-                    slave_running = true;
+                    deviceRunning = true;
                     button_slave.Background = System.Windows.Media.Brushes.Salmon;
-                    button_slave.Content = "Stop Slave";
+                    button_slave.Content = "Stop Configuration";
                     return;
                 }
             }
             //If we get here it means we failed startup or are stopping the demo
-            Shutdown_Slave();
-            master_running = false;
+            ShutdownConfigDevice();
             button_slave.Background = System.Windows.Media.Brushes.LightGreen;
-            button_slave.Content = "Start Slave";
+            button_slave.Content = "Start Configuration";
         }
 
         public Boolean ANT_Slave_Start()
         {
             try
             {
-                slave = new ANT_Device();
-                slave.deviceResponse += new ANT_Device.dDeviceResponseHandler(slave_deviceResponse);
-                slave.getChannel(0).channelResponse += new dChannelResponseHandler(slave_channelResponse);
+                device = new ANT_Device();
+                device.deviceResponse += new ANT_Device.dDeviceResponseHandler(deviceResponse);
+                device.getChannel(0).channelResponse += new dChannelResponseHandler(channelResponse);
 
-                setupAndOpen(slave, ANT_ReferenceLibrary.ChannelType.BASE_Slave_Receive_0x00);
+                setupAndOpen(device, channelType);
             }
             catch (Exception e)
             {
-                Console.WriteLine("Can't start slave: " + e.Message);
+                Console.WriteLine("Can't start configuration slave channel: " + e.Message);
                 return false;
             }
             return true;
         }
 
-        public void Shutdown_Slave()
+        public void ShutdownConfigDevice()
         {
             //If you need to manually disconnect from a ANTDevice call the shutdownDeviceInstance method,
             //It releases all the resources, the device, and nullifies the object reference
-            ANT_Device.shutdownDeviceInstance(ref slave);
+            ANT_Device.shutdownDeviceInstance(ref device);
+            deviceRunning = false;
         }
 
         private void setupAndOpen(ANT_Device deviceToSetup, ANT_ReferenceLibrary.ChannelType channelType)
@@ -129,7 +119,7 @@ namespace MissMooseConfigurationApplication
                 //To access an ANTChannel on a paticular device we need to get the channel from the device
                 //Once again, this ensures you have a valid object associated with a real-world ANTChannel
                 //ie: You can only get channels that actually exist
-                ANT_Channel channel0 = deviceToSetup.getChannel(0);
+                channel = deviceToSetup.getChannel(0);
 
                 //Almost all functions in the library have two overloads, one with a response wait time and one without
                 //If you give a wait time, you can check the return value for success or failure of the command, however
@@ -143,7 +133,7 @@ namespace MissMooseConfigurationApplication
                 //So, first we assign the channel, we have already been passed the channelType which is an enum that has various flags
                 //If we were doing something more advanced we could use a bitwise or ie:base|adv1|adv2 here too
                 //We also use net 0 which has the public network key by default
-                if (channel0.assignChannel(channelType, 0, 500))
+                if (channel.assignChannel(channelType, 0, 500))
                     Console.WriteLine("Ch assigned to " + channelType + " on net 0.");
                 else
                     throw new Exception("Channel assignment operation failed.");
@@ -153,48 +143,39 @@ namespace MissMooseConfigurationApplication
                 //the slave will search until it finds a broadcast that matches all the non-wild card parameters in the id.
                 //The pairing bit ensures on a search that you only pair with devices that also are requesting
                 //pairing, but we don't need it here so we set it to false
-                if (channel0.setChannelID(0, false, 0, 0, 500))
-                    Console.WriteLine("Set channel ID to 0, 0, 0");
+                if (channel.setChannelID(deviceNumber, false, deviceType, transmissionType, 500))
+                    Console.WriteLine("Set channel ID to " + deviceNumber + ", " + deviceType + ", " + transmissionType);
                 else
-                    throw new Exception("Set Channel ID operation failed.");
+                    throw new Exception("Set channel ID operation failed.");
+
+                if (channel.setChannelFreq(rfFrequency, 500))
+                    Console.WriteLine("RF frequency set to " + (rfFrequency + 2400));
 
                 //Setting the channel period isn't mandatory, but we set it slower than the default period so messages aren't coming so fast
                 //The period parameter is divided by 32768 to set the period of a message in seconds. So here, 32768/32768 = 1 sec/msg = 1Hz
-                if (channel0.setChannelPeriod(32768, 500))
-                    Console.WriteLine("Message Period set to 1 second per message");
+                if (channel.setChannelPeriod(channelPeriod, 500))
+                    Console.WriteLine("Message rate set to 4Hz");
 
                 //Now we open the channel
-                if (channel0.openChannel(500))
-                    Console.WriteLine("Opened Channel");
+                if (channel.openChannel(500))
+                    Console.WriteLine("Opened channel");
                 else
-                    throw new Exception("Channel Open operation failed.");
+                    throw new Exception("Channel open operation failed.");
             }
             catch (Exception ex)
             {
-                throw new Exception("Setup and Open Failed. " + ex.Message + Environment.NewLine);
+                throw new Exception("Setup and open failed. " + ex.Message + Environment.NewLine);
             }
         }
 
         //Print the device response to the textbox
-        void master_deviceResponse(ANT_Response response)
-        {
-            threadSafePrintLine(decodeDeviceFeedback(response), textBox_master);
-        }
-
-        //Print the channel response to the textbox
-        void master_channelResponse(ANT_Response response)
-        {
-            threadSafePrintLine(decodeChannelFeedback(response), textBox_master);
-        }
-
-        //Print the device response to the textbox
-        void slave_deviceResponse(ANT_Response response)
+        void deviceResponse(ANT_Response response)
         {
             threadSafePrintLine(decodeDeviceFeedback(response), textBox_slave);
         }
 
         //Print the channel response to the textbox
-        void slave_channelResponse(ANT_Response response)
+        void channelResponse(ANT_Response response)
         {
             threadSafePrintLine(decodeChannelFeedback(response), textBox_slave);
         }
@@ -242,13 +223,58 @@ namespace MissMooseConfigurationApplication
             StringBuilder stringToPrint;    //We use a stringbuilder for speed and better memory usage, but, it doesn't really matter for the demo.
             stringToPrint = new StringBuilder("Channel: ", 100); //Begin the string and allocate some more space
 
+            // Get device number of the connected master device
+            ANT_ChannelID channelId = channel.requestID(100);
+            MasterDeviceNumber = channelId.deviceNumber;
+
             //In the channel feedback we will get either RESPONSE_EVENTs or receive events,
             //If it is a response event we display what the event was and the error code if it failed.
             //Mostly, these response_events will all be broadcast events from a Master channel.
             if (response.responseID == (byte)ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40)
                 stringToPrint.AppendLine(((ANT_ReferenceLibrary.ANTEventID)response.messageContents[2]).ToString());
             else   //This is a receive event, so display the ID
+            {
                 stringToPrint.AppendLine("Received " + ((ANT_ReferenceLibrary.ANTMessageID)response.responseID).ToString());
+
+                byte[] rxBuffer = response.getDataPayload();
+
+                // If the payload has a known data page number, decode it
+                if (rxBuffer[0] == NodeStatusPage.DataPageNumber)
+                {
+                    NodeStatusPage.Decode(rxBuffer);
+
+                    switch (NodeStatusPage.ConfigStatus)
+                    {
+                        case NodeStatusPage.ConfigurationStatus.Unconfigured:
+                            {
+                                nodeRequiresConfiguration = true;
+
+                                ConfigurationCommandPage.NodeId = nextNodeId;
+                                ConfigurationCommandPage.NetworkId = networkId;
+
+                                byte[] txBuffer = new byte[8];
+                                ConfigurationCommandPage.Encode(txBuffer);
+                                channel.sendAcknowledgedData(txBuffer);
+                            }
+                            break;
+                        case NodeStatusPage.ConfigurationStatus.Configured:
+                            {
+
+
+                                if (nodeRequiresConfiguration)
+                                {
+                                    nodeRequiresConfiguration = false;
+                                    if (nextNodeId < maxNodeId) nextNodeId++;
+                                    else throw new Exception("Maximum node ID (512) reached. Cannot configure another node.");
+                                }
+                            }
+                            break;
+                        default:
+                            // do nothing
+                            break;
+                    }
+                }
+            }
 
             //Always print the raw contents in hex, with leading '::' for easy visibility/parsing
             //If this is a receive event it will contain the payload of the message
@@ -264,6 +290,18 @@ namespace MissMooseConfigurationApplication
             //We need to put this on the dispatcher because sometimes it is called by the feedback thread
             //If you set the priority to 'background' then it never interferes with the UI interaction if you have a high message rate (we don't have to worry about it in the demo)
             boxToPrintTo.Dispatcher.BeginInvoke(new dAppendText(boxToPrintTo.AppendText), System.Windows.Threading.DispatcherPriority.Background, stringToPrint + Environment.NewLine);
+            boxToPrintTo.Dispatcher.BeginInvoke(new dScrollToEnd(boxToPrintTo.ScrollToEnd), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string name)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(name));
+            }
         }
     }
 }
