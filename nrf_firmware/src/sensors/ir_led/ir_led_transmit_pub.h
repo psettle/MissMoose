@@ -17,7 +17,7 @@ void ir_led_transmit_init(nrf_drv_gpiote_pin_t ctrl_pin, nrf_drv_gpiote_pin_t ou
  * @brief A call for updating the ir led transmitter.
  *
  */
-void ir_led_transmit_update(void);
+void ir_led_transmit_update_main(void);
 #ifdef __cplusplus
 }
 #endif
