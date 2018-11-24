@@ -27,12 +27,12 @@
 		<link>
 			<name>nRF5_SDK</name>
 			<type>2</type>
-			<location>C:/builds/missmoose/nrf_firmware/nRF5_SDK</location>
+			<location>/Users/nataliewong/Documents/Capstone/missmoose/nrf_firmware/nRF5_SDK</location>
 		</link>
 		<link>
 			<name>src</name>
 			<type>2</type>
-			<location>C:/builds/missmoose/nrf_firmware/src</location>
+			<location>/Users/nataliewong/Documents/Capstone/missmoose/nrf_firmware/src</location>
 		</link>
 	</linkedResources>
 </projectDescription>
