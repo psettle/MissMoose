@@ -23,6 +23,9 @@ notes:
 #include "softdevice_handler.h"
 #include "boards.h"
 
+// Hack
+#include "grideye_pub.h"
+
 /**********************************************************
                         CONSTANTS
 **********************************************************/
@@ -67,7 +70,7 @@ void mm_ant_init(void)
         .transmission_type = MM_CHAN_ID_TRANS_TYPE,
         .device_type       = MM_CHAN_ID_DEV_TYPE,
         .device_number     = MM_CHAN_ID_DEV_NUM,
-        .channel_period    = MM_CHAN_PERIOD,
+        .channel_period    = MM_CHAN_PERIOD/2,
         .network_number    = MM_ANT_NETWORK_NUMBER,
     };
 
@@ -99,4 +102,5 @@ void mm_ant_set_payload(mm_ant_payload_t const * payload)
 
 static void ant_evt_dispatch(ant_evt_t * p_ant_evt)
 {
+    grideye_ant_event_handler(p_ant_evt);
 }

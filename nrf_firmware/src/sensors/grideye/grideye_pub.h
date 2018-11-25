@@ -12,6 +12,7 @@ extern "C" {
 /**********************************************************
                         INCLUDES
 **********************************************************/
+#include "ant_stack_handler_types.h"
 
 /**********************************************************
                         CONSTANTS
@@ -49,6 +50,12 @@ void grideye_set_framerate(grideye_framerate_t framerate);
  *
  */
 void grideye_init(void);
+
+/**
+ * @brief
+ *
+ */
+void grideye_ant_event_handler(ant_evt_t * p_ant_evt);
 
 #ifdef __cplusplus
 }
