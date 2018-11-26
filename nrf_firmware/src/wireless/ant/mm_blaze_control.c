@@ -7,19 +7,18 @@ notes:
 /**********************************************************
                         INCLUDES
 **********************************************************/
+#include "mm_blaze_control.h"
+
 #include <string.h>
 
-#include "mm_blaze_control.h"
-#include "mm_ant_static_config.h"
 #include "mm_ant_control.h"
-
+#include "mm_ant_static_config.h"
 #include "app_error.h"
 #include "app_timer.h"
 #include "ant_parameters.h"
 #include "ant_stack_config.h"
 #include "ant_blaze_node_interface.h"
 #include "ant_blaze_gateway_interface.h"
-#include "ant_blaze_defines.h"
 #include "ant_stack_handler_types.h"
 #include "ant_interface.h"
 
@@ -36,9 +35,16 @@ notes:
 #define TIMER_TICKS APP_TIMER_TICKS(ANT_BLAZE_TIMEOUT_INTERVAL)
 APP_TIMER_DEF(m_timer_id);
 
+#define MAX_EVT_HANDLERS	( 10 )
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
+#ifdef MM_BLAZE_NODE
+	static void mm_blaze_node_init(void);
+#else
+	static void mm_blaze_gateway_init(void);
+#endif
+
 
 static void rx_message_handler(ant_blaze_message_t msg);
 static void backchannel_msg_handler(ant_evt_t* p_ant_evt);
@@ -57,12 +63,23 @@ static void mm_ant_evt_dispatch(ant_evt_t * p_ant_evt);
 	static ant_blaze_gateway_config_t gateway_config;
 #endif
 
+static mm_blaze_message_handler_t message_handlers[MAX_EVT_HANDLERS];
+
 static uint8_t m_ant_network_key[] = {0xE8, 0xE4, 0x21, 0x3B, 0x55, 0x7A, 0x67, 0xC1}; // ANT Public network key. Replace with manufacturer specific ANT network key assigned by Dynastream.
 static uint8_t m_encryption_key[] = {0x7D, 0x77, 0xBE, 0xE8, 0xD2, 0xE3, 0x2B, 0x2F, 0x41, 0x4C, 0x7C, 0x30, 0x89, 0xC1, 0x59, 0x1D};  // Encryption key to use for this network
 
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
+
+void mm_blaze_init(void)
+{
+#ifdef MM_BLAZE_NODE
+	mm_blaze_node_init();
+#else
+	mm_blaze_gateway_init();
+#endif
+}
 
 void mm_blaze_send_message(ant_blaze_message_t * message)
 {
@@ -76,8 +93,23 @@ void mm_blaze_send_message(ant_blaze_message_t * message)
 	APP_ERROR_CHECK(err_code);
 }
 
+void mm_blaze_register_message_listener(mm_blaze_message_handler_t rx_handler)
+{
+	uint32_t i;
+	for(i = 0; i < MAX_EVT_HANDLERS; ++i)
+	{
+		if(message_handlers[i] == NULL)
+		{
+			message_handlers[i] = rx_handler;
+			break;
+		}
+	}
+
+	APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
+}
+
 #ifdef MM_BLAZE_NODE
-	void mm_blaze_node_init(void)
+	static void mm_blaze_node_init(void)
 	{
 		uint32_t err_code;
 
@@ -114,7 +146,7 @@ void mm_blaze_send_message(ant_blaze_message_t * message)
 		APP_ERROR_CHECK(err_code);
 	}
 #else
-	void mm_blaze_gateway_init(void)
+	static void mm_blaze_gateway_init(void)
 	{
 		uint32_t err_code;
 
@@ -151,6 +183,15 @@ static void rx_message_handler(ant_blaze_message_t msg)
 #if LED_DEBUG
 	bsp_board_led_on( 0 );
 #endif
+
+	uint32_t i;
+	for(i = 0; i< MAX_EVT_HANDLERS; ++i)
+	{
+		if(message_handlers[i] != NULL)
+		{
+			message_handlers[i](msg);
+		}
+	}
 }
 
 static void backchannel_msg_handler(ant_evt_t* p_ant_evt)
@@ -185,28 +226,8 @@ static void timer_event(void * p_context)
 {
 #ifdef MM_BLAZE_NODE
 		ant_blaze_node_process_timeout();
-		uint32_t err_code;
-
-		ant_blaze_message_t p_message;
-		p_message.address = 0;
-		p_message.index = 0;
-		p_message.length = 9;
-		p_message.p_data = (uint8_t*)"imma node";
-
-		err_code = ant_blaze_node_send_message(&p_message);
-		APP_ERROR_CHECK(err_code);
 #else
 		ant_blaze_gateway_process_timeout();
-
-		uint32_t err_code;
-		ant_blaze_message_t p_message;
-		p_message.address = 0;
-		p_message.index = 0;
-		p_message.length = 9;
-		p_message.p_data = (uint8_t*)"imma gateway";
-
-		err_code = ant_blaze_gateway_send_message(&p_message);
-		APP_ERROR_CHECK(err_code);
 #endif
 
 }

@@ -21,15 +21,15 @@ notes:
                        DECLARATIONS
 **********************************************************/
 
+typedef ant_blaze_rx_message_handler_t mm_blaze_message_handler_t;
+
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
 
-#ifdef MM_BLAZE_NODE
-	void mm_blaze_node_init(void);
-#else
-	void mm_blaze_gateway_init(void);
-#endif
+void mm_blaze_init(void);
+
+void mm_blaze_register_message_listener(mm_blaze_message_handler_t rx_handler);
 
 /* Send a message through blaze */
 void mm_blaze_send_message(ant_blaze_message_t * message);

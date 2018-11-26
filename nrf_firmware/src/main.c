@@ -49,11 +49,7 @@ int main(void)
     utils_setup();
     mm_softdevice_init();
     mm_ant_init();
-#ifdef MM_BLAZE_NODE
-    mm_blaze_node_init();
-#else
-    mm_blaze_gateway_init();
-#endif
+    mm_blaze_init();
 
     while(true)
     {
