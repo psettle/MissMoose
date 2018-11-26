@@ -190,13 +190,23 @@ static void timer_event(void * p_context)
 		ant_blaze_message_t p_message;
 		p_message.address = 0;
 		p_message.index = 0;
-		p_message.length = 5;
-		p_message.p_data = (uint8_t*)"hello world";
+		p_message.length = 9;
+		p_message.p_data = (uint8_t*)"imma node";
 
 		err_code = ant_blaze_node_send_message(&p_message);
 		APP_ERROR_CHECK(err_code);
 #else
 		ant_blaze_gateway_process_timeout();
+
+		uint32_t err_code;
+		ant_blaze_message_t p_message;
+		p_message.address = 0;
+		p_message.index = 0;
+		p_message.length = 9;
+		p_message.p_data = (uint8_t*)"imma gateway";
+
+		err_code = ant_blaze_gateway_send_message(&p_message);
+		APP_ERROR_CHECK(err_code);
 #endif
 
 }
