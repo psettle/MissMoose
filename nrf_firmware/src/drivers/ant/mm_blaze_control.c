@@ -64,6 +64,18 @@ static uint8_t m_encryption_key[] = {0x7D, 0x77, 0xBE, 0xE8, 0xD2, 0xE3, 0x2B, 0
                        DEFINITIONS
 **********************************************************/
 
+void mm_blaze_send_message(ant_blaze_message_t * message)
+{
+	uint32_t err_code;
+
+#ifdef MM_BLAZE_NODE
+	err_code = ant_blaze_node_send_message(message);
+#else
+	err_code = ant_blaze_gateway_send_message(message);
+#endif
+	APP_ERROR_CHECK(err_code);
+}
+
 #ifdef MM_BLAZE_NODE
 	void mm_blaze_node_init(void)
 	{
