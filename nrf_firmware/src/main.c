@@ -49,7 +49,12 @@ int main(void)
     utils_setup();
     mm_softdevice_init();
     mm_ant_init();
+
+    // If not getting node ID from the configuration app,
+    // go ahead and do BLAZE initialization
+    #ifndef NODE_ID_FROM_CONFIG_APP
     mm_blaze_init();
+    #endif
 
     while(true)
     {

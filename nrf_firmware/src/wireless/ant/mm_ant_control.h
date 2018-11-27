@@ -17,6 +17,11 @@ notes:
 /**********************************************************
                         CONSTANTS
 **********************************************************/
+#define NODE_STATUS_PAGE_NUM        0x01
+#define CONFIG_COMMAND_PAGE_NUM     0x10
+
+#define CONFIG_STATUS_UNCONFIGURED  0
+#define CONFIG_STATUS_CONFIGURED    1
 
 /**********************************************************
                        DECLARATIONS

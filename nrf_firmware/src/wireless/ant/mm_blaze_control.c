@@ -63,6 +63,9 @@ static void mm_ant_evt_dispatch(ant_evt_t * p_ant_evt);
 	static ant_blaze_gateway_config_t gateway_config;
 #endif
 
+uint16_t network_id = 0;
+uint16_t node_id = 0;
+
 static mm_blaze_message_handler_t message_handlers[MAX_EVT_HANDLERS];
 
 static uint8_t m_ant_network_key[] = {0xE8, 0xE4, 0x21, 0x3B, 0x55, 0x7A, 0x67, 0xC1}; // ANT Public network key. Replace with manufacturer specific ANT network key assigned by Dynastream.
@@ -219,6 +222,9 @@ static void get_node_and_network_id(uint16_t* p_node_id, uint16_t* p_network_id)
                   (nrf_gpio_pin_read(SWITCH_8) << 7));
     #elif defined(NODE_ID_FROM_DEVICE_ID)
     *p_node_id = ((uint16_t)(NRF_FICR->DEVICEID[0]&0x01FF)); // Set 9-bit node address based on internal Device ID.
+	#elif defined(NODE_ID_FROM_CONFIG_APP)
+	*p_network_id	= network_id;
+	*p_node_id  	= node_id;
     #endif
 }
 

@@ -15,22 +15,22 @@ notes:
                         ANT CONSTANTS
 **********************************************************/
 
-
-#define MM_CHANNEL_NUMBER	   ( 0x05 )
-#define MM_CHANNEL_TYPE		   ( CHANNEL_TYPE_MASTER )
-#define MM_EXT_ASSIGN		   ( 0x00 )
-#define MM_RF_FREQ			   ( 66 )	//2566 Mhz
-#define MM_CHAN_PERIOD 		   ( 8192 )
-#define MM_CHAN_ID_DEV_NUM 	   ( 2 )
-#define MM_CHAN_ID_DEV_TYPE    ( 2 )
-#define MM_CHAN_ID_TRANS_TYPE  ( 1 )
-#define MM_ANT_NETWORK_NUMBER  ( 0x00 ) //public network
+#define MM_CHANNEL_NUMBER       ( 0x05 )
+#define MM_CHANNEL_TYPE         ( CHANNEL_TYPE_MASTER )
+#define MM_EXT_ASSIGN           ( 0x00 )
+#define MM_RF_FREQ              ( 66 )	//2566 MHz
+#define MM_CHAN_PERIOD          ( 8192 ) //4 Hz
+#define MM_CHAN_ID_DEV_NUM      ( (uint16_t) NRF_FICR->DEVICEID[0] )
+#define MM_CHAN_ID_DEV_TYPE     ( 1 )
+#define MM_CHAN_ID_TRANS_TYPE   ( 1 )
+#define MM_ANT_NETWORK_NUMBER   ( 0x00 ) //public network
 
 /**********************************************************
                         BLAZE CONSTANTS
 **********************************************************/
 
-#define NODE_ID_FROM_DEVICE_ID
+//#define NODE_ID_FROM_DEVICE_ID
+#define NODE_ID_FROM_CONFIG_APP
 
 #define MM_NETWORK_ID          ( (uint16_t) 20000 )
 #define MM_TX_POWER            ( RADIO_TX_POWER_LVL_3 )
