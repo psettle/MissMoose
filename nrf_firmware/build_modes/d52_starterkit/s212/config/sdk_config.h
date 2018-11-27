@@ -797,18 +797,6 @@
 #endif //APP_SCHEDULER_ENABLED
 // </e>
 
-// <h> nRF_Drivers 
-
-//==========================================================
-// <q> SYSTICK_ENABLED  - nrf_drv_systick - SysTick driver
-
-
-#ifndef SYSTICK_ENABLED
-#define SYSTICK_ENABLED 1
-#endif
-
-// </h>
-
 // <q> APP_PWM_ENABLED  - app_pwm - PWM functionality
 
 

@@ -20,7 +20,6 @@ SRC_FILES += \
   $(SDK_ROOT)/components/drivers_nrf/gpiote/nrf_drv_gpiote.c \
   $(SDK_ROOT)/components/drivers_nrf/uart/nrf_drv_uart.c \
   $(SDK_ROOT)/components/drivers_nrf/timer/nrf_drv_timer.c \
-  $(SDK_ROOT)/components/drivers_nrf/systick/nrf_drv_systick.c \
   $(SDK_ROOT)/components/drivers_nrf/ppi/nrf_drv_ppi.c \
   $(SDK_ROOT)/components/ant/ant_channel_config/ant_channel_config.c \
   $(SDK_ROOT)/components/ant/ant_key_manager/ant_key_manager.c \
@@ -70,7 +69,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/drivers_nrf/clock \
   $(SDK_ROOT)/components/drivers_nrf/ppi \
   $(SDK_ROOT)/components/drivers_nrf/timer \
-  $(SDK_ROOT)/components/drivers_nrf/systick \
   $(SDK_ROOT)/components/libraries/pwm \
   $(PROJ_DIR)/src/sensors/pir \
   $(PROJ_DIR)/src/sensors/ir_led \
