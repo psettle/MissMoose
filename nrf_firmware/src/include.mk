@@ -33,7 +33,6 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensors/pir/pir_28027.c \
   $(PROJ_DIR)/src/sensors/ir_led/ky_022_receive.c \
   $(PROJ_DIR)/src/sensors/ir_led/ir_led_transmit.c \
-  $(PROJ_DIR)/src/sensors/lidar/lidar_transmit_pub.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -72,7 +71,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/pwm \
   $(PROJ_DIR)/src/sensors/pir \
   $(PROJ_DIR)/src/sensors/ir_led \
-  $(PROJ_DIR)/src/sensors/lidar \
   ../config \
   $(SDK_ROOT)/components/libraries/hardfault \
   $(SDK_ROOT)/components/libraries/util \
