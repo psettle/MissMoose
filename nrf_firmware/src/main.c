@@ -23,6 +23,7 @@ notes:
 #include "pir_28027_pub.h"
 #include "pir_st_00081_pub.h"
 #include "mm_ant_control.h"
+#include "mm_ant_static_config.h"
 #include "mm_blaze_control.h"
 
 /**********************************************************

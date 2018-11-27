@@ -201,5 +201,5 @@ static void encode_node_status_page(mm_ant_payload_t * payload)
 {
     payload->data[0] = NODE_STATUS_PAGE_NUM;
     payload->data[1] = node_config_status;
-    memcpy(&payload->data[2], 0xFF, 6);
+    memset(&payload->data[2], 0xFF, 6);
 }
