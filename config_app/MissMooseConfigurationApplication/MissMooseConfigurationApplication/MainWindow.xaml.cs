@@ -18,16 +18,17 @@ using System.Windows.Shapes;
 namespace MissMooseConfigurationApplication
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
-    {
-        //This delegate is for using the dispatcher to avoid conflicts of the feedback thread referencing the UI elements
-        delegate void dAppendText(String toAppend);
-        delegate void dScrollToEnd();
+    {      
+        #region Private Members
 
         // ANT Device which opens a slave channel to search for node devices
         ANT_Device device;
 
         // Slave channel to search for node devices
         ANT_Channel channel;
+
+        // Parser to decode any valid received data pages
+        PageParser pageParser;
 
         // Properties for the ANT slave channel
         static readonly byte rfFrequency        = 66;           // 2466 MHz
@@ -37,31 +38,58 @@ namespace MissMooseConfigurationApplication
         static readonly UInt16 channelPeriod    = 8192;         // same channel period as node master devices
         static readonly ANT_ReferenceLibrary.ChannelType channelType = ANT_ReferenceLibrary.ChannelType.BASE_Slave_Receive_0x00;
 
-        Boolean deviceRunning = false;
-
-        Boolean nodeRequiresConfiguration = true;
-
         // BLAZE node config properties
         static readonly UInt16 maxNodeId = 512;
         static UInt16 nextNodeId = 1;
-        static readonly UInt16 networkId = 1;
+        static readonly UInt16 networkId = 1;        
+
+        // Device number of the connected master device
+        ushort masterDeviceNumber = 0;
+
+        Boolean deviceRunning = false;
+        Boolean nodeRequiresConfiguration = true;
+
+        #endregion
+
+        #region Private Delegates
+
+        //This delegate is for using the dispatcher to avoid conflicts of the feedback thread referencing the UI elements
+        private delegate void dAppendText(String toAppend);
+        private delegate void dScrollToEnd();
+
+        #endregion
+
+        #region Public Properties
 
         public NodeStatusPage NodeStatusPage { get; set; }
 
         public ConfigurationCommandPage ConfigurationCommandPage { get; set; }
 
-        ushort masterDeviceNumber = 0;
         public ushort MasterDeviceNumber
         {
             get { return masterDeviceNumber; }
             set { masterDeviceNumber = value; OnPropertyChanged("MasterDeviceNumber"); }
         }
 
+        #endregion
+
+        #region Public Events
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Public Methods
+
         public MainWindow()
         {
             InitializeComponent();
 
             this.DataContext = this;
+
+            // Set up the page parser to decode valid data pages
+            pageParser = new PageParser();
+            pageParser.AddDataPage(new NodeStatusPage());
 
             NodeStatusPage = new NodeStatusPage();
             ConfigurationCommandPage = new ConfigurationCommandPage();
@@ -110,6 +138,10 @@ namespace MissMooseConfigurationApplication
             ANT_Device.shutdownDeviceInstance(ref device);
             deviceRunning = false;
         }
+
+        #endregion
+
+        #region Private Methods
 
         private void setupAndOpen(ANT_Device deviceToSetup, ANT_ReferenceLibrary.ChannelType channelType)
         {
@@ -238,42 +270,10 @@ namespace MissMooseConfigurationApplication
 
                 byte[] rxBuffer = response.getDataPayload();
 
-                // If the payload has a known data page number, decode it
-                if (rxBuffer[0] == NodeStatusPage.DataPageNumber)
-                {
-                    NodeStatusPage.Decode(rxBuffer);
+                dynamic dataPage = pageParser.Parse(rxBuffer);
 
-                    switch (NodeStatusPage.ConfigStatus)
-                    {
-                        case NodeStatusPage.ConfigurationStatus.Unconfigured:
-                            {
-                                nodeRequiresConfiguration = true;
-
-                                ConfigurationCommandPage.NodeId = nextNodeId;
-                                ConfigurationCommandPage.NetworkId = networkId;
-
-                                byte[] txBuffer = new byte[8];
-                                ConfigurationCommandPage.Encode(txBuffer);
-                                channel.sendAcknowledgedData(txBuffer);
-                            }
-                            break;
-                        case NodeStatusPage.ConfigurationStatus.Configured:
-                            {
-
-
-                                if (nodeRequiresConfiguration)
-                                {
-                                    nodeRequiresConfiguration = false;
-                                    if (nextNodeId < maxNodeId) nextNodeId++;
-                                    else throw new Exception("Maximum node ID (512) reached. Cannot configure another node.");
-                                }
-                            }
-                            break;
-                        default:
-                            // do nothing
-                            break;
-                    }
-                }
+                if (dataPage != null)
+                    handlePage(dataPage);
             }
 
             //Always print the raw contents in hex, with leading '::' for easy visibility/parsing
@@ -285,17 +285,56 @@ namespace MissMooseConfigurationApplication
             return stringToPrint.ToString();
         }
 
-        void threadSafePrintLine(String stringToPrint, TextBox boxToPrintTo)
+        /*
+         * Processes a received Node Status data page 
+         */
+        private void handlePage(NodeStatusPage dataPage)
+        {
+            NodeStatusPage.ConfigStatus = dataPage.ConfigStatus;
+
+            switch (NodeStatusPage.ConfigStatus)
+            {
+                // If the node indicates that it is unconfigured, send a Configuration Command page
+                case NodeStatusPage.ConfigurationStatus.Unconfigured:
+                    {
+                        nodeRequiresConfiguration = true;
+
+                        ConfigurationCommandPage.NodeId = nextNodeId;
+                        ConfigurationCommandPage.NetworkId = networkId;
+
+                        byte[] txBuffer = new byte[8];
+                        ConfigurationCommandPage.Encode(txBuffer);
+                        channel.sendAcknowledgedData(txBuffer);
+                    }
+                    break;
+
+                // If the node indicates that it is configured and we just configured it,
+                // increment the next node ID to be assigned
+                case NodeStatusPage.ConfigurationStatus.Configured:
+                    {
+                        if (nodeRequiresConfiguration)
+                        {
+                            nodeRequiresConfiguration = false;
+                            if (nextNodeId < maxNodeId) nextNodeId++;
+                            else Console.WriteLine("Maximum node ID (512) reached. Cannot configure another node.");
+                        }
+                    }
+                    break;
+                default:
+                    // do nothing
+                    break;
+            }
+        }
+
+        private void threadSafePrintLine(String stringToPrint, TextBox boxToPrintTo)
         {
             //We need to put this on the dispatcher because sometimes it is called by the feedback thread
             //If you set the priority to 'background' then it never interferes with the UI interaction if you have a high message rate (we don't have to worry about it in the demo)
             boxToPrintTo.Dispatcher.BeginInvoke(new dAppendText(boxToPrintTo.AppendText), System.Windows.Threading.DispatcherPriority.Background, stringToPrint + Environment.NewLine);
             boxToPrintTo.Dispatcher.BeginInvoke(new dScrollToEnd(boxToPrintTo.ScrollToEnd), System.Windows.Threading.DispatcherPriority.Background);
-        }
+        }        
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string name)
+        private void OnPropertyChanged(string name)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
             if (handler != null)
@@ -303,5 +342,7 @@ namespace MissMooseConfigurationApplication
                 handler(this, new PropertyChangedEventArgs(name));
             }
         }
+
+        #endregion
     }
 }
