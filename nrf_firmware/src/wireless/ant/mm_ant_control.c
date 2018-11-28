@@ -37,21 +37,11 @@ notes:
 /* Internal callback for handling low level ant events. */
 static void ant_evt_dispatch(ant_evt_t * p_ant_evt);
 
-/* Performs internal processing of an ANT event. */
-static void process_ant_evt(ant_evt_t * evt);
-
-/* Encodes node status data page. */
-static void encode_node_status_page(mm_ant_payload_t * status_page);
-
 /**********************************************************
                        VARIABLES
 **********************************************************/
 
 static mm_ant_evt_handler_t ant_evt_handlers[MAX_EVT_HANDLERS];
-
-static uint8_t node_config_status;
-extern uint16_t node_id;
-extern uint16_t network_id;
 
 /**********************************************************
                        DEFINITIONS
@@ -90,13 +80,12 @@ void mm_ant_init(void)
         .network_number    = MM_ANT_NETWORK_NUMBER,
     };
 
-    node_config_status  = CONFIG_STATUS_UNCONFIGURED;
-
     err_code = ant_channel_init(&broadcast_channel_config);
     APP_ERROR_CHECK(err_code);
 
+    //default payload
     mm_ant_payload_t payload;
-    encode_node_status_page(&payload);
+    memset(&payload, 0, sizeof(payload));
     mm_ant_set_payload(&payload);
 
     // Open channel.
@@ -135,9 +124,6 @@ void mm_ant_set_payload(mm_ant_payload_t const * payload)
 
 static void ant_evt_dispatch(ant_evt_t * p_ant_evt)
 {
-    // Perform internal processing of ANT event
-    process_ant_evt(p_ant_evt);
-
     // Forward ANT event to listeners
 	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
 	{
@@ -150,56 +136,4 @@ static void ant_evt_dispatch(ant_evt_t * p_ant_evt)
 			break;
 		}
 	}
-}
-
-static void process_ant_evt(ant_evt_t * evt)
-{
-    // Process the event if it occurred on the configuration app channel
-    if (evt->channel == MM_CHANNEL_NUMBER)
-    {
-        ANT_MESSAGE * p_message = (ANT_MESSAGE *)evt->msg.evt_buffer;
-
-        switch (evt->event)
-        {
-            // If this is a "received message" event, take a closer look
-            case EVENT_RX:
-
-                if (p_message->ANT_MESSAGE_ucMesgID == MESG_BROADCAST_DATA_ID
-                    || p_message->ANT_MESSAGE_ucMesgID == MESG_ACKNOWLEDGED_DATA_ID)
-                {
-                    if (p_message->ANT_MESSAGE_aucPayload[0] == CONFIG_COMMAND_PAGE_NUM)
-                    {
-                        // Only accept node configuration if this node
-                        // does not already have a node_id and network_id
-                        if (node_id == 0 && network_id == 0)
-                        {
-                            // Set the node ID and network ID
-                            memcpy(&node_id, &p_message->ANT_MESSAGE_aucPayload[1], sizeof(node_id));
-                            memcpy(&network_id, &p_message->ANT_MESSAGE_aucPayload[3], sizeof(network_id));
-
-                            // Initialize BLAZE now that node ID and network ID are set
-                            mm_blaze_init();
-
-                            // Node has been configured, so update the status broadcast
-                            node_config_status = CONFIG_STATUS_CONFIGURED;
-
-                            mm_ant_payload_t payload;
-                            encode_node_status_page(&payload);
-                            mm_ant_set_payload(&payload);
-                        }
-                    }
-                }
-                break;
-
-            default:
-                break;
-        }
-    }
-}
-
-static void encode_node_status_page(mm_ant_payload_t * payload)
-{
-    payload->data[0] = NODE_STATUS_PAGE_NUM;
-    payload->data[1] = node_config_status;
-    memset(&payload->data[2], 0xFF, 6);
 }

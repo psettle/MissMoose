@@ -25,6 +25,7 @@ notes:
 #include "mm_ant_control.h"
 #include "mm_ant_static_config.h"
 #include "mm_blaze_control.h"
+#include "mm_node_config.h"
 
 /**********************************************************
                         CONSTANTS
@@ -51,16 +52,20 @@ int main(void)
     mm_softdevice_init();
     mm_ant_init();
 
-    // If not getting node ID from the configuration app,
-    // go ahead and do BLAZE initialization
-    #ifndef NODE_ID_FROM_CONFIG_APP
-    mm_blaze_init();
+    #ifdef NODE_ID_FROM_CONFIG_APP
+    // If getting node ID from the configuration app,
+    // start the node config procedure
+    mm_node_config_init();
+    #else
+    // Otherwise, just start up BLAZE directly
+    mm_blaze_init(0, 0);
     #endif
 
     while(true)
     {
-		err_code = sd_app_evt_wait();
-		APP_ERROR_CHECK(err_code);
+        mm_node_config_main();
+        err_code = sd_app_evt_wait();
+        APP_ERROR_CHECK(err_code);
     }
 }
 

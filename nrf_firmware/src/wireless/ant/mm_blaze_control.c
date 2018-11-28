@@ -63,8 +63,8 @@ static void mm_ant_evt_dispatch(ant_evt_t * p_ant_evt);
 	static ant_blaze_gateway_config_t gateway_config;
 #endif
 
-uint16_t network_id = 0;
-uint16_t node_id = 0;
+static uint16_t network_id;
+static uint16_t node_id;
 
 static mm_blaze_message_handler_t message_handlers[MAX_EVT_HANDLERS];
 
@@ -75,13 +75,16 @@ static uint8_t m_encryption_key[] = {0x7D, 0x77, 0xBE, 0xE8, 0xD2, 0xE3, 0x2B, 0
                        DEFINITIONS
 **********************************************************/
 
-void mm_blaze_init(void)
+void mm_blaze_init(uint16_t assigned_node_id, uint16_t assigned_network_id)
 {
-#ifdef MM_BLAZE_NODE
+	node_id = assigned_node_id;
+	network_id = assigned_network_id;
+
+	#ifdef MM_BLAZE_NODE
 	mm_blaze_node_init();
-#else
+	#else
 	mm_blaze_gateway_init();
-#endif
+	#endif
 }
 
 void mm_blaze_send_message(ant_blaze_message_t * message)
