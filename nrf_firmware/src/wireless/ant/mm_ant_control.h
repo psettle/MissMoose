@@ -41,7 +41,7 @@ void mm_ant_init(void);
 /* Add ANT event listeners */
 void mm_ant_evt_handler_set(mm_ant_evt_handler_t mm_ant_evt_handler);
 
-/* Set a broadcast payload. Persistents until called again. */
+/* Set a broadcast payload. Persistent until called again. */
 void mm_ant_set_payload(mm_ant_payload_t const * payload);
 
 #endif /* MM_ANT_CONTROL_H */

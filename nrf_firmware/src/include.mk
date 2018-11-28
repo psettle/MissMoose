@@ -37,7 +37,7 @@ SRC_FILES += \
   $(PROJ_DIR)/src/pir_st_00081.c \
   $(PROJ_DIR)/src/pir_28027.c \
   $(PROJ_DIR)/src/wireless/ant/mm_ant_control.c \
-  $(PROJ_DIR)/src/wireless/ant/mm_blaze_control.c \
+  $(PROJ_DIR)/src/wireless/blaze/mm_blaze_control.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -85,6 +85,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/timer \
   $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/pages \
   $(PROJ_DIR)/src/wireless/ant \
+  $(PROJ_DIR)/src/wireless/blaze \
 
 # Libraries
 ifeq ($(IS_BLAZE_GATEWAY),1)
