@@ -22,6 +22,8 @@ notes:
 
 #include "pir_28027_pub.h"
 #include "pir_st_00081_pub.h"
+#include "ir_led_transmit_pub.h"
+#include "ky_022_receive_pub.h"
 #include "mm_ant_control.h"
 #include "mm_blaze_control.h"
 
@@ -51,8 +53,14 @@ int main(void)
     mm_ant_init();
     mm_blaze_init();
 
+    //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
+    //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
+    //pir_28027_init();
+    //pir_st_00081_init();
+
     while(true)
     {
+        //ir_led_transmit_update_main();
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }
