@@ -13,7 +13,6 @@ notes:
 #include <string.h>
 
 #include "mm_ant_static_config.h"
-#include "mm_blaze_control.h"
 #include "nrf.h"
 #include "nrf_sdm.h"
 #include "ant_interface.h"
