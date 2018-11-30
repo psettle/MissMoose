@@ -26,7 +26,8 @@ notes:
                         CONSTANTS
 **********************************************************/
 
-#define LED_DEBUG 		( true )
+#define LED_DEBUG		( false )
+#define TEST_MESSAGE	( false )
 #if LED_DEBUG
 	#include "bsp.h"
 #endif
@@ -181,13 +182,17 @@ void mm_blaze_register_message_listener(mm_blaze_message_handler_t rx_handler)
 		// Start the ANT BLAZE library
 		err_code = ant_blaze_gateway_start();
 		APP_ERROR_CHECK(err_code);
+
+#if LED_DEBUG
+		bsp_board_led_on( 0 ); //flag the gateway
+#endif
 	}
 #endif
 
 static void rx_message_handler(ant_blaze_message_t msg)
 {
 #if LED_DEBUG
-	bsp_board_led_invert( 0 );
+	bsp_board_led_invert( 2 );
 #endif
 
 	uint32_t i;
@@ -230,6 +235,21 @@ static void timer_event(void * p_context)
 		ant_blaze_gateway_process_timeout();
 #endif
 
+
+#if TEST_MESSAGE
+	ant_blaze_message_t msg;
+
+	msg.address = 0;
+	msg.index = 0;
+	msg.p_data = (uint8_t*)"test";
+	msg.length = 4;
+
+	mm_blaze_send_message(&msg);
+#endif
+
+#if LED_DEBUG
+	bsp_board_led_invert( 1 );
+#endif
 }
 
 static void mm_blaze_common_init(void)
