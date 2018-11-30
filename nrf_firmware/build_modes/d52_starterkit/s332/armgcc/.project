@@ -25,6 +25,11 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>d52_starterkit</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>nRF5_SDK</name>
 			<type>2</type>
 			<location>C:/builds/missmoose/nrf_firmware/nRF5_SDK</location>
@@ -33,6 +38,21 @@
 			<name>src</name>
 			<type>2</type>
 			<location>C:/builds/missmoose/nrf_firmware/src</location>
+		</link>
+		<link>
+			<name>d52_starterkit/s332</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>d52_starterkit/s332/config</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>d52_starterkit/s332/config/sdk_config.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/config/sdk_config.h</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
