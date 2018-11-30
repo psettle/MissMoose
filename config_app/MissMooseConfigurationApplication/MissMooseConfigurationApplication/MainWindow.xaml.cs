@@ -41,7 +41,7 @@ namespace MissMooseConfigurationApplication
         // BLAZE node config properties
         static readonly UInt16 maxNodeId = 512;
         static UInt16 nextNodeId = 1;
-        static readonly UInt16 networkId = 1;        
+        static readonly UInt16 networkId = 20000;
 
         // Device number of the connected master device
         ushort masterDeviceNumber = 0;

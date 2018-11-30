@@ -18,7 +18,7 @@ namespace MissMooseConfigurationApplication
 
         public static byte GetByte1(UInt16 field)
         {
-            return (byte)(field & 0xFF00);
+            return (byte)((field & 0xFF00) >> 8);
         }
 
         public static byte GetByte0(UInt32 field)
@@ -28,17 +28,17 @@ namespace MissMooseConfigurationApplication
 
         public static byte GetByte1(UInt32 field)
         {
-            return (byte)(field & 0x0000FF00);
+            return (byte)((field & 0x0000FF00) >> 8);
         }
 
         public static byte GetByte2(UInt32 field)
         {
-            return (byte)(field & 0x00FF0000);
+            return (byte)((field & 0x00FF0000) >> 16);
         }
 
         public static byte GetByte3(UInt32 field)
         {
-            return (byte)(field & 0xFF000000);
+            return (byte)((field & 0xFF000000) >> 24);
         }
 
         public static void SetByte0(UInt16 field, byte value)
