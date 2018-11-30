@@ -23,10 +23,13 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/util/nrf_assert.c \
   $(SDK_ROOT)/components/libraries/strerror/nrf_strerror.c \
   $(SDK_ROOT)/components/libraries/sensorsim/sensorsim.c \
+  $(SDK_ROOT)/components/libraries/pwm/app_pwm.c \
   $(SDK_ROOT)/components/drivers_nrf/clock/nrf_drv_clock.c \
   $(SDK_ROOT)/components/drivers_nrf/common/nrf_drv_common.c \
   $(SDK_ROOT)/components/drivers_nrf/gpiote/nrf_drv_gpiote.c \
   $(SDK_ROOT)/components/drivers_nrf/uart/nrf_drv_uart.c \
+  $(SDK_ROOT)/components/drivers_nrf/timer/nrf_drv_timer.c \
+  $(SDK_ROOT)/components/drivers_nrf/ppi/nrf_drv_ppi.c \
   $(SDK_ROOT)/components/ant/ant_channel_config/ant_channel_config.c \
   $(SDK_ROOT)/components/ant/ant_key_manager/ant_key_manager.c \
   $(SDK_ROOT)/components/ant/ant_stack_config/ant_stack_config.c \
@@ -34,11 +37,13 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/bsp/bsp_btn_ant.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp_nfc.c \
   $(PROJ_DIR)/src/main.c \
-  $(PROJ_DIR)/src/pir_st_00081.c \
-  $(PROJ_DIR)/src/pir_28027.c \
   $(PROJ_DIR)/src/wireless/ant/mm_ant_control.c \
-  $(PROJ_DIR)/src/wireless/ant/mm_blaze_control.c \
+  $(PROJ_DIR)/src/wireless/blaze/mm_blaze_control.c \
   $(PROJ_DIR)/src/protocols/mm_node_config.c \
+  $(PROJ_DIR)/src/sensors/pir/pir_st_00081.c \
+  $(PROJ_DIR)/src/sensors/pir/pir_28027.c \
+  $(PROJ_DIR)/src/sensors/ir_led/ky_022_receive.c \
+  $(PROJ_DIR)/src/sensors/ir_led/ir_led_transmit.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -72,6 +77,11 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/bsp \
   $(SDK_ROOT)/components/ant/ant_key_manager/config \
   $(SDK_ROOT)/components/drivers_nrf/clock \
+  $(SDK_ROOT)/components/drivers_nrf/ppi \
+  $(SDK_ROOT)/components/drivers_nrf/timer \
+  $(SDK_ROOT)/components/libraries/pwm \
+  $(PROJ_DIR)/src/sensors/pir \
+  $(PROJ_DIR)/src/sensors/ir_led \
   ../config \
   $(SDK_ROOT)/components/libraries/hardfault \
   $(SDK_ROOT)/components/libraries/util \
@@ -86,6 +96,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/timer \
   $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/pages \
   $(PROJ_DIR)/src/wireless/ant \
+  $(PROJ_DIR)/src/wireless/blaze \
   $(PROJ_DIR)/src/protocols \
 
 # Libraries

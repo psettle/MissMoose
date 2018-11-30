@@ -12,7 +12,7 @@ notes:
 #include <string.h>
 
 #include "mm_ant_control.h"
-#include "mm_ant_static_config.h"
+#include "mm_blaze_static_config.h"
 #include "app_error.h"
 #include "app_timer.h"
 #include "ant_parameters.h"
@@ -187,7 +187,7 @@ void mm_blaze_register_message_listener(mm_blaze_message_handler_t rx_handler)
 static void rx_message_handler(ant_blaze_message_t msg)
 {
 #if LED_DEBUG
-	bsp_board_led_on( 0 );
+	bsp_board_led_invert( 0 );
 #endif
 
 	uint32_t i;
@@ -212,22 +212,13 @@ static void get_node_and_network_id(uint16_t* p_node_id, uint16_t* p_network_id)
 
     #ifdef MM_BLAZE_GATEWAY
     *p_node_id = MM_GATEWAY_ID;
-
-    #elif defined(NODE_ID_FROM_SWITCHES)
-    // Set the node ID by reading value in dip switches. Switch 1 is the lsb, switch 8 the msb.
-    *p_node_id = ((nrf_gpio_pin_read(SWITCH_1) << 0) |
-                  (nrf_gpio_pin_read(SWITCH_2) << 1) |
-                  (nrf_gpio_pin_read(SWITCH_3) << 2) |
-                  (nrf_gpio_pin_read(SWITCH_4) << 3) |
-                  (nrf_gpio_pin_read(SWITCH_5) << 4) |
-                  (nrf_gpio_pin_read(SWITCH_6) << 5) |
-                  (nrf_gpio_pin_read(SWITCH_7) << 6) |
-                  (nrf_gpio_pin_read(SWITCH_8) << 7));
     #elif defined(NODE_ID_FROM_DEVICE_ID)
     *p_node_id = ((uint16_t)(NRF_FICR->DEVICEID[0]&0x01FF)); // Set 9-bit node address based on internal Device ID.
 	#elif defined(NODE_ID_FROM_CONFIG_APP)
 	*p_network_id	= network_id;
 	*p_node_id  	= node_id;
+	#else
+		#error No node id selection method defined.
     #endif
 }
 
