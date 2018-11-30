@@ -15,7 +15,8 @@ notes:
                         BLAZE CONSTANTS
 **********************************************************/
 
-#define NODE_ID_FROM_DEVICE_ID
+//#define NODE_ID_FROM_DEVICE_ID
+#define NODE_ID_FROM_CONFIG_APP
 
 #define MM_NETWORK_ID          ( (uint16_t) 20000 )
 #define MM_TX_POWER            ( RADIO_TX_POWER_LVL_3 )

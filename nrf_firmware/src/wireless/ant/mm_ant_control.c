@@ -123,6 +123,7 @@ void mm_ant_set_payload(mm_ant_payload_t const * payload)
 
 static void ant_evt_dispatch(ant_evt_t * p_ant_evt)
 {
+    // Forward ANT event to listeners
 	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
 	{
 		if (ant_evt_handlers[i] != NULL)

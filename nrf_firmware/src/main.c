@@ -25,7 +25,9 @@ notes:
 #include "ir_led_transmit_pub.h"
 #include "ky_022_receive_pub.h"
 #include "mm_ant_control.h"
+#include "mm_blaze_static_config.h"
 #include "mm_blaze_control.h"
+#include "mm_node_config.h"
 
 /**********************************************************
                         CONSTANTS
@@ -51,7 +53,15 @@ int main(void)
     utils_setup();
     mm_softdevice_init();
     mm_ant_init();
-    mm_blaze_init();
+
+    #ifdef NODE_ID_FROM_CONFIG_APP
+    // If getting node ID from the configuration app,
+    // start the node config procedure
+    mm_node_config_init();
+    #else
+    // Otherwise, just start up BLAZE directly
+    mm_blaze_init(0, 0);
+    #endif
 
     //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
     //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
@@ -61,6 +71,7 @@ int main(void)
     while(true)
     {
         //ir_led_transmit_update_main();
+		mm_node_config_main();
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }
