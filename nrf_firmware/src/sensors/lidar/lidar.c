@@ -17,25 +17,10 @@
                         CONSTANTS
 **********************************************************/
 
-/* Register definitions for the grid-eye. */
-#define POWER_CONTROL_REGISTER        (0x00U)
-#define RESET_REGISTER                (0x01U)
-#define FRAMERATE_REGISTER            (0x02U)
-#define INT_CONTROL_REGISTER          (0x03U)
-#define STATUS_REGISTER               (0x04U)
-#define STATUS_CLEAR_REGISTER         (0x05U)
-#define AVERAGE_REGISTER              (0x07U)
-#define INT_LEVEL_REGISTER_UPPER_LSB  (0x08U)
-#define INT_LEVEL_REGISTER_UPPER_MSB  (0x09U)
-#define INT_LEVEL_REGISTER_LOWER_LSB  (0x0AU)
-#define INT_LEVEL_REGISTER_LOWER_MSB  (0x0BU)
-#define INT_LEVEL_REGISTER_HYST_LSB   (0x0CU)
-#define INT_LEVEL_REGISTER_HYST_MSB   (0x0DU)
-#define THERMISTOR_REGISTER_LSB       (0x0EU)
-#define THERMISTOR_REGISTER_MSB       (0x0FU)
-#define INT_TABLE_REGISTER_INT0       (0x10U)
-#define RESERVED_AVERAGE_REGISTER     (0x1FU)
-#define TEMPERATURE_REGISTER_START    (0x80U)
+/* Register definitions for the LIDAR. */
+#define DISTANCE_VALUE_REGISTER     (0x8FU)
+#define MEASUREMENT_TYPE_REGISTER   (0x00U)
+#define RECEIVER_BIS_CORRECTION     (0x04U)
 
 /* TWI instance ID. */
 #define TWI_INSTANCE_ID     0
@@ -50,7 +35,8 @@
 typedef enum
 {
     READING_START_FLAG = 0, ///< When this flag is set, time to start a reading!
-    WAITING_FOR_WRITE,      ///< We have written to the temperature register, waiting for transfer complete
+    WAITING_FOR_WRITE,      ///< We have told the lidar to take a reading, wait for transfer complete
+    INITIATE_DISTANCE_READ, ///< We initiated a reading off the LIDAR's distance register, wait for transfer complete
     WAITING_FOR_READ,       ///< We have started reading data, waiting for transfer complete
     READING_DONE            ///< We're finished the reading.
 }lidar_reading_states_t;
@@ -61,7 +47,7 @@ typedef enum
 
 static void lidar_process_distance(void);
 static ret_code_t set_register_value(uint8_t reg, uint8_t val);
-//static ret_code_t write_register(uint8_t reg);
+static ret_code_t write_register(uint8_t reg);
 void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context);
 
 static void timer_event_handler(void * p_context);
@@ -70,7 +56,7 @@ static void timer_event_handler(void * p_context);
 static volatile bool xfer_done = true;
 static uint8_t       rx_buffer[BUFFER_LENGTH];
 
-static uint8_t       frames_per_second = 1;
+static uint8_t       frames_per_second = 10;
 static lidar_framerate_t lidar_framerate = LIDAR_10FPS; // Framerate setting in lidar format.
 static uint8_t       timer_iteration_count = 0;
 static bool          pending_framerate_change = false;
@@ -96,11 +82,18 @@ void lidar_update_main(void)
         {
             case READING_START_FLAG:
                 // Write to the lidar the register we want to read data off of.
-                err_code = set_register_value( 0x00, 0x04 );
+                err_code = set_register_value( MEASUREMENT_TYPE_REGISTER, RECEIVER_BIS_CORRECTION );
                 APP_ERROR_CHECK(err_code);
                 lidar_reading_state = WAITING_FOR_WRITE;
                 break;
             case WAITING_FOR_WRITE:
+                // Initiate a reading off the grid-eye.
+                xfer_done = false;
+                err_code = write_register(DISTANCE_VALUE_REGISTER);
+                APP_ERROR_CHECK(err_code);
+                lidar_reading_state = INITIATE_DISTANCE_READ;
+                break;
+            case INITIATE_DISTANCE_READ:
                 // Initiate a reading off the grid-eye.
                 xfer_done = false;
                 err_code = nrf_drv_twi_rx(&m_twi, LIDAR_ADDR, rx_buffer, sizeof(rx_buffer));
@@ -189,15 +182,15 @@ static ret_code_t set_register_value(uint8_t reg, uint8_t val)
     return err_code;
 }
 
-//static ret_code_t write_register(uint8_t reg)
-//{
-//    xfer_done = false;
-//    ret_code_t err_code;
-//    err_code = nrf_drv_twi_tx(&m_twi, LIDAR_ADDR, (uint8_t*)&reg, 1, true);
-//
-//    // while (xfer_done == false);
-//    return err_code;
-//}
+static ret_code_t write_register(uint8_t reg)
+{
+   xfer_done = false;
+   ret_code_t err_code;
+   err_code = nrf_drv_twi_tx(&m_twi, LIDAR_ADDR, (uint8_t*)&reg, 1, true);
+
+   // while (xfer_done == false);
+   return err_code;
+}
 
 static void timed_reading_init(void)
 {
