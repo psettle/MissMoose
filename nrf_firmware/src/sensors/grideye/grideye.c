@@ -56,6 +56,7 @@
 #define GRIDEYE_ADDR                  (0x69U)
 #define BUFFER_LENGTH                 (128)
 #define BASE_FRAMERATE                (100)
+#define GRIDEYE_LED_DEBUG             (true)
 
 /**
  * @brief States of simple timer state machine.
@@ -193,7 +194,9 @@ static void grideye_process_frame(void)
     uint8_t        i;
     uint32_t    raw = 0;
     float       result;
-    bsp_board_led_off(2);
+    #if GRIDEYE_LED_DEBUG
+        bsp_board_led_off(2);
+    #endif
     // loop through all pixel temperature data
     for(i = 0; i < BUFFER_LENGTH; i++)
     {
@@ -231,10 +234,12 @@ static void grideye_process_frame(void)
 
             temperature_array_u7[i/2] = (uint8_t)compressed_value;
 
-            if(temperature_array[i/2] > 26.0)
-            {
-                bsp_board_led_on(2);
-            }
+            #if GRIDEYE_LED_DEBUG
+                if(temperature_array[i/2] >= 24.0)
+                {
+                    bsp_board_led_on(2);
+                }
+            #endif
         }
         // if the lower byte is processed
         else
@@ -313,7 +318,9 @@ static void timer_event_handler(void * p_context)
         // do a reading!
         grideye_reading_state = READING_START_FLAG;
         timer_iteration_count = 0;
-        bsp_board_led_invert(0); // Flashy flashy every time we take a frame.
+        #if GRIDEYE_LED_DEBUG
+            bsp_board_led_invert(0); // Flashy flashy every time we take a frame.
+        #endif
     }
 }
 
@@ -326,13 +333,13 @@ void grideye_ant_event_handler(ant_evt_t * p_ant_evt)
     uint8_t current_pixel;
     mm_ant_payload_t payload;
 
-    bsp_board_led_invert(1);
-
     switch (p_ant_evt->event)
     {
         case EVENT_TX:
             // Time to send the next row!
-            bsp_board_led_invert(3);
+            #if GRIDEYE_LED_DEBUG
+                bsp_board_led_invert(3);
+            #endif
 
             memset(&payload, 0, sizeof(payload));
             // Roll over the index of the row we're transferring, if necessary.
