@@ -26,6 +26,7 @@ notes:
 #include "ir_led_transmit_pub.h"
 #include "ky_022_receive_pub.h"
 #include "mm_ant_control.h"
+#include "sensors/lidar/lidar_pub.h"
 
 /**********************************************************
                         CONSTANTS
@@ -61,14 +62,16 @@ int main(void)
 
     mm_ant_set_payload(&payload);
 
-    ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
-    ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
+    //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
+    //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
     //pir_28027_init();
     //pir_st_00081_init();
+    lidar_init();
 
     while(true)
     {
-        ir_led_transmit_update_main();
+        //ir_led_transmit_update_main();
+    	lidar_update_main();
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }
