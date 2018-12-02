@@ -70,7 +70,7 @@ static void timer_event_handler(void * p_context);
 static volatile bool xfer_done = true;
 static uint8_t       rx_buffer[BUFFER_LENGTH];
 
-static uint8_t       frames_per_second = 10;
+static uint8_t       frames_per_second = 1;
 static lidar_framerate_t lidar_framerate = LIDAR_10FPS; // Framerate setting in lidar format.
 static uint8_t       timer_iteration_count = 0;
 static bool          pending_framerate_change = false;
