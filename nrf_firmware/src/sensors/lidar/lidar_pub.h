@@ -22,15 +22,6 @@ extern "C" {
                        DECLARATIONS
 **********************************************************/
 
-/**
- * @brief Enum for conveniently describing the framerate.
- */
-typedef enum
-{
-    LIDAR_10FPS,
-    LIDAR_1FPS,
-} lidar_framerate_t;
-
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
@@ -39,11 +30,6 @@ typedef enum
  * @brief
  */
 void lidar_update_main(void);
-
-/**
- * @brief
- */
-void grideye_set_framerate(lidar_framerate_t framerate);
 
 /**
  * @brief

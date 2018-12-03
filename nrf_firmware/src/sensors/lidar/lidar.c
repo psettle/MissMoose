@@ -35,7 +35,7 @@
 typedef enum
 {
     READING_START_FLAG = 0, ///< When this flag is set, time to start a reading!
-    WAITING_FOR_WRITE,      ///< We have told the lidar to take a reading, wait for transfer complete
+    WAITING_FOR_WRITE,      ///< We have told the LIDAR to take a reading, wait for transfer complete
     INITIATE_DISTANCE_READ, ///< We initiated a reading off the LIDAR's distance register, wait for transfer complete
     WAITING_FOR_READ,       ///< We have started reading data, waiting for transfer complete
     READING_DONE            ///< We're finished the reading.
@@ -56,10 +56,8 @@ static void timer_event_handler(void * p_context);
 static volatile bool xfer_done = true;
 static uint8_t       rx_buffer[BUFFER_LENGTH];
 
-static uint8_t       frames_per_second = 10;
-static lidar_framerate_t lidar_framerate = LIDAR_10FPS; // Framerate setting in lidar format.
+static uint8_t       samples_per_second = 10;
 static uint8_t       timer_iteration_count = 0;
-static bool          pending_framerate_change = false;
 static lidar_reading_states_t lidar_reading_state = READING_DONE;
 
 /* TWI instance. */
@@ -73,6 +71,9 @@ APP_TIMER_DEF(m_lidar_timer);
                        DEFINITIONS
 **********************************************************/
 
+/**
+ * @brief Call for updating the data read off the LIDAR.
+ */
 void lidar_update_main(void)
 {
     ret_code_t err_code;
@@ -81,20 +82,20 @@ void lidar_update_main(void)
         switch(lidar_reading_state)
         {
             case READING_START_FLAG:
-                // Write to the lidar the register we want to read data off of.
+                // Write to the LIDAR the register we want to read data off of.
                 err_code = set_register_value( MEASUREMENT_TYPE_REGISTER, RECEIVER_BIS_CORRECTION );
                 APP_ERROR_CHECK(err_code);
                 lidar_reading_state = WAITING_FOR_WRITE;
                 break;
             case WAITING_FOR_WRITE:
-                // Initiate a reading off the grid-eye.
+                // Initiate a reading off the LIDAR.
                 xfer_done = false;
                 err_code = write_register(DISTANCE_VALUE_REGISTER);
                 APP_ERROR_CHECK(err_code);
                 lidar_reading_state = INITIATE_DISTANCE_READ;
                 break;
             case INITIATE_DISTANCE_READ:
-                // Initiate a reading off the grid-eye.
+                // Initiate a reading off the LIDAR.
                 xfer_done = false;
                 err_code = nrf_drv_twi_rx(&m_twi, LIDAR_ADDR, rx_buffer, sizeof(rx_buffer));
                 APP_ERROR_CHECK(err_code);
@@ -112,21 +113,6 @@ void lidar_update_main(void)
                 break;
         };
     }
-}
-
-/**
- * @brief
- */
-void lidar_set_framerate(lidar_framerate_t new_framerate)
-{
-    // Check for invalid argument
-    if(new_framerate > LIDAR_1FPS)
-    {
-        return;
-    }
-    pending_framerate_change = true;
-    lidar_framerate = new_framerate;
-    frames_per_second = lidar_framerate == LIDAR_10FPS ? 10 : 1;
 }
 
 /**
@@ -150,6 +136,9 @@ void twi_init(void)
     nrf_drv_twi_enable(&m_twi);
 }
 
+/**
+ * @brief Processes distance from rx_buffer and broadcasts it over ANT.
+ */
 static void lidar_process_distance(void)
 {
     bsp_board_led_off(2);
@@ -178,7 +167,6 @@ static ret_code_t set_register_value(uint8_t reg, uint8_t val)
     uint8_t reg_val[2] = {reg, val};
     err_code = nrf_drv_twi_tx(&m_twi, LIDAR_ADDR, (uint8_t*)&reg_val, 2, true);
 
-    // while (xfer_done == false);
     return err_code;
 }
 
@@ -188,10 +176,12 @@ static ret_code_t write_register(uint8_t reg)
    ret_code_t err_code;
    err_code = nrf_drv_twi_tx(&m_twi, LIDAR_ADDR, (uint8_t*)&reg, 1, true);
 
-   // while (xfer_done == false);
    return err_code;
 }
 
+/**
+ * @brief Starts periodic distance readings.
+ */
 static void timed_reading_init(void)
 {
     ret_code_t err_code;
@@ -201,6 +191,9 @@ static void timed_reading_init(void)
     err_code = app_timer_start(m_lidar_timer, APP_TIMER_TICKS(BASE_FRAMERATE), NULL);
 }
 
+/**
+ * @brief Initializes LIDAR sensor.
+ */
 void lidar_init(void)
 {
     twi_init();
@@ -227,7 +220,7 @@ void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
 static void timer_event_handler(void * p_context)
 {
     timer_iteration_count++;
-    if(timer_iteration_count >= (11 - frames_per_second))
+    if(timer_iteration_count >= (11 - samples_per_second))
     {
         // do a reading!
         lidar_reading_state = READING_START_FLAG;
