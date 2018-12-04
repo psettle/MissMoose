@@ -1,3 +1,12 @@
+#control constants
+IS_BLAZE_GATEWAY = 0
+
+ifeq ($(IS_BLAZE_GATEWAY),1)
+  CFLAGS += -DMM_BLAZE_GATEWAY
+else
+  CFLAGS += -DMM_BLAZE_NODE
+endif
+
 # Source files common to all targets
 SRC_FILES += \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_serial.c \
@@ -20,7 +29,6 @@ SRC_FILES += \
   $(SDK_ROOT)/components/drivers_nrf/gpiote/nrf_drv_gpiote.c \
   $(SDK_ROOT)/components/drivers_nrf/uart/nrf_drv_uart.c \
   $(SDK_ROOT)/components/drivers_nrf/timer/nrf_drv_timer.c \
-  $(SDK_ROOT)/components/drivers_nrf/systick/nrf_drv_systick.c \
   $(SDK_ROOT)/components/drivers_nrf/ppi/nrf_drv_ppi.c \
   $(SDK_ROOT)/components/drivers_nrf/twi_master/nrf_drv_twi.c \
   $(SDK_ROOT)/components/ant/ant_channel_config/ant_channel_config.c \
@@ -30,7 +38,9 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/bsp/bsp_btn_ant.c \
   $(SDK_ROOT)/components/libraries/bsp/bsp_nfc.c \
   $(PROJ_DIR)/src/main.c \
-  $(PROJ_DIR)/src/drivers/ant/mm_ant_control.c \
+  $(PROJ_DIR)/src/wireless/ant/mm_ant_control.c \
+  $(PROJ_DIR)/src/wireless/blaze/mm_blaze_control.c \
+  $(PROJ_DIR)/src/protocols/mm_node_config.c \
   $(PROJ_DIR)/src/sensors/pir/pir_st_00081.c \
   $(PROJ_DIR)/src/sensors/pir/pir_28027.c \
   $(PROJ_DIR)/src/sensors/ir_led/ky_022_receive.c \
@@ -49,7 +59,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/sensorsim \
   $(SDK_ROOT)/components/ant/ant_key_manager \
   $(SDK_ROOT)/components/libraries/hardfault/nrf52 \
-  $(SDK_ROOT)/components/softdevice/s212/headers/ANT_s212_nrf52832_4.0.5.API/include/nrf52 \
+  $(SDK_ROOT)/components/softdevice/s332/headers/nrf52 \
   $(SDK_ROOT)/components/toolchain/gcc \
   $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm \
   $(SDK_ROOT)/components/drivers_nrf/uart \
@@ -60,7 +70,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/strerror \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components/drivers_nrf/gpiote \
-  $(SDK_ROOT)/components/softdevice/s212/headers \
+  $(SDK_ROOT)/components/softdevice/s332/headers \
   $(SDK_ROOT)/components/libraries/button \
   $(SDK_ROOT)/components/ant/ant_state_indicator \
   $(SDK_ROOT)/components/libraries/log \
@@ -75,7 +85,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/pwm \
   $(PROJ_DIR)/src/sensors/pir \
   $(PROJ_DIR)/src/sensors/ir_led \
-  $(PROJ_DIR)/src/sensors/lidar \
   ../config \
   $(SDK_ROOT)/components/libraries/hardfault \
   $(SDK_ROOT)/components/libraries/util \
@@ -89,9 +98,15 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/toolchain/cmsis/include \
   $(SDK_ROOT)/components/libraries/timer \
   $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm/pages \
-  $(PROJ_DIR)/src/drivers/ant \
+  $(PROJ_DIR)/src/wireless/ant \
+  $(PROJ_DIR)/src/wireless/blaze \
+  $(PROJ_DIR)/src/protocols \
 
-# Libraries common to all targets
-LIB_FILES += \
-  $(SDK_ROOT)/external/ANT_BLAZE_Libraries_v1.0.0/bin/ANT_BLAZE_Gateway_Library_GCC.a \
-  $(SDK_ROOT)/external/ANT_BLAZE_Libraries_v1.0.0/bin/ANT_BLAZE_Node_Library_GCC.a
+# Libraries
+ifeq ($(IS_BLAZE_GATEWAY),1)
+  LIB_FILES += $(SDK_ROOT)/external/ANT_BLAZE_Libraries_v1.0.0/bin/ANT_BLAZE_Gateway_Library_GCC.a
+else
+  LIB_FILES += $(SDK_ROOT)/external/ANT_BLAZE_Libraries_v1.0.0/bin/ANT_BLAZE_Node_Library_GCC.a
+endif
+
+

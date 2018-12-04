@@ -1,4 +1,5 @@
 ﻿<Window x:Class="MissMooseConfigurationApplication.MainWindow"
+        x:Name="this"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -11,19 +12,43 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="8*"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
-            <ColumnDefinition Width="8*"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="10*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-        <Button Grid.Column="1" Grid.Row="1" Name="button_master" VerticalAlignment="Top" Background="LightGreen" Click="Start_Master">Start Master (Sending messages)</Button>
-        <Button Grid.Column="3" Grid.Row="1" Name="button_slave" VerticalAlignment="Top" Background="LightGreen" Click="Start_Slave">Start Slave (Listening for messages)</Button>
-        <TextBox Grid.Column="1" Grid.Row="3" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" Name="textBox_master" VerticalScrollBarVisibility="Auto"/>
-        <TextBox Grid.Column="3" Grid.Row="3" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" Name="textBox_slave" VerticalScrollBarVisibility="Auto"/>
+        <Button Grid.Column="1" Grid.Row="1" Name="button_slave" VerticalAlignment="Top" Background="LightGreen" Click="StartConfigDevice">Start Configuration</Button>
+        <Grid Grid.Column="1" Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="1" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" Name="textBox_slave" VerticalScrollBarVisibility="Auto"/>
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="7*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Label Grid.Column="0" Grid.Row="0" Content="Connected Node"></Label>
+                <Label Grid.Column="0" Grid.Row="1" Content="Device Number:"></Label>
+                <Label Grid.Column="1" Grid.Row="1" Content="{Binding Path=MasterDeviceNumber, UpdateSourceTrigger=PropertyChanged}"></Label>
+                <Label Grid.Column="0" Grid.Row="2" Content="Configuration Status:"></Label>
+                <Label Grid.Column="1" Grid.Row="2" Content="{Binding Path=NodeStatusPage.ConfigStatus, UpdateSourceTrigger=PropertyChanged}"></Label>
+                <Label Grid.Column="0" Grid.Row="4" Content="Node ID being assigned:"></Label>
+                <Label Grid.Column="1" Grid.Row="4" Content="{Binding Path=ConfigurationCommandPage.NodeId, UpdateSourceTrigger=PropertyChanged}"></Label>
+                <Label Grid.Column="0" Grid.Row="5" Content="Network ID being assigned:"></Label>
+                <Label Grid.Column="1" Grid.Row="5" Content="{Binding Path=ConfigurationCommandPage.NetworkId, UpdateSourceTrigger=PropertyChanged}"></Label>
+            </Grid>
+        </Grid>        
     </Grid>
 </Window>

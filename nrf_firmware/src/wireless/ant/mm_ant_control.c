@@ -8,11 +8,11 @@ notes:
                         INCLUDES
 **********************************************************/
 
+#include "mm_ant_control.h"
+
 #include <string.h>
 
-#include "mm_ant_control.h"
 #include "mm_ant_static_config.h"
-
 #include "nrf.h"
 #include "nrf_sdm.h"
 #include "ant_interface.h"
@@ -27,12 +27,20 @@ notes:
                         CONSTANTS
 **********************************************************/
 
+#define MAX_EVT_HANDLERS ( 10 )
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
 
 /* Internal callback for handling low level ant events. */
 static void ant_evt_dispatch(ant_evt_t * p_ant_evt);
+
+/**********************************************************
+                       VARIABLES
+**********************************************************/
+
+static mm_ant_evt_handler_t ant_evt_handlers[MAX_EVT_HANDLERS];
 
 /**********************************************************
                        DEFINITIONS
@@ -84,6 +92,22 @@ void mm_ant_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+void mm_ant_evt_handler_set(mm_ant_evt_handler_t mm_ant_evt_handler)
+{
+	uint32_t i;
+
+	for (i = 0; i < MAX_EVT_HANDLERS; i++)
+	{
+		if (ant_evt_handlers[i] == NULL)
+		{
+			ant_evt_handlers[i] = mm_ant_evt_handler;
+			break;
+		}
+	}
+
+	APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
+}
+
 void mm_ant_set_payload(mm_ant_payload_t const * payload)
 {
     uint32_t err_code;
@@ -99,4 +123,16 @@ void mm_ant_set_payload(mm_ant_payload_t const * payload)
 
 static void ant_evt_dispatch(ant_evt_t * p_ant_evt)
 {
+    // Forward ANT event to listeners
+	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
+	{
+		if (ant_evt_handlers[i] != NULL)
+		{
+			ant_evt_handlers[i](p_ant_evt);
+		}
+		else
+		{
+			break;
+		}
+	}
 }
