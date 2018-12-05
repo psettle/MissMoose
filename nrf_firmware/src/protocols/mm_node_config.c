@@ -13,7 +13,8 @@ notes:
 
 #include "mm_ant_control.h"
 #include "mm_blaze_control.h"
-
+#include "mm_blaze_basic_txrx_demo.h"
+#include "bsp.h"
 /**********************************************************
                         CONSTANTS
 **********************************************************/
@@ -72,6 +73,7 @@ void mm_node_config_main(void)
         case BLAZE_INIT_PENDING:
             // Start BLAZE initialization
             mm_blaze_init(node_id, network_id);
+            mm_blaze_basic_txrx_demo_init();
             state = IDLE;
             break;
         default:
@@ -111,6 +113,27 @@ static void process_ant_evt(ant_evt_t * evt)
                         mm_ant_payload_t payload;
                         encode_node_status_page(&payload);
                         mm_ant_set_payload(&payload);
+
+                        if(node_id & 0x1)
+                        {
+                        	bsp_board_led_invert( 0 );
+                        }
+
+                        if(node_id & 0x2)
+                        {
+                        	bsp_board_led_invert( 1 );
+                        }
+
+                        if(node_id & 0x4)
+						{
+							bsp_board_led_invert( 2 );
+						}
+
+                        if(node_id & 0x8)
+						{
+							bsp_board_led_invert( 3 );
+						}
+
                     }
                 }
             }

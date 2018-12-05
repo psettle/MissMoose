@@ -22,7 +22,6 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/hardfault/hardfault_implementation.c \
   $(SDK_ROOT)/components/libraries/util/nrf_assert.c \
   $(SDK_ROOT)/components/libraries/strerror/nrf_strerror.c \
-  $(SDK_ROOT)/components/libraries/sensorsim/sensorsim.c \
   $(SDK_ROOT)/components/libraries/pwm/app_pwm.c \
   $(SDK_ROOT)/components/drivers_nrf/clock/nrf_drv_clock.c \
   $(SDK_ROOT)/components/drivers_nrf/common/nrf_drv_common.c \
@@ -40,6 +39,7 @@ SRC_FILES += \
   $(PROJ_DIR)/src/wireless/ant/mm_ant_control.c \
   $(PROJ_DIR)/src/wireless/blaze/mm_blaze_control.c \
   $(PROJ_DIR)/src/protocols/mm_node_config.c \
+  $(PROJ_DIR)/src/demo/mm_blaze_basic_txrx_demo.c \
   $(PROJ_DIR)/src/sensors/pir/pir_st_00081.c \
   $(PROJ_DIR)/src/sensors/pir/pir_28027.c \
   $(PROJ_DIR)/src/sensors/ir_led/ky_022_receive.c \
@@ -59,7 +59,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/hardfault/nrf52 \
   $(SDK_ROOT)/components/softdevice/s332/headers/nrf52 \
   $(SDK_ROOT)/components/toolchain/gcc \
-  $(SDK_ROOT)/components/ant/ant_profiles/ant_hrm \
   $(SDK_ROOT)/components/drivers_nrf/uart \
   $(SDK_ROOT)/components/device \
   $(SDK_ROOT)/components/libraries/scheduler \
@@ -70,7 +69,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/drivers_nrf/gpiote \
   $(SDK_ROOT)/components/softdevice/s332/headers \
   $(SDK_ROOT)/components/libraries/button \
-  $(SDK_ROOT)/components/ant/ant_state_indicator \
   $(SDK_ROOT)/components/libraries/log \
   $(SDK_ROOT)/components/libraries/log/src \
   $(SDK_ROOT)/components/toolchain \
@@ -98,6 +96,7 @@ INC_FOLDERS += \
   $(PROJ_DIR)/src/wireless/ant \
   $(PROJ_DIR)/src/wireless/blaze \
   $(PROJ_DIR)/src/protocols \
+  $(PROJ_DIR)/src/demo \
 
 # Libraries
 ifeq ($(IS_BLAZE_GATEWAY),1)
