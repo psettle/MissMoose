@@ -25,6 +25,7 @@ notes:
 #include "ir_led_transmit_pub.h"
 #include "ky_022_receive_pub.h"
 #include "mm_ant_control.h"
+#include "sensors/lidar/lidar_pub.h"
 #include "mm_blaze_static_config.h"
 #include "mm_blaze_control.h"
 #include "mm_node_config.h"
@@ -68,9 +69,11 @@ int main(void)
     //pir_28027_init();
     //pir_st_00081_init();
 
+    // lidar_init();
+
     while(true)
     {
-        //ir_led_transmit_update_main();
+    	// lidar_update_main();
 		mm_node_config_main();
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
