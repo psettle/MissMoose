@@ -4,7 +4,6 @@
 
 #include "lidar_pub.h"
 
-#include <stdio.h>
 #include <string.h>
 #include "boards.h"
 #include "app_error.h"
@@ -189,6 +188,7 @@ static void timed_reading_init(void)
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_start(m_lidar_timer, APP_TIMER_TICKS(BASE_FRAMERATE), NULL);
+    APP_ERROR_CHECK(err_code);
 }
 
 /**
