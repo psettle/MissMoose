@@ -7,48 +7,40 @@
         xmlns:local="clr-namespace:MissMooseConfigurationApplication"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-            <ColumnDefinition Width="8*"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
+    <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="10*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Button Grid.Column="1" Grid.Row="1" Name="button_slave" VerticalAlignment="Top" Background="LightGreen" Click="StartConfigDevice">Start Configuration</Button>
-        <Grid Grid.Column="1" Grid.Row="2">
+        <Grid Grid.Row="0" Grid.Column="0" Background="Gray">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="4*"/>
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Column="1" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" Name="textBox_slave" VerticalScrollBarVisibility="Auto"/>
-            <Grid Grid.Column="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="7*"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
-                </Grid.RowDefinitions>
-                <Label Grid.Column="0" Grid.Row="0" Content="Connected Node"></Label>
-                <Label Grid.Column="0" Grid.Row="1" Content="Device Number:"></Label>
-                <Label Grid.Column="1" Grid.Row="1" Content="{Binding Path=MasterDeviceNumber, UpdateSourceTrigger=PropertyChanged}"></Label>
-                <Label Grid.Column="0" Grid.Row="2" Content="Configuration Status:"></Label>
-                <Label Grid.Column="1" Grid.Row="2" Content="{Binding Path=NodeStatusPage.ConfigStatus, UpdateSourceTrigger=PropertyChanged}"></Label>
-                <Label Grid.Column="0" Grid.Row="4" Content="Node ID being assigned:"></Label>
-                <Label Grid.Column="1" Grid.Row="4" Content="{Binding Path=ConfigurationCommandPage.NodeId, UpdateSourceTrigger=PropertyChanged}"></Label>
-                <Label Grid.Column="0" Grid.Row="5" Content="Network ID being assigned:"></Label>
-                <Label Grid.Column="1" Grid.Row="5" Content="{Binding Path=ConfigurationCommandPage.NetworkId, UpdateSourceTrigger=PropertyChanged}"></Label>
-            </Grid>
-        </Grid>        
+            <Label Content="Miss Moose" Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="20" FontWeight="Bold"/>
+            <Border Grid.Row="0" Grid.Column="1" CornerRadius="8" BorderThickness="4" BorderBrush="LightSkyBlue" Margin="8">
+                <Label BorderThickness="0" BorderBrush="LightSkyBlue" Name="label_SystemStatusBar" Content="System Status: Uninitialized" Background="LightSkyBlue" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="16" FontWeight="Bold"/>
+            </Border>
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="0" Background="LightGray">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+        </Grid>
+        <Grid Grid.Row="2" Grid.Column="0" Background="Gray">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+        </Grid>
+       
+        
     </Grid>
+    
 </Window>
