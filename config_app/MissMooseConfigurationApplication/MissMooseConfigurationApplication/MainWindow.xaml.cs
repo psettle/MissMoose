@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MissMooseConfigurationApplication.UIPages;
 
 namespace MissMooseConfigurationApplication
 {
@@ -23,8 +24,10 @@ namespace MissMooseConfigurationApplication
     }
 
     public partial class MainWindow : Window
-    {      
+    {
         #region Private Members
+
+        private Dictionary<PageSwitcherButton, Page> navigationItems;
 
         #endregion
 
@@ -47,6 +50,33 @@ namespace MissMooseConfigurationApplication
             InitializeComponent();
 
             SetSystemStatusLabel(SystemStatusEnum.SystemStatus_OK);
+
+            // main window owns all these pages so that state is maintained when switching between them
+            navigationItems = new Dictionary<PageSwitcherButton, Page>()
+            {
+                { ConfigPageButton, new ConfigurationPage() },
+                { EventLogPageButton, new EventLogPage() },
+                { SystemProbsPageButton, new SystemProblemsPage()},
+                { SystemOverviewPageButton, new SystemOverviewPage()}
+            };
+            // app starts on config screen
+            PageSwitchClick(ConfigPageButton);
+        }
+
+        public void PageSwitchClick(PageSwitcherButton sender)
+        {
+            foreach ( KeyValuePair<PageSwitcherButton, Page> item in navigationItems)
+            {
+                if (item.Key.Name.Equals(sender.Name))
+                {
+                    item.Key.SetButtonColour(true);
+                    PageFrame.Navigate(item.Value);
+                }
+                else
+                {
+                    item.Key.SetButtonColour(false);
+                }
+            }
         }
 
         #endregion
