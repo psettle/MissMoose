@@ -8,6 +8,9 @@
 extern "C" {
 #endif
 
+/**********************************************************
+                       DECLARATIONS
+**********************************************************/
 /**
  * @brief Function for initializing the wide-angle PIR sensor.
  */

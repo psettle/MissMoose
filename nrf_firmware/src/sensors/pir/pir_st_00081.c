@@ -19,6 +19,10 @@
  * The sensor has a range of up to 30 feet in optimal conditions, in a 180 degree Field of View.
  */
 
+/**********************************************************
+                        INCLUDES
+**********************************************************/
+
 #include <stdio.h>
 #include "nrf_drv_gpiote.h"
 #include "boards.h"
@@ -26,10 +30,10 @@
 
 #define USE_ENABLE_PIN      false /* Whether or not the Enable pin of the sensor is to be used. */
 #define USE_LED_INDICATOR   true /* Whether or not a detected change should be indicated on an LED. */
+/**********************************************************
+                        CONSTANTS
+**********************************************************/
 
-#if USE_ENABLE_PIN
-    #define PIR_WIDE_EN_PIN_OU
-#endif
 
 #ifdef BSP_BUTTON_1
     #define PIR_PIN_IN BSP_BUTTON_1
@@ -56,10 +60,16 @@
         #error "Please indicate output pin. This pin could be an indicator LED to show that something is detected."
     #endif
 #endif
+/**********************************************************
+                       DECLARATIONS
+**********************************************************/
 
 static void pir_gpiote_init(void);
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 
+/**********************************************************
+                       DEFINITIONS
+**********************************************************/
 /**
  * @brief Function for initializing the wide-angle PIR sensor.
  */
