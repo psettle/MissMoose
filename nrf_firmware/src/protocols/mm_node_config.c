@@ -25,7 +25,7 @@ notes:
 **********************************************************/
 
 #define CONTROL_PIN (BSP_BUTTON_1)
-#define TIMEOUT_PERIOD_S		( 60 )
+#define TIMEOUT_PERIOD_S		( 10 )
 #define TIMEOUT_PERIOD_MS		( TIMEOUT_PERIOD_S * 1000 )
 #define TIMER_TICKS APP_TIMER_TICKS(TIMEOUT_PERIOD_MS)
 
@@ -166,18 +166,23 @@ static void encode_node_status_page(mm_ant_payload_t * payload)
 
 static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
+	uint32_t err_code;
+
     if(nrf_drv_gpiote_in_is_set(CONTROL_PIN))
     {
     	if(mm_ant_get_broadcast_state())
     	{
     		mm_ant_pause_broadcast();
+
+    		//stop timeout timer
+    		err_code = app_timer_stop(m_timer_id);
+    		APP_ERROR_CHECK(err_code);
     	}
     	else
     	{
     		mm_ant_resume_broadcast();
 
     		//launch timeout timer
-    		uint32_t err_code;
     		err_code = app_timer_start(m_timer_id, TIMER_TICKS, NULL);
     		APP_ERROR_CHECK(err_code);
     	}
