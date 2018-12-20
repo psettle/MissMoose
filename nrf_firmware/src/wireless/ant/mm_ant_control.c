@@ -42,6 +42,8 @@ static void ant_evt_dispatch(ant_evt_t * p_ant_evt);
 
 static mm_ant_evt_handler_t ant_evt_handlers[MAX_EVT_HANDLERS];
 
+static bool ant_broadcast_active;
+
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
@@ -87,9 +89,7 @@ void mm_ant_init(void)
     memset(&payload, 0, sizeof(payload));
     mm_ant_set_payload(&payload);
 
-    // Open channel.
-    err_code = sd_ant_channel_open(MM_CHANNEL_NUMBER);
-    APP_ERROR_CHECK(err_code);
+    mm_ant_resume_broadcast();
 }
 
 void mm_ant_evt_handler_set(mm_ant_evt_handler_t mm_ant_evt_handler)
@@ -121,6 +121,30 @@ void mm_ant_set_payload(mm_ant_payload_t const * payload)
     APP_ERROR_CHECK(err_code);
 }
 
+
+void mm_ant_pause_broadcast(void)
+{
+	uint32_t err_code;
+    err_code = sd_ant_channel_close(MM_CHANNEL_NUMBER);
+    APP_ERROR_CHECK(err_code);
+
+    ant_broadcast_active = false;
+}
+
+void mm_ant_resume_broadcast(void)
+{
+	uint32_t err_code;
+    err_code = sd_ant_channel_open(MM_CHANNEL_NUMBER);
+    APP_ERROR_CHECK(err_code);
+
+    ant_broadcast_active = true;
+}
+
+bool mm_ant_get_broadcast_state(void)
+{
+	return ant_broadcast_active;
+}
+
 static void ant_evt_dispatch(ant_evt_t * p_ant_evt)
 {
     // Forward ANT event to listeners
@@ -136,3 +160,4 @@ static void ant_evt_dispatch(ant_evt_t * p_ant_evt)
 		}
 	}
 }
+

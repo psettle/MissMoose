@@ -14,9 +14,20 @@ notes:
 #include "mm_ant_control.h"
 #include "mm_blaze_control.h"
 
+#include "bsp.h"
+#include "nrf_drv_gpiote.h"
+#include "boards.h"
+
+#include "app_timer.h"
+
 /**********************************************************
                         CONSTANTS
 **********************************************************/
+
+#define CONTROL_PIN (BSP_BUTTON_1)
+#define TIMEOUT_PERIOD_S		( 60 )
+#define TIMEOUT_PERIOD_MS		( TIMEOUT_PERIOD_S * 1000 )
+#define TIMER_TICKS APP_TIMER_TICKS(TIMEOUT_PERIOD_MS)
 
 /**********************************************************
                         ENUMS
@@ -36,6 +47,12 @@ static void process_ant_evt(ant_evt_t * evt);
 /* Encodes node status data page. */
 static void encode_node_status_page(mm_ant_payload_t * status_page);
 
+/* Responds to button input. */
+static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+
+/* Timer handler */
+static void timer_event(void * p_context);
+
 /**********************************************************
                        VARIABLES
 **********************************************************/
@@ -44,6 +61,8 @@ static uint16_t node_id;
 static uint16_t network_id;
 
 static state_t state;
+
+APP_TIMER_DEF(m_timer_id);
 
 /**********************************************************
                        DEFINITIONS
@@ -57,9 +76,26 @@ void mm_node_config_init(void)
     // Register to receive ANT events
     mm_ant_evt_handler_set(&process_ant_evt);
 
+    mm_ant_pause_broadcast();
+
     mm_ant_payload_t payload;
     encode_node_status_page(&payload);
     mm_ant_set_payload(&payload);
+
+    //configure control button
+    uint32_t err_code;
+
+    nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
+    in_config.pull = NRF_GPIO_PIN_PULLUP;
+
+    err_code = nrf_drv_gpiote_in_init(CONTROL_PIN, &in_config, control_pin_handler);
+    APP_ERROR_CHECK(err_code);
+
+    nrf_drv_gpiote_in_event_enable(CONTROL_PIN, true);
+
+    //configure button timeout timer
+	err_code = app_timer_create(&m_timer_id, APP_TIMER_MODE_SINGLE_SHOT, timer_event);
+	APP_ERROR_CHECK(err_code);
 }
 
 void mm_node_config_main(void)
@@ -127,3 +163,32 @@ static void encode_node_status_page(mm_ant_payload_t * payload)
     payload->data[1] = node_config_status;
     memset(&payload->data[2], 0xFF, 6);
 }
+
+static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    if(nrf_drv_gpiote_in_is_set(CONTROL_PIN))
+    {
+    	if(mm_ant_get_broadcast_state())
+    	{
+    		mm_ant_pause_broadcast();
+    	}
+    	else
+    	{
+    		mm_ant_resume_broadcast();
+
+    		//launch timeout timer
+    		uint32_t err_code;
+    		err_code = app_timer_start(m_timer_id, TIMER_TICKS, NULL);
+    		APP_ERROR_CHECK(err_code);
+    	}
+    }
+}
+
+static void timer_event(void * p_context)
+{
+	if(mm_ant_get_broadcast_state())
+	{
+		mm_ant_pause_broadcast();
+	}
+}
+
