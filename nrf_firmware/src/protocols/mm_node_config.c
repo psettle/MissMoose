@@ -25,7 +25,7 @@ notes:
 **********************************************************/
 
 #define CONTROL_PIN (BSP_BUTTON_1)
-#define TIMEOUT_PERIOD_S		( 10 )
+#define TIMEOUT_PERIOD_S		( 60 )
 #define TIMEOUT_PERIOD_MS		( TIMEOUT_PERIOD_S * 1000 )
 #define TIMER_TICKS APP_TIMER_TICKS(TIMEOUT_PERIOD_MS)
 
