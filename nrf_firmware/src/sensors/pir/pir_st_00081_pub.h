@@ -9,21 +9,40 @@ extern "C" {
 #endif
 
 /**********************************************************
+                       DEFINITIONS
+**********************************************************/
+#define PIR_SENSOR_1_ID    0
+#define PIR_SENSOR_2_ID    1
+#define PIR_SENSOR_3_ID    2
+
+/**********************************************************
                        DECLARATIONS
 **********************************************************/
 /**
- * @brief Function for initializing the wide-angle PIR sensor.
+ * @brief Struct to hold pinout information for PIR sensors
  */
-void pir_st_00081_init(void);
+typedef struct pir_pinout_struct {
+    //The output pin controlling the PIR enable
+    uint8_t pir_en_pin_out;
+    //The input pin from the PIR - High when motion is detected
+    uint8_t pir_pin_in;
+} pir_pinout_t;
+
+/**
+ * @brief Function for initializing the wide-angle PIR sensor.
+ * 
+ * @param[in] num_pir_sensors The number of PIR sensors on the node (Maximum 3!).
+ */
+void pir_st_00081_init(uint8_t num_pir_sensors);
 
 /**
  * @brief Function for disabling the wide-angle PIR sensor.
  */
-void pir_st_00081_disable(void);
+void pir_st_00081_disable(uint8_t pir_sensor_id);
 /**
  * @brief Function for enabling the wide-angle PIR sensor.
  */
-void pir_st_00081_enable(void);
+void pir_st_00081_enable(uint8_t pir_sensor_id);
 
 #ifdef __cplusplus
 }
