@@ -4,11 +4,129 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:MissMooseConfigurationApplication.UIPages"
+      xmlns:missmooseconfigurationapplication="clr-namespace:MissMooseConfigurationApplication"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="ConfigurationPage">
 
     <Grid>
-        <Label>This is ConfigurationPage</Label>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="450"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Rectangle Stroke="Black" Height="150" Margin="0,0,0,0" Width="125"/>
+            <Viewbox Name="NewSensorViewbox" Width="100" Height="100" Stretch="Fill">
+                <Viewbox.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                </Viewbox.RenderTransform>
+            </Viewbox>
+            <Label Name="NewNodeLabel" Content="New Node!" Margin="25,150,25,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="125"/>
+        </Grid>
+
+
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Line X1="50" Y1="50" X2="50" Y2="400" Stroke="Black"/>
+            <Line X1="225" Y1="50" X2="225" Y2="400" Stroke="Black"/>
+            <Line X1="400" Y1="50" X2="400" Y2="400" Stroke="Black"/>
+
+            <Line X1="50" Y1="50" X2="400" Y2="50" Stroke="Black"/>
+            <Line X1="50" Y1="225" X2="400" Y2="225" Stroke="Black"/>
+            <Line X1="50" Y1="400" X2="400" Y2="400" Stroke="Black"/>
+
+
+            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,0,350,350">
+                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_0_0"/>
+            </Viewbox>
+            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,0,0,350">
+                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_1_0"/>
+            </Viewbox>
+            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="350,0,0,350">
+                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_2_0"/>
+            </Viewbox>
+
+            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,175,350,175">
+                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_0_1"/>
+            </Viewbox>
+            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,175,0,175">
+                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_1_1"/>
+            </Viewbox>
+            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="350,175,0,175">
+                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_2_1"/>
+            </Viewbox>
+
+            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,350,350,0">
+                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_0_2"/>
+            </Viewbox>
+            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,350,0,0">
+                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_1_2"/>
+            </Viewbox>
+            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="350,350,0,0">
+                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_2_2"/>
+            </Viewbox>
+
+            <Viewbox Name="SensorViewbox_0_0" Width="100" Height="100" Stretch="Fill" Margin="0,0,350,350">
+                <Viewbox.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                </Viewbox.RenderTransform>
+            </Viewbox>
+            <Viewbox Name="SensorViewbox_0_1" Width="100" Height="100" Stretch="Fill" Margin="0,175,350,175">
+                <Viewbox.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                </Viewbox.RenderTransform>
+            </Viewbox>
+            <Viewbox Name="SensorViewbox_0_2" Width="100" Height="100" Stretch="Fill" Margin="0,350,350,0">
+                <Viewbox.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                </Viewbox.RenderTransform>
+            </Viewbox>
+
+            <Viewbox Name="SensorViewbox_1_0" Width="100" Height="100" Stretch="Fill" Margin="175,0,175,350">
+                <Viewbox.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                </Viewbox.RenderTransform>
+            </Viewbox>
+            <Viewbox Name="SensorViewbox_1_1" Width="100" Height="100" Stretch="Fill" Margin="175">
+                <Viewbox.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                </Viewbox.RenderTransform>
+            </Viewbox>
+            <Viewbox Name="SensorViewbox_1_2" Width="100" Height="100" Stretch="Fill" Margin="175,350,175,0">
+                <Viewbox.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                </Viewbox.RenderTransform>
+            </Viewbox>
+
+            <Viewbox Name="SensorViewbox_2_0" Width="100" Height="100" Stretch="Fill" Margin="350,0,0,350">
+                <Viewbox.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                </Viewbox.RenderTransform>
+            </Viewbox>
+            <Viewbox Name="SensorViewbox_2_1" Width="100" Height="100" Stretch="Fill" Margin="350,175,0,175">
+                <Viewbox.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                </Viewbox.RenderTransform>
+            </Viewbox>
+            <Viewbox Name="SensorViewbox_2_2" Width="100" Height="100" Stretch="Fill" Margin="350,350,0,0">
+                <Viewbox.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                </Viewbox.RenderTransform>
+            </Viewbox>
+
+        </Grid>
+
+        <Grid Grid.Row="0" Grid.Column="2">
+            <Rectangle Stroke="Black" Fill="DarkGray" Height="150" Margin="0,0,0,0" Width="125"/>
+
+            <Label Name="NodeNameLabel" Content="Node X" Foreground="White" Margin="25,150,25,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="125"/>
+
+            <Button Name="RotateCounterClockwise" Margin="25,176,87,231" Content="CurveLeft" Click="RotateCounterClockwise_Click"/>
+            <Button Name="RotateClockwise" Margin="88,176,24,231" Content="CurveRight" Click="RotateClockwise_Click"/>
+        </Grid>
+
+
+
     </Grid>
 </Page>

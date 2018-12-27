@@ -60,6 +60,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -79,8 +81,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="PageParser.cs" />
+    <Compile Include="UIComponents\PulsingCircle.xaml.cs">
+      <DependentUpon>PulsingCircle.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UIComponents\PageSwitcherButton.xaml.cs">
       <DependentUpon>PageSwitcherButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UIComponents\SensorNode.xaml.cs">
+      <DependentUpon>SensorNode.xaml</DependentUpon>
     </Compile>
     <Compile Include="UIPages\ConfigurationPage.xaml.cs">
       <DependentUpon>ConfigurationPage.xaml</DependentUpon>
@@ -114,7 +122,15 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UIComponents\PulsingCircle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UIComponents\PageSwitcherButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UIComponents\SensorNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -181,6 +197,7 @@
     <Content Include="DSI_SiUSBXp_3_1.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Pictures\curved_arrow_transparent.png" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
