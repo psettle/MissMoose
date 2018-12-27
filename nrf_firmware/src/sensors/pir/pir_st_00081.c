@@ -238,7 +238,14 @@ static void pir_enable_button_init(uint8_t num_pir_sensors){
 //Handles a button being pressed.
 static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
     //Elijah TODO
+    
     bsp_board_led_invert(3);
+    //If the pin for the button being pressed matches control button i, toggle LED i
+    for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
+        if(pir_enable_ctrl_buttons[i] == pin){
+            bsp_board_led_invert(i);
+        }
+    }
 
     // nrf_drv_gpiote_out_toggle(pir_sensors[0].pir_en_pin_out); //TODO TODO TODO
 }
