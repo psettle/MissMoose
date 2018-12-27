@@ -35,38 +35,27 @@
 #define MAXIMUM_NUM_PIRS    3
 #define TOO_MANY_PIR_ERROR  -1
 
-#define USE_ENABLE_PIN      false /* Whether or not the Enable pin of the sensor is to be used. */
+#define USE_ENABLE_PIN      true /* Whether or not the Enable pin of the sensor is to be used. */
+#if USE_ENABLE_PIN //No point in BUTTON_ENABLE_TEST if USE_ENABLE_PIN is false
+#define BUTTON_ENABLE_TEST  true
+#endif
 
-//Elijah TODO - Delete
-// #ifdef BSP_BUTTON_1
-//     #define PIR_PIN_IN BSP_BUTTON_1
-// #endif
-// #ifndef PIR_PIN_IN
-//     #error "Please indicate input pin. For sanity checking, you can set this to BSP_BUTTON_1 and change the pin configuration to pullup, which will allow you to pretend you're getting input from the button instead of the sensor."
-// #endif
-
-// #if USE_ENABLE_PIN
-//     #ifdef BSP_BUTTON_2
-//         #define PIR_EN_PIN_OUT BSP_BUTTON_2
-//     #endif
-//     #ifndef PIR_EN_PIN_OUT
-//         #error "Please indicate output pin. This pin should be connected to the EN pin of the sensor."
-//     #endif
-// #endif
-
-/*Elijah TODO - Available P0##'s: 005 (j102.07), 018 (j102.02), 004 (j102.05), 003 (j102.03), 
-026 (j102.16), 028 (j102.09), 027 (j102.18), 025 (j102.14), 013 (j102.17)
-NOTE: 029 and 030 reserved for LIDAR*/
 
 /*Define pins for PIR enable and detectoion pins. Tried to select general I/O pins that were beside 
-each other based on the J102 track numbers. Placed into arrays to make code cleaner.*/
-//PIR_EN_OUT - The enable pin. PIR_PIN_IN - The signalling pin.
-//https://www.thisisant.com/assets/resources/Datasheets/D00001687_D52_Module_Datasheet.v.2.0.pdf - Page 15+16 for pin info
+each other based on the J102 track numbers. Placed into arrays to make code cleaner.
+PIR_EN_OUT - The enable pin. PIR_PIN_IN - The signalling pin.
+https://www.thisisant.com/assets/resources/Datasheets/D00001687_D52_Module_Datasheet.v.2.0.pdf - Page 15+16 for pin info
+
+Elijah TODO - Available P0##'s: 005 (j102.07), 018 (j102.02), 004 (j102.05), 003 (j102.03), 
+026 (j102.16), 028 (j102.09), 027 (j102.18), 025 (j102.14), 013 (j102.17)
+NOTE: 029 and 030 reserved for LIDAR
+*/
 #define PIR1_PIN_IN         3 //Pin J102.03
 #define PIR2_PIN_IN         4 //Pin J102.05
 //Used pin 26 for this originally. Trying other pins.
 #define PIR3_PIN_IN         5  // Pin J102.07
 
+//Elijah TODO - Figure out EN pins
 #define PIR1_PIN_EN_OUT     18 //Pin J102.02
 #define PIR2_PIN_EN_OUT     28 //Pin J102.09
 //Used pin 25 for this originally. Trying other pins.
@@ -76,12 +65,23 @@ each other based on the J102 track numbers. Placed into arrays to make code clea
 static const uint8_t pir_input_pins[] = {PIR1_PIN_IN, PIR2_PIN_IN, PIR3_PIN_IN};
 static const uint8_t pir_enable_pins[] = {PIR1_PIN_EN_OUT, PIR2_PIN_EN_OUT, PIR3_PIN_EN_OUT};
 
+#if BUTTON_ENABLE_TEST
+    //Button 0, 1, and 2: Referred to as BSP_BUTTON_0, BSP_BUTTON_1, BSP_BUTTON_2
+    static const uint8_t pir_enable_ctrl_buttons[] = {BSP_BUTTON_0, BSP_BUTTON_1, BSP_BUTTON_2};
+#endif
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
 
 static void pir_gpiote_init(uint8_t num_pir_sensors);
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+#if BUTTON_ENABLE_TEST
+//Initializes enable 
+static void pir_enable_button_init(uint8_t num_pir_sensors);
+//Handles a button being pressed.
+static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+#endif
 
 
 /**********************************************************
@@ -97,7 +97,7 @@ pir_pinout_t pir_sensors[MAXIMUM_NUM_PIRS];
  */
 void pir_st_00081_init(uint8_t num_pir_sensors)
 {
-    //Elijah TODO - Error handling if num_pir_sensors > 3. Alternative: If greater than max, set to max?
+    //Error handling if num_pir_sensors > 3. Alternative: If greater than max, set to max?
     if(num_pir_sensors > MAXIMUM_NUM_PIRS){
         //Too many PIRs selected, throw an error.
         APP_ERROR_CHECK(TOO_MANY_PIR_ERROR);
@@ -162,7 +162,7 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
 
         err_code = nrf_drv_gpiote_out_init(pir_sensors[i].pir_en_pin_out, &out_en_config);
         APP_ERROR_CHECK(err_code);
-        pir_st_00081_enable(&pir_sensors[i]);
+        pir_st_00081_enable(i); //The ID of the PIR sensor to enable
 #endif
 
         /* Sense changes in either direction. Pull down the pin. */
@@ -175,6 +175,11 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
         nrf_drv_gpiote_in_event_enable(pir_sensors[i].pir_pin_in, true); 
     
     }
+
+#if BUTTON_ENABLE_TEST
+    //Initializes buttons to enable or disable the PIR sensors.
+    pir_enable_button_init(num_pir_sensors);
+#endif
 
 }
 
@@ -201,28 +206,45 @@ static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t a
         if (pir_sensors[i].pir_pin_in == pin){
             //If the input pin for that PIR sensor is set:
             if (nrf_drv_gpiote_in_is_set(pir_sensors[i].pir_pin_in)){
-                bsp_board_led_on(i); //TODO
+                bsp_board_led_on(i);
             }
             else{
-                bsp_board_led_off(i); //TODO
+                bsp_board_led_off(i);
             }
         }
     }
 
-    //This will never run - Elijah TODO, delete
-    #if USE_LED_INDICATOR
-#error "this shouldn't run"
-        if(nrf_drv_gpiote_in_is_set(PIR_PIN_IN))
-        {
-            nrf_drv_gpiote_out_set(PIR_INDICATOR_PIN_OUT);
-        }
-        else
-        {
-            nrf_drv_gpiote_out_clear(PIR_INDICATOR_PIN_OUT);
-        }
-    #endif
+}
+
+#if BUTTON_ENABLE_TEST
+//Initializes buttons to enable or disable the PIR sensors.
+static void pir_enable_button_init(uint8_t num_pir_sensors){
+
+    /* Sense changes in either direction on the control pin. Pull up the pin,
+    * since we expect to use an IO board button for this. (Based on ir_led_transmit.c)*/
+   //Perform for each PIR
+   ret_code_t err_code;
+   for(int i = 0; i < num_pir_sensors; i++){
+        nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
+        in_config.pull = NRF_GPIO_PIN_PULLUP;
+
+        err_code = nrf_drv_gpiote_in_init(pir_enable_ctrl_buttons[i], &in_config, pir_button_press_handler);
+        APP_ERROR_CHECK(err_code);
+
+        nrf_drv_gpiote_in_event_enable(pir_enable_ctrl_buttons[i], true);
+   }
 
 }
+//Handles a button being pressed.
+static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
+    //Elijah TODO
+    bsp_board_led_invert(3);
+
+    // nrf_drv_gpiote_out_toggle(pir_sensors[0].pir_en_pin_out); //TODO TODO TODO
+}
+#endif
+
+
 
 /**
  *@}
