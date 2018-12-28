@@ -14,8 +14,10 @@ namespace MissMooseConfigurationApplication.UIPages
         #region Private Members
         private List<List<PulsingCircle>> pulses;
         private List<List<Viewbox>> sensorViewboxes;
+        private List<SensorNode> nodes = new List<SensorNode>();
 
         private const int GridSize = 3;
+        private const int OffsetScalePixels = 10;
 
         private Viewbox ActiveViewbox = null;
         #endregion
@@ -27,17 +29,14 @@ namespace MissMooseConfigurationApplication.UIPages
             InitializeComponent();
             InitializeViewboxes();
             InitializePulses();
-            
+            ClockwiseButton.Button.Click += RotateClockwise_Click;
+            CounterClockwiseButton.Button.Click += RotateCounterClockwise_Click;
+            UpButton.Button.Click += DirectionClick;
+            DownButton.Button.Click += DirectionClick;
+            RightButton.Button.Click += DirectionClick;
+            LeftButton.Button.Click += DirectionClick;
 
-            AddNewNode(new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS, 2));
-            TransferNode(NewSensorViewbox, sensorViewboxes[1][1]);
-            AddNewNode(new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_2_PIR, 3));
-
-            
-
-            //SetNodeRotation(sensorViewboxes[1][1], NodeRotation.NODEROTATION_180);
-
-            //TransferNode(sensorViewboxes[1][1], sensorViewboxes[2][2]);
+            new AntControl(this);
         }
 
         public void AddNewNode(SensorNode node)
@@ -47,6 +46,29 @@ namespace MissMooseConfigurationApplication.UIPages
             node.Button.Click += NodeClick;
             NewNodeLabel.Content = "New Node!";
             SetActiveViewbox(NewSensorViewbox);
+        }
+
+        public void AddExistingNode(SensorNode node)
+        {
+            node.Button.Click += NodeClick;
+
+            node.GetPos(out int xpos, out int ypos);
+            var viewbox = sensorViewboxes[xpos][ypos];
+            viewbox.Child = node;
+            nodes.Add(node);
+
+            node.GetOffset(out int xoffset, out int yoffset);
+            AddViewboxOffset(viewbox, xoffset, yoffset);
+            
+            SetNodeRotation(viewbox, node.GetRotation());
+            UpdatePulseStates();
+
+            SetActiveViewbox(viewbox);
+        }
+
+        public List<SensorNode> GetCurrentNodes()
+        {
+            return nodes;
         }
 
         #endregion
@@ -109,23 +131,27 @@ namespace MissMooseConfigurationApplication.UIPages
             {
                 foreach(var v in list)
                 {
-                    v.Opacity = 0.5;
+                    v.Opacity = 0.8;
                 }
             }
 
-            NewSensorViewbox.Opacity = 0.5;
+            NewSensorViewbox.Opacity = 0.8;
 
             ActiveViewbox = newActive;
             ActiveViewbox.Opacity = 1.0f;
 
             var node = ActiveViewbox.Child as SensorNode;
 
-            NodeNameLabel.Content = "Node " + node.NodeID;
+            NodeNameLabel.Content = "Node " + node.GetNodeID();
         }
 
         private void TransferNode(Viewbox source, Viewbox destination)
         {
             SensorNode node = source.Child as SensorNode;
+
+            node.GetOffset(out int x, out int y);
+            AddViewboxOffset(source, -x, -y);
+            node.SetOffset(0, 0);
 
             source.Child = null;
             destination.Child = node;
@@ -133,10 +159,24 @@ namespace MissMooseConfigurationApplication.UIPages
             if(source == NewSensorViewbox)
             {
                 NewNodeLabel.Content = "";
+                nodes.Add(node);
             }
 
-            SetNodeRotation(destination, node.rotation);
+            SetNodeRotation(destination, node.GetRotation());
             UpdatePulseStates();
+
+            int row, col;
+            for(row = 0; row < GridSize; ++row)
+            {
+                for (col = 0; col < GridSize; ++col)
+                {
+                    if(sensorViewboxes[row][col] == destination)
+                    {
+                        node.SetPosition(row, col);
+                        break;
+                    }
+                }
+            }
         }
 
         private void SetNodeRotation(Viewbox viewbox, NodeRotation rotation)
@@ -299,7 +339,7 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             var node = ActiveViewbox.Child as SensorNode;
-            var rotation = node.rotation;
+            var rotation = node.GetRotation();
 
             switch(rotation)
             {
@@ -340,7 +380,7 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             var node = ActiveViewbox.Child as SensorNode;
-            var rotation = node.rotation;
+            var rotation = node.GetRotation();
 
             switch (rotation)
             {
@@ -371,6 +411,69 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             SetNodeRotation(ActiveViewbox, rotation);
+        }
+
+        private void DirectionClick(object sender, RoutedEventArgs e)
+        {
+            if(ActiveViewbox == null || ActiveViewbox.Child == null || ActiveViewbox == NewSensorViewbox)
+            {
+                return;
+            }
+
+            var node = ActiveViewbox.Child as SensorNode;
+
+            node.GetOffset(out int x, out int y);
+            AddViewboxOffset(ActiveViewbox, -x, -y);
+
+            if (sender == UpButton.Button)
+            {
+                y++;
+            }
+            else if(sender == DownButton.Button)
+            {
+                y--;
+            }
+            else if(sender == LeftButton.Button)
+            {
+                x--;
+            }
+            else if(sender == RightButton.Button)
+            {
+                x++;
+            }
+
+            if(x > SensorNode.MaxOffset)
+            {
+                x = SensorNode.MaxOffset;
+            }
+
+            if (x < -SensorNode.MaxOffset)
+            {
+                x = -SensorNode.MaxOffset;
+            }
+
+            if (y > SensorNode.MaxOffset)
+            {
+                y = SensorNode.MaxOffset;
+            }
+
+            if (y < -SensorNode.MaxOffset)
+            {
+                y = -SensorNode.MaxOffset;
+            }
+
+            node.SetOffset(x, y);
+            AddViewboxOffset(ActiveViewbox, x, y);  
+        }
+
+        private void AddViewboxOffset(Viewbox viewbox, int offsetx, int offsety)
+        {
+            var margin = viewbox.Margin;
+            margin.Top -= offsety * OffsetScalePixels;
+            margin.Bottom += offsety * OffsetScalePixels;
+            margin.Left += offsetx * OffsetScalePixels;
+            margin.Right -= offsetx * OffsetScalePixels;
+            viewbox.Margin = margin;
         }
 
         #endregion

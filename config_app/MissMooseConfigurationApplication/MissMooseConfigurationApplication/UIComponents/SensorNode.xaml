@@ -34,8 +34,11 @@
         <Ellipse Name="InnerRing" Fill="DarkGray" Height="250" Width="250" />
         <Ellipse Name="InnerCircle" Fill="DarkGray" Height="200" Width="200" />
 
+        <Label Name="Name" Content="X" Foreground="White" FontSize="120" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Button Name="Button" Opacity="0"></Button>
 
+
+        
     </Grid>
 
 </UserControl>

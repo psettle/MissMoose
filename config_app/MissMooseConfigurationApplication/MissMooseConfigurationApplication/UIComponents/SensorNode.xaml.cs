@@ -48,14 +48,24 @@ namespace MissMooseConfigurationApplication
         NODEROTATION_315
     }
 
-    /// <summary>
-    /// Interaction logic for SensorNode.xaml
-    /// </summary>
     public partial class SensorNode : UserControl
     {
-        internal NodeRotation rotation = NodeRotation.NODEROTATION_0;
-        HardwareConfiguration configuration;
-        internal int NodeID;
+        #region Private Members
+        private HardwareConfiguration configuration;
+        private int NodeID;
+
+        private NodeRotation rotation = NodeRotation.NODEROTATION_0;
+
+        private int xpos = -1;
+        private int ypos = -1;
+
+        private int xoffset = 0;
+        private int yoffset = 0;
+        public const int MaxOffset = 5;
+
+        #endregion
+
+        #region Public Methods
 
         public SensorNode(HardwareConfiguration configuration, int NodeID)
         {
@@ -63,6 +73,7 @@ namespace MissMooseConfigurationApplication
 
             this.configuration = configuration;
             this.NodeID = NodeID;
+            Name.Content = NodeID;
 
             switch(configuration)
             {
@@ -142,5 +153,40 @@ namespace MissMooseConfigurationApplication
             this.rotation = rotation;
         }
 
+        public NodeRotation GetRotation()
+        {
+            return rotation;
+        }
+
+        public void SetPosition(int x, int y)
+        {
+            xpos = x;
+            ypos = y;
+        }
+
+        public void GetPos(out int xpos, out int ypos)
+        {
+            xpos = this.xpos;
+            ypos = this.ypos;
+        }
+
+        public void SetOffset(int x, int y)
+        {
+            xoffset = x;
+            yoffset = y;
+        }
+
+        public void GetOffset(out int x, out int y)
+        {
+            x = xoffset;
+            y = yoffset;
+        }
+
+        public int GetNodeID()
+        {
+            return NodeID;
+        }
+
+        #endregion
     }
 }

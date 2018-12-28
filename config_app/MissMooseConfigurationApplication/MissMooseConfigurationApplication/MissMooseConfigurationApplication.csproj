@@ -80,7 +80,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AntControl\AntControl.cs" />
     <Compile Include="PageParser.cs" />
+    <Compile Include="UIComponents\ArrowButton.xaml.cs">
+      <DependentUpon>ArrowButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UIComponents\PulsingCircle.xaml.cs">
       <DependentUpon>PulsingCircle.xaml</DependentUpon>
     </Compile>
@@ -89,6 +93,9 @@
     </Compile>
     <Compile Include="UIComponents\SensorNode.xaml.cs">
       <DependentUpon>SensorNode.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UIComponents\CurvedArrowButton.xaml.cs">
+      <DependentUpon>CurvedArrowButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="UIPages\ConfigurationPage.xaml.cs">
       <DependentUpon>ConfigurationPage.xaml</DependentUpon>
@@ -122,6 +129,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UIComponents\ArrowButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UIComponents\PulsingCircle.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -131,6 +142,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UIComponents\SensorNode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UIComponents\CurvedArrowButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -191,13 +206,13 @@
     <Content Include="ANT_WrappedLib.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="curved_arrow_tranparent.png" />
     <Content Include="DSI_CP210xManufacturing_3_1.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="DSI_SiUSBXp_3_1.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Resource Include="Pictures\curved_arrow_transparent.png" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
