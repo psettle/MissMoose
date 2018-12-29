@@ -35,9 +35,9 @@
 #define MAXIMUM_NUM_PIRS    3
 #define TOO_MANY_PIR_ERROR  -1
 
-#define USE_ENABLE_PIN      true /* Whether or not the Enable pin of the sensor is to be used. */
+#define USE_ENABLE_PIN      false /* Whether or not the Enable pin of the sensor is to be used. */
 #if USE_ENABLE_PIN //No point in BUTTON_ENABLE_TEST if USE_ENABLE_PIN is false
-#define BUTTON_ENABLE_TEST  true
+#define BUTTON_ENABLE_TEST  false
 #endif
 
 
@@ -46,20 +46,18 @@ each other based on the J102 track numbers. Placed into arrays to make code clea
 PIR_EN_OUT - The enable pin. PIR_PIN_IN - The signalling pin.
 https://www.thisisant.com/assets/resources/Datasheets/D00001687_D52_Module_Datasheet.v.2.0.pdf - Page 15+16 for pin info
 
-Elijah TODO - Available P0##'s: 005 (j102.07), 018 (j102.02), 004 (j102.05), 003 (j102.03), 
-026 (j102.16), 028 (j102.09), 027 (j102.18), 025 (j102.14), 013 (j102.17)
-NOTE: 029 and 030 reserved for LIDAR
+Available P0##'s that don't have Molex connections: 
+002 (j102.01), 018 (j102.02), 003 (j102.03), 004 (j102.05), 005 (j102.07) 
+028 (j102.09), 025 (j102.14), 026 (j102.16), 013 (j102.17), 027 (j102.18)
+NOTE: 029 and 030 currently reserved for LIDAR (Dec 29, 2018)
 */
-#define PIR1_PIN_IN         3 //Pin J102.03
-#define PIR2_PIN_IN         4 //Pin J102.05
-//Used pin 26 for this originally. Trying other pins.
-#define PIR3_PIN_IN         5  // Pin J102.07
+#define PIR1_PIN_IN         2 //Pin J102.01 
+#define PIR2_PIN_IN         3 //Pin J102.03
+#define PIR3_PIN_IN         4 //Pin J102.05
 
-//Elijah TODO - Figure out EN pins
 #define PIR1_PIN_EN_OUT     18 //Pin J102.02
-#define PIR2_PIN_EN_OUT     28 //Pin J102.09
-//Used pin 25 for this originally. Trying other pins.
-#define PIR3_PIN_EN_OUT     25 //Pin J102.14
+#define PIR2_PIN_EN_OUT     5  //Pin J102.07
+#define PIR3_PIN_EN_OUT     28 //Pin J102.09
 
 
 static const uint8_t pir_input_pins[] = {PIR1_PIN_IN, PIR2_PIN_IN, PIR3_PIN_IN};
@@ -194,15 +192,14 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
  */
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    /*Elijah TODO - Handle detection here. See if the "pin" input matches the pir_sensors[i].pir_pin_in
-    * --> Need some way to differentiate between sensors!
-    */
-    //Looks like the LEDs are just indexed? From 0 to 3?
-    //Commands - bsp_board_led_off, bsp_board_led_on, bsp_board_led_invert
-    // Match the pin with the PIR sensor.
+    /*Replace this with event handling for a detection! 
+    For the moment, a detection lights up the corresponding LED*/
+    
+    /*LEDs are indexed from 0 to 3. LED commands:
+     * bsp_board_led_off, bsp_board_led_on, bsp_board_led_invert
+     * 
+     * Match the pin with the PIR sensor - If pin in matches pin, that's the PIR that detected something.*/
     for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
-        //Elijah TODO - Clean up notes and explanations if this stuff works
-        //See if the PIR pin matches the pir sensor
         if (pir_sensors[i].pir_pin_in == pin){
             //If the input pin for that PIR sensor is set:
             if (nrf_drv_gpiote_in_is_set(pir_sensors[i].pir_pin_in)){
@@ -237,17 +234,16 @@ static void pir_enable_button_init(uint8_t num_pir_sensors){
 }
 //Handles a button being pressed.
 static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
-    //Elijah TODO
-    
-    bsp_board_led_invert(3);
-    //If the pin for the button being pressed matches control button i, toggle LED i
-    for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
-        if(pir_enable_ctrl_buttons[i] == pin){
-            bsp_board_led_invert(i);
+    //Check that the pin was set - Otherwise the handler will run both when the button is pressed and depressed.
+    //If it was set, then toggle the enable line for that PIR sensor
+    if(nrf_drv_gpiote_in_is_set(pin)){
+        for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
+            if(pir_enable_ctrl_buttons[i] == pin){
+                nrf_drv_gpiote_out_toggle(pir_sensors[i].pir_en_pin_out);
+            }
         }
     }
 
-    // nrf_drv_gpiote_out_toggle(pir_sensors[0].pir_en_pin_out); //TODO TODO TODO
 }
 #endif
 
