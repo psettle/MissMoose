@@ -27,17 +27,20 @@
 #include "nrf_drv_gpiote.h"
 #include "boards.h"
 #include "pir_st_00081_pub.h"
+#include "nrf_error.h"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
 
 #define MAXIMUM_NUM_PIRS    3
-#define TOO_MANY_PIR_ERROR  -1
+#define TOO_MANY_PIR_ERROR  NRF_ERROR_NOT_SUPPORTED
 
 #define USE_ENABLE_PIN      false /* Whether or not the Enable pin of the sensor is to be used. */
 #if USE_ENABLE_PIN //No point in BUTTON_ENABLE_TEST if USE_ENABLE_PIN is false
-#define BUTTON_ENABLE_TEST  false
+    #define BUTTON_ENABLE_TEST  false //Set to true if you want to run this test
+#else
+    #define BUTTON_ENABLE_TEST false //Always false in this case
 #endif
 
 
@@ -75,10 +78,10 @@ static const uint8_t pir_enable_pins[] = {PIR1_PIN_EN_OUT, PIR2_PIN_EN_OUT, PIR3
 static void pir_gpiote_init(uint8_t num_pir_sensors);
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 #if BUTTON_ENABLE_TEST
-//Initializes enable 
-static void pir_enable_button_init(uint8_t num_pir_sensors);
-//Handles a button being pressed.
-static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+    //Initializes enable 
+    static void pir_enable_button_init(uint8_t num_pir_sensors);
+    //Handles a button being pressed.
+    static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 #endif
 
 
@@ -214,37 +217,37 @@ static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t a
 }
 
 #if BUTTON_ENABLE_TEST
-//Initializes buttons to enable or disable the PIR sensors.
-static void pir_enable_button_init(uint8_t num_pir_sensors){
+    //Initializes buttons to enable or disable the PIR sensors.
+    static void pir_enable_button_init(uint8_t num_pir_sensors){
 
     /* Sense changes in either direction on the control pin. Pull up the pin,
-    * since we expect to use an IO board button for this. (Based on ir_led_transmit.c)*/
-   //Perform for each PIR
-   ret_code_t err_code;
-   for(int i = 0; i < num_pir_sensors; i++){
-        nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
-        in_config.pull = NRF_GPIO_PIN_PULLUP;
+       since we expect to use an IO board button for this. (Based on ir_led_transmit.c)*/
+    //Perform for each PIR
+    ret_code_t err_code;
+    for(int i = 0; i < num_pir_sensors; i++){
+            nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
+            in_config.pull = NRF_GPIO_PIN_PULLUP;
 
-        err_code = nrf_drv_gpiote_in_init(pir_enable_ctrl_buttons[i], &in_config, pir_button_press_handler);
-        APP_ERROR_CHECK(err_code);
+            err_code = nrf_drv_gpiote_in_init(pir_enable_ctrl_buttons[i], &in_config, pir_button_press_handler);
+            APP_ERROR_CHECK(err_code);
 
-        nrf_drv_gpiote_in_event_enable(pir_enable_ctrl_buttons[i], true);
-   }
-
-}
-//Handles a button being pressed.
-static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
-    //Check that the pin was set - Otherwise the handler will run both when the button is pressed and depressed.
-    //If it was set, then toggle the enable line for that PIR sensor
-    if(nrf_drv_gpiote_in_is_set(pin)){
-        for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
-            if(pir_enable_ctrl_buttons[i] == pin){
-                nrf_drv_gpiote_out_toggle(pir_sensors[i].pir_en_pin_out);
-            }
-        }
+            nrf_drv_gpiote_in_event_enable(pir_enable_ctrl_buttons[i], true);
     }
 
-}
+    }
+    //Handles a button being pressed.
+    static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
+        //Check that the pin was set - Otherwise the handler will run both when the button is pressed and depressed.
+        //If it was set, then toggle the enable line for that PIR sensor
+        if(nrf_drv_gpiote_in_is_set(pin)){
+            for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
+                if(pir_enable_ctrl_buttons[i] == pin){
+                    nrf_drv_gpiote_out_toggle(pir_sensors[i].pir_en_pin_out);
+                }
+            }
+        }
+
+    }
 #endif
 
 
