@@ -90,6 +90,8 @@ static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t a
 **********************************************************/
 //The number of PIR sensors that were initialized.
 static uint8_t pir_sensor_count;
+//The enable/disable status of the PIR sensors
+static bool pirs_enabled[3] = {false, false, false};
 
 /**********************************************************
                        DEFINITIONS
@@ -131,6 +133,7 @@ void pir_st_00081_disable(uint8_t pir_sensor_id)
         APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
     }
     #if USE_ENABLE_PIN
+        pirs_enabled[pir_sensor_id] = true; //This PIR is now enabled
         nrf_drv_gpiote_out_clear(pir_sensors[pir_sensor_id].pir_en_pin_out);
     #endif
 }
@@ -150,9 +153,24 @@ void pir_st_00081_enable(uint8_t pir_sensor_id)
         APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
     }
     #if USE_ENABLE_PIN
+        pirs_enabled[pir_sensor_id] = false; //This PIR is now disabled
         nrf_drv_gpiote_out_set(pir_sensors[pir_sensor_id].pir_en_pin_out);
     #endif
 }
+
+/**
+ * @brief Function for checking if the wide-angle PIR sensor is enabled or disabled.
+ *
+ * @param[in] pir_sensor_id The ID of the pir sensor to check the enable status of
+ */
+bool check_pir_st_00081_enabled(uint8_t pir_sensor_id){
+    //Sensor IDs start from 0. So if the pir_sensor_count is 2, 0 and 1 are valid inputs. So >= 2 is not.
+    if(pir_sensor_id >= pir_sensor_count){
+        APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
+    }
+    return pirs_enabled[pir_sensor_id];
+}
+
 
 /**
  * @brief Function for configuring the GPIO pins and interrupts used by each PIR sensor.
@@ -180,6 +198,9 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
         err_code = nrf_drv_gpiote_out_init(pir_sensors[i].pir_en_pin_out, &out_en_config);
         APP_ERROR_CHECK(err_code);
         pir_st_00081_enable(i); //The ID of the PIR sensor to enable
+#else
+        //The enable pins are not used. The PIR should always be listed as enabled.
+        pirs_enabled[i] = true; //This PIR is now enabled
 #endif
 
         /* Sense changes in either direction. Pull down the pin. */
