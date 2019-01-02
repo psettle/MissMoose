@@ -94,8 +94,8 @@ void mm_node_config_init(void)
     nrf_drv_gpiote_in_event_enable(CONTROL_PIN, true);
 
     //configure button timeout timer
-	err_code = app_timer_create(&m_timer_id, APP_TIMER_MODE_SINGLE_SHOT, timer_event);
-	APP_ERROR_CHECK(err_code);
+    err_code = app_timer_create(&m_timer_id, APP_TIMER_MODE_SINGLE_SHOT, timer_event);
+    APP_ERROR_CHECK(err_code);
 }
 
 void mm_node_config_main(void)
@@ -166,34 +166,38 @@ static void encode_node_status_page(mm_ant_payload_t * payload)
 
 static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-	uint32_t err_code;
+    uint32_t err_code;
 
+    /* Check that button is actually set. */
     if(nrf_drv_gpiote_in_is_set(CONTROL_PIN))
     {
-    	if(mm_ant_get_broadcast_state())
-    	{
-    		mm_ant_pause_broadcast();
+        /* If broadcast is on, pause it and stop the timer. */
+        if(mm_ant_get_broadcast_state())
+        {
+            mm_ant_pause_broadcast();
 
-    		//stop timeout timer
-    		err_code = app_timer_stop(m_timer_id);
-    		APP_ERROR_CHECK(err_code);
+            //stop timeout timer
+            err_code = app_timer_stop(m_timer_id);
+            APP_ERROR_CHECK(err_code);
     	}
-    	else
-    	{
-    		mm_ant_resume_broadcast();
+        /* If broadcast is off, start it and launch the timer. */
+        else
+        {
+            mm_ant_resume_broadcast();
 
-    		//launch timeout timer
-    		err_code = app_timer_start(m_timer_id, TIMER_TICKS, NULL);
-    		APP_ERROR_CHECK(err_code);
+            //launch timeout timer
+            err_code = app_timer_start(m_timer_id, TIMER_TICKS, NULL);
+            APP_ERROR_CHECK(err_code);
     	}
     }
 }
 
 static void timer_event(void * p_context)
 {
-	if(mm_ant_get_broadcast_state())
-	{
-		mm_ant_pause_broadcast();
-	}
+    /* When the timer times out, if the broadcast is on, pause it. */
+    if(mm_ant_get_broadcast_state())
+    {
+        mm_ant_pause_broadcast();
+    }
 }
 

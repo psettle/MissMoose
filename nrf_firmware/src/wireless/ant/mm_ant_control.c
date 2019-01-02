@@ -124,7 +124,7 @@ void mm_ant_set_payload(mm_ant_payload_t const * payload)
 
 void mm_ant_pause_broadcast(void)
 {
-	uint32_t err_code;
+    uint32_t err_code;
     err_code = sd_ant_channel_close(MM_CHANNEL_NUMBER);
     APP_ERROR_CHECK(err_code);
 
@@ -133,7 +133,7 @@ void mm_ant_pause_broadcast(void)
 
 void mm_ant_resume_broadcast(void)
 {
-	uint32_t err_code;
+    uint32_t err_code;
     err_code = sd_ant_channel_open(MM_CHANNEL_NUMBER);
     APP_ERROR_CHECK(err_code);
 
@@ -142,7 +142,7 @@ void mm_ant_resume_broadcast(void)
 
 bool mm_ant_get_broadcast_state(void)
 {
-	return ant_broadcast_active;
+    return ant_broadcast_active;
 }
 
 static void ant_evt_dispatch(ant_evt_t * p_ant_evt)
