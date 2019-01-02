@@ -35,7 +35,7 @@
 
 #define MAXIMUM_NUM_PIRS            3
 #define TOO_MANY_PIR_ERROR          NRF_ERROR_NOT_SUPPORTED
-#define PIR_ID_NOT_ENABLED_ERROR    NRF_ERROR_NOT_SUPPORTED
+#define PIR_NOT_INITIALIZZED_ERROR  NRF_ERROR_NOT_SUPPORTED
 
 #define USE_ENABLE_PIN              false /* Whether or not the Enable pin of the sensor is to be used. */
 #if USE_ENABLE_PIN //No point in BUTTON_ENABLE_TEST if USE_ENABLE_PIN is false
@@ -128,7 +128,7 @@ void pir_st_00081_disable(uint8_t pir_sensor_id)
 {
     //Sensor IDs start from 0. So if the pir_sensor_count is 2, 0 and 1 are valid inputs. So >= 2 is not.
     if(pir_sensor_id >= pir_sensor_count){
-        APP_ERROR_CHECK(PIR_ID_NOT_ENABLED_ERROR);
+        APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
     }
     #if USE_ENABLE_PIN
         nrf_drv_gpiote_out_clear(pir_sensors[pir_sensor_id].pir_en_pin_out);
@@ -147,7 +147,7 @@ void pir_st_00081_enable(uint8_t pir_sensor_id)
 {
     //Sensor IDs start from 0. So if the pir_sensor_count is 2, 0 and 1 are valid inputs. So >= 2 is not.
     if(pir_sensor_id >= pir_sensor_count){
-        APP_ERROR_CHECK(PIR_ID_NOT_ENABLED_ERROR);
+        APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
     }
     #if USE_ENABLE_PIN
         nrf_drv_gpiote_out_set(pir_sensors[pir_sensor_id].pir_en_pin_out);
