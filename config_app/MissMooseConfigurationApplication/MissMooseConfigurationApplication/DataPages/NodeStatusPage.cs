@@ -50,7 +50,7 @@ namespace MissMooseConfigurationApplication
         /* Decodes the given rxBuffer into this page's data fields */
         public override void Decode(byte[] rxBuffer)
         {
-            ConfigStatus = (ConfigurationStatus)(rxBuffer[1] & 0x01);
+            ConfigStatus = (ConfigurationStatus)(BitManipulation.GetBit(rxBuffer[1], 0) ? 1 : 0);
         }
 
         #endregion

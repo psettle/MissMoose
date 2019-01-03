@@ -59,11 +59,11 @@ namespace MissMooseConfigurationApplication
         /* Decodes the given rxBuffer into this page's data fields */
         public override void Decode(byte[] rxBuffer)
         {
-            BitManipulation.SetByte0(NodeId, rxBuffer[1]);
-            BitManipulation.SetByte1(NodeId, (byte)(rxBuffer[2] & 0x01));
+            BitManipulation.SetByte0(ref nodeId, rxBuffer[1]);
+            BitManipulation.SetByte1(ref nodeId, (byte)(rxBuffer[2] & 0x01));
 
-            BitManipulation.SetByte0(NetworkId, rxBuffer[3]);
-            BitManipulation.SetByte1(NetworkId, rxBuffer[4]);
+            BitManipulation.SetByte0(ref networkId, rxBuffer[3]);
+            BitManipulation.SetByte1(ref networkId, rxBuffer[4]);
         }
 
         #endregion
