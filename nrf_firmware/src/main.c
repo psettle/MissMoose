@@ -94,4 +94,13 @@ int main(void)
      APP_ERROR_CHECK(err_code);
 
      bsp_board_leds_init();
+
+     //Initializes the battery board switches as inputs.
+	 for (uint32_t pin = 0; pin < 32; pin++)
+	 {
+		 if((SWITCHES_MASK) & (1 << pin))
+		 {
+			 nrf_gpio_cfg_input(pin, SWITCH_PULL);
+		 }
+	 }
  }
