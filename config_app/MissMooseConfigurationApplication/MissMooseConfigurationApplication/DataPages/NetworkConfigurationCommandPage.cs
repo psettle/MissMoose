@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MissMooseConfigurationApplication
 {
-    public class ConfigurationCommandPage : DataPage
+    public class NetworkConfigurationCommandPage : DataPage
     {
         #region Private Members
 
@@ -64,16 +64,6 @@ namespace MissMooseConfigurationApplication
 
             BitManipulation.SetByte0(ref networkId, rxBuffer[3]);
             BitManipulation.SetByte1(ref networkId, rxBuffer[4]);
-        }
-
-        #endregion
-
-        #region Types
-
-        public enum ConfigurationStatus : byte
-        {
-            Unconfigured = 0,
-            Configured = 1,
         }
 
         #endregion

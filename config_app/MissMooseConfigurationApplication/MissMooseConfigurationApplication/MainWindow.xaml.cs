@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,6 +31,9 @@ namespace MissMooseConfigurationApplication
         // Parser to decode any valid received data pages
         PageParser pageParser;
 
+        // Handles sending data pages
+        PageSender pageSender;
+
         // Properties for the ANT slave channel
         static readonly byte rfFrequency        = 66;           // 2466 MHz
         byte transmissionType                   = 0;            // wildcard for search
@@ -46,8 +50,14 @@ namespace MissMooseConfigurationApplication
         // Device number of the connected master device
         ushort masterDeviceNumber = 0;
 
+        // Device numbers of all discovered gateway devices, using network number as dictionary keys
+        Dictionary<ushort, ushort> gatewayDeviceNumbers;
+
+        // Node configuration data waiting to be sent to a gateway node, using node ID as dictionary keys
+        Dictionary<ushort, NodeConfigurationData> nodeConfigList;
+
         Boolean deviceRunning = false;
-        Boolean nodeRequiresConfiguration = true;
+        Boolean sendConfiguration = false;
 
         #endregion
 
@@ -63,7 +73,7 @@ namespace MissMooseConfigurationApplication
 
         public NodeStatusPage NodeStatusPage { get; set; }
 
-        public ConfigurationCommandPage ConfigurationCommandPage { get; set; }
+        public NetworkConfigurationCommandPage NetworkConfigPage { get; set; }
 
         public ushort MasterDeviceNumber
         {
@@ -92,7 +102,10 @@ namespace MissMooseConfigurationApplication
             pageParser.AddDataPage(new NodeStatusPage());
 
             NodeStatusPage = new NodeStatusPage();
-            ConfigurationCommandPage = new ConfigurationCommandPage();
+            NetworkConfigPage = new NetworkConfigurationCommandPage();
+
+            gatewayDeviceNumbers = new Dictionary<ushort, ushort>();
+            nodeConfigList = new Dictionary<ushort, NodeConfigurationData>();
         }
 
         public void StartConfigDevice(object sender, RoutedEventArgs e)
@@ -152,6 +165,9 @@ namespace MissMooseConfigurationApplication
                 //Once again, this ensures you have a valid object associated with a real-world ANTChannel
                 //ie: You can only get channels that actually exist
                 channel = deviceToSetup.getChannel(0);
+
+                // Initialize a page sender with the channel
+                pageSender = new PageSender(channel);
 
                 //Almost all functions in the library have two overloads, one with a response wait time and one without
                 //If you give a wait time, you can check the return value for success or failure of the command, however
@@ -290,39 +306,81 @@ namespace MissMooseConfigurationApplication
          */
         private void handlePage(NodeStatusPage dataPage)
         {
-            NodeStatusPage.ConfigStatus = dataPage.ConfigStatus;
+            NodeStatusPage.NodeId = dataPage.NodeId;
+            NodeStatusPage.NetworkId = dataPage.NetworkId;
+            NodeStatusPage.NodeType = dataPage.NodeType;
+            NodeStatusPage.IsGatewayNode = dataPage.IsGatewayNode;
 
-            switch (NodeStatusPage.ConfigStatus)
+            // If the node does not have a node ID, send a Network Configuration Command page
+            if (NodeStatusPage.NodeId == 0)
             {
-                // If the node indicates that it is unconfigured, send a Configuration Command page
-                case NodeStatusPage.ConfigurationStatus.Unconfigured:
+                sendConfiguration = true;
+
+                NetworkConfigPage.NodeId = nextNodeId;
+                NetworkConfigPage.NetworkId = networkId;
+
+                pageSender.SendAcknowledged(NetworkConfigPage, false);
+            }
+            // If the node has a node ID and we just configured it, increment the next node ID to be assigned
+            else if (sendConfiguration)
+            {
+                sendConfiguration = false;
+                if (nextNodeId < maxNodeId) nextNodeId++;
+                else Console.WriteLine("Maximum node ID (512) reached. Cannot configure another node.");
+            }
+
+            // If this is a gateway node, save its device number and network ID
+            // so that we can communicate with it later
+            if (NodeStatusPage.IsGatewayNode)
+            {
+                gatewayDeviceNumbers[NodeStatusPage.NetworkId] = MasterDeviceNumber;
+
+                // If there is any node configuration data waiting to be sent to this gateway, send it
+                KeyValuePair<ushort, NodeConfigurationData> dataToSend = nodeConfigList.Where(x => x.Value.networkId == NodeStatusPage.NetworkId).FirstOrDefault();
+                if (!dataToSend.Equals(default(KeyValuePair<ushort, NodeConfigurationData>)) && !dataToSend.Value.isSent)
+                {
+                    PositionConfigurationCommandPage positionPage = new PositionConfigurationCommandPage();
+                    positionPage.NodeId = dataToSend.Key;
+                    positionPage.NodeType = dataToSend.Value.nodeType;
+                    positionPage.NodeRotation = dataToSend.Value.nodeRotation;
+
+                    // Send the node data as an acknowledged message, retrying up to 5 times
+                    pageSender.SendAcknowledged(positionPage, true, 5);
+
+                    // Mark the node data as sent so we do not send it to the gateway again (unless it changes)
+                    dataToSend.Value.isSent = true;
+
+                    if (nodeConfigList.Where(x => !x.Value.isSent).ToList().Count() == 0)
                     {
-                        nodeRequiresConfiguration = true;
+                        Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
 
-                        ConfigurationCommandPage.NodeId = nextNodeId;
-                        ConfigurationCommandPage.NetworkId = networkId;
-
-                        byte[] txBuffer = new byte[8];
-                        ConfigurationCommandPage.Encode(txBuffer);
-                        channel.sendAcknowledgedData(txBuffer);
+                            ConnectToGatewayTextBlock.Visibility = Visibility.Hidden;
+                        });                 
                     }
-                    break;
+                }
+            }
+            // If this is not a gateway node, save the node type, node ID, and network ID
+            // to send to the gateway node
+            else if(NodeStatusPage.NodeId != 0 && NodeStatusPage.NodeType != NodeType.Unknown)
+            {
+                NodeConfigurationData dataToReplace;
+                nodeConfigList.TryGetValue(NodeStatusPage.NodeId, out dataToReplace);
 
-                // If the node indicates that it is configured and we just configured it,
-                // increment the next node ID to be assigned
-                case NodeStatusPage.ConfigurationStatus.Configured:
-                    {
-                        if (nodeRequiresConfiguration)
-                        {
-                            nodeRequiresConfiguration = false;
-                            if (nextNodeId < maxNodeId) nextNodeId++;
-                            else Console.WriteLine("Maximum node ID (512) reached. Cannot configure another node.");
-                        }
-                    }
-                    break;
-                default:
-                    // do nothing
-                    break;
+                NodeConfigurationData newData = new NodeConfigurationData(NodeStatusPage.NetworkId, NodeStatusPage.NodeType, NodeRotation.Rotation0Degrees);
+                // TODO: once hooked into the updated UI with rotatable node icons,
+                // the node's rotation will need to be saved into the list as well
+
+                // Save the data if data for this node ID is not yet in the list,
+                // OR data for this node ID exists in the list and differs from the new data
+                if (dataToReplace == null || !dataToReplace.Equals(newData))
+                {
+                    nodeConfigList[NodeStatusPage.NodeId] = newData;
+
+                    Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
+
+                        ConnectToGatewayTextBlock.Visibility = Visibility.Visible;
+                    });
+                }                
             }
         }
 
@@ -336,10 +394,39 @@ namespace MissMooseConfigurationApplication
 
         private void OnPropertyChanged(string name)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        #endregion
+
+        #region Private Classes
+
+        private class NodeConfigurationData
+        {
+            public ushort networkId;
+            public NodeType nodeType;
+            public NodeRotation nodeRotation;
+            public bool isSent = false;
+
+            public NodeConfigurationData(ushort networkId, NodeType nodeType, NodeRotation nodeRotation)
             {
-                handler(this, new PropertyChangedEventArgs(name));
+                this.networkId = networkId;
+                this.nodeType = nodeType;
+                this.nodeRotation = nodeRotation;
+            }
+
+            public override bool Equals(object obj)
+            {
+                var nodeConfigData = obj as NodeConfigurationData;
+
+                if (nodeConfigData == null)
+                {
+                    return false;
+                }
+
+                return (this.networkId == nodeConfigData.networkId
+                    && this.nodeType == nodeConfigData.nodeType
+                    && this.nodeRotation == nodeConfigData.nodeRotation);
             }
         }
 

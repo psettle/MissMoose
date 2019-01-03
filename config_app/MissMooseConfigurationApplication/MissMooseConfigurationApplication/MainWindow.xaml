@@ -35,7 +35,10 @@
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="7*"></RowDefinition>
+                    <RowDefinition Height="3*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
@@ -45,9 +48,11 @@
                 <Label Grid.Column="0" Grid.Row="2" Content="Configuration Status:"></Label>
                 <Label Grid.Column="1" Grid.Row="2" Content="{Binding Path=NodeStatusPage.ConfigStatus, UpdateSourceTrigger=PropertyChanged}"></Label>
                 <Label Grid.Column="0" Grid.Row="4" Content="Node ID being assigned:"></Label>
-                <Label Grid.Column="1" Grid.Row="4" Content="{Binding Path=ConfigurationCommandPage.NodeId, UpdateSourceTrigger=PropertyChanged}"></Label>
+                <Label Grid.Column="1" Grid.Row="4" Content="{Binding Path=NetworkConfigPage.NodeId, UpdateSourceTrigger=PropertyChanged}"></Label>
                 <Label Grid.Column="0" Grid.Row="5" Content="Network ID being assigned:"></Label>
-                <Label Grid.Column="1" Grid.Row="5" Content="{Binding Path=ConfigurationCommandPage.NetworkId, UpdateSourceTrigger=PropertyChanged}"></Label>
+                <Label Grid.Column="1" Grid.Row="5" Content="{Binding Path=NetworkConfigPage.NetworkId, UpdateSourceTrigger=PropertyChanged}"></Label>
+                <TextBlock Name="ConnectToGatewayTextBlock" Grid.Column="0" Grid.Row="7" Grid.RowSpan="2" Grid.ColumnSpan="2" Visibility="Hidden"
+                           TextWrapping="Wrap" Text="Node configuration data waiting to be sent to gateway. Connect to gateway node to send the data."></TextBlock>
             </Grid>
         </Grid>        
     </Grid>

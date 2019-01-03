@@ -78,7 +78,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="PageParser.cs" />
+    <Compile Include="DataPages\PositionConfigurationCommandPage.cs" />
+    <Compile Include="DataPages\DataPageEnums.cs" />
+    <Compile Include="Utils\ANTUtils\PageSender.cs" />
+    <Compile Include="Utils\ANTUtils\PageParser.cs" />
     <Compile Include="Utils\BitManipulation.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -95,7 +98,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataPages\ConfigurationCommandPage.cs" />
+    <Compile Include="DataPages\NetworkConfigurationCommandPage.cs" />
     <Compile Include="DataPages\NodeStatusPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
