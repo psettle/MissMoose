@@ -33,7 +33,7 @@
             </Grid.ColumnDefinitions>
             <local:PageSwitcherButton Grid.Row="0" Grid.Column="0" x:Name="ConfigPageButton">Configure Nodes</local:PageSwitcherButton>
             <local:PageSwitcherButton Grid.Row="0" Grid.Column="1" x:Name="EventLogPageButton">Event Log</local:PageSwitcherButton>
-            <local:PageSwitcherButton Grid.Row="0" Grid.Column="2" x:Name="SystemProbsPageButton">System Problems</local:PageSwitcherButton>
+            <local:PageSwitcherButton Grid.Row="0" Grid.Column="2" x:Name="SystemProblemsPageButton">System Problems</local:PageSwitcherButton>
             <local:PageSwitcherButton Grid.Row="0" Grid.Column="3" x:Name="SystemOverviewPageButton">System Overview</local:PageSwitcherButton>
         </Grid>
     </Grid>
