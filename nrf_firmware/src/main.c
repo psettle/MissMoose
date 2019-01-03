@@ -29,6 +29,7 @@ notes:
 #include "mm_blaze_static_config.h"
 #include "mm_blaze_control.h"
 #include "mm_node_config.h"
+#include "mm_rgb_led_pub.h"
 
 /**********************************************************
                         CONSTANTS
@@ -70,6 +71,7 @@ int main(void)
     //pir_st_00081_init();
 
     // lidar_init();
+    // mm_rgb_led_init();
 
     while(true)
     {
