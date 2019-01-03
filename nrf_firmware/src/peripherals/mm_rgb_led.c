@@ -245,7 +245,7 @@ void mm_rgb_led_init(void)
 
     /* Initialize and enable PWM - RED. */
     APP_TIMER_DEF(lpp_timer_red);
-    low_power_pwm_config.active_high    = false;    /* For new, red is active low because we're using a P-channel mosfet. */
+    low_power_pwm_config.active_high    = true;
     low_power_pwm_config.period         = LOW_POWER_PWM_CONFIG_PERIOD;
     low_power_pwm_config.bit_mask       = RGB_LED_RED_MASK;
     low_power_pwm_config.p_timer_id     = &lpp_timer_red;
@@ -258,7 +258,7 @@ void mm_rgb_led_init(void)
 
     /* Initialize and enable PWM - GREEN. */
     APP_TIMER_DEF(lpp_timer_green);
-    low_power_pwm_config.active_high    = false;     /* For new, green is active low because we're using a P-channel mosfet. */
+    low_power_pwm_config.active_high    = true;
     low_power_pwm_config.period         = LOW_POWER_PWM_CONFIG_PERIOD;
     low_power_pwm_config.bit_mask       = RGB_LED_GREEN_MASK;
     low_power_pwm_config.p_timer_id     = &lpp_timer_green;
