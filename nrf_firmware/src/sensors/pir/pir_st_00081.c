@@ -1,7 +1,7 @@
 /**@file
- * @defgroup pir_28027 PIR motion detection examples
+ * @defgroup pir_st_00081 PIR motion detection examples
  * @{
- * @ingroup pir_28027
+ * @ingroup pir_st_00081
  *
  * @brief Example of setting up pins and interrupts for the Parallax Wide Angle PIR sensor.
  * http://simplytronics.com/docs/index.php?title=ST-00081
@@ -92,6 +92,8 @@ static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t a
 static uint8_t pir_sensor_count;
 //The enable/disable status of the PIR sensors
 static bool pirs_enabled[3] = {false, false, false};
+//The state of the PIR sensors - High or low (Detecting something or not detecting)
+static bool pirs_detecting[3] = {false, false, false};
 
 /**********************************************************
                        DEFINITIONS
@@ -171,6 +173,19 @@ bool check_pir_st_00081_enabled(uint8_t pir_sensor_id){
     return pirs_enabled[pir_sensor_id];
 }
 
+/**
+ * @brief Function for checking if the wide-angle PIR sensor is detecting anything or not.
+ *
+ * @param[in] pir_sensor_id The ID of the pir sensor to check the detection status of
+ */
+bool check_pir_st_00081_detecting(uint8_t pir_sensor_id){
+    //Sensor IDs start from 0. So if the pir_sensor_count is 2, 0 and 1 are valid inputs. So >= 2 is not.
+    if(pir_sensor_id >= pir_sensor_count){
+        APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
+    }
+    return pirs_detecting[pir_sensor_id];
+}
+
 
 /**
  * @brief Function for configuring the GPIO pins and interrupts used by each PIR sensor.
@@ -212,6 +227,9 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
 
         nrf_drv_gpiote_in_event_enable(pir_sensors[i].pir_pin_in, true); 
     
+        //Default setting: PIRs are not detecting anything
+        pirs_detecting[i] = false;
+    
     }
 
 #if BUTTON_ENABLE_TEST
@@ -244,9 +262,11 @@ static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t a
             //If the input pin for that PIR sensor is set:
             if (nrf_drv_gpiote_in_is_set(pir_sensors[i].pir_pin_in)){
                 bsp_board_led_on(i);
+                pirs_detecting[i] = true;
             }
             else{
                 bsp_board_led_off(i);
+                pirs_detecting[i] = false;
             }
         }
     }

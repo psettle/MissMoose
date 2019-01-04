@@ -47,6 +47,10 @@ void pir_st_00081_enable(uint8_t pir_sensor_id);
  * @brief Function for checking if the wide-angle PIR sensor is enabled or disabled.
  */
 bool check_pir_st_00081_enabled(uint8_t pir_sensor_id);
+/**
+ * @brief Function for checking if the wide-angle PIR sensor is detecting anything or not.
+ */
+bool check_pir_st_00081_detecting(uint8_t pir_sensor_id);
 
 #ifdef __cplusplus
 }
