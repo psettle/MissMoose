@@ -56,7 +56,7 @@ namespace MissMooseConfigurationApplication
             {
                 { ConfigPageButton, new ConfigurationPage() },
                 { EventLogPageButton, new EventLogPage() },
-                { SystemProbsPageButton, new SystemProblemsPage()},
+                { SystemProblemsPageButton, new SystemProblemsPage()},
                 { SystemOverviewPageButton, new SystemOverviewPage()}
             };
             // app starts on config screen
@@ -67,7 +67,7 @@ namespace MissMooseConfigurationApplication
         {
             foreach ( KeyValuePair<PageSwitcherButton, Page> item in navigationItems)
             {
-                if (item.Key.Name.Equals(sender.Name))
+                if (item.Key.Name.Contains(sender.Name))
                 {
                     item.Key.SetButtonColour(true);
                     PageFrame.Navigate(item.Value);

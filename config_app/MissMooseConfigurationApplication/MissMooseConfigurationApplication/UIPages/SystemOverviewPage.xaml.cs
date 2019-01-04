@@ -13,11 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MissMooseConfigurationApplication.UIPages
+namespace MissMooseConfigurationApplication
 {
-    /// <summary>
-    /// Interaction logic for SystemOverviewPage.xaml
-    /// </summary>
     public partial class SystemOverviewPage : Page
     {
         public SystemOverviewPage()
