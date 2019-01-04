@@ -1,0 +1,12 @@
+﻿<UserControl x:Class="MissMooseConfigurationApplication.ArrowButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="250">
+    <Grid>
+        <Polygon Points="125,0 250,125 200,125 200,450 50,450 50,125 0,125" Fill="Black"/>
+        <Button Name="Button" Opacity="0" />
+    </Grid>
+</UserControl>
