@@ -7,14 +7,25 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="SystemOverviewPage">
-
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="6*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Label Grid.Column="0">This is SystemOverviewPage</Label>
-        <Grid Grid.Column="1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*"></RowDefinition>
+            <RowDefinition Height="12*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Grid.ColumnSpan="2" Background="#2e2e2e">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Border BorderThickness="0,4,0,0" BorderBrush="Yellow" Grid.Row="0"></Border>
+            <Line Margin="0,2,0,0" Stroke="White" StrokeThickness="4" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" X2="{Binding ActualWidth, RelativeSource={RelativeSource Self}}" StrokeDashArray="10 8"></Line>
+            <TextBlock Text="Direction of Traffic &#x2794;" Grid.RowSpan="2" Foreground="DeepSkyBlue" FontWeight="Bold" FontSize="20" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4" Padding="4" Background="#2e2e2e"/>
+        </Grid>
+        <Grid Grid.Column="1" Grid.RowSpan="2">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="8*"></RowDefinition>
