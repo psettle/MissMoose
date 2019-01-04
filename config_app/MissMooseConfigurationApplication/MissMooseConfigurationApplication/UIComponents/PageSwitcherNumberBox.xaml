@@ -1,0 +1,18 @@
+﻿<Grid x:Class="MissMooseConfigurationApplication.PageSwitcherNumberBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MissMooseConfigurationApplication"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Margin="4">
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="4*"></ColumnDefinition>
+        <ColumnDefinition Width="*"></ColumnDefinition>
+    </Grid.ColumnDefinitions>
+    <Button Grid.Column="0" Name="TitleButton" Background="Gray" Foreground="White" BorderThickness="2" BorderBrush="Black" Click="PageSwitchClick">
+        <TextBlock Name="TitleText" TextWrapping="WrapWithOverflow" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+    </Button>
+    <Label Grid.Column="1" Name="NumberField" BorderThickness="0,2,2,2" BorderBrush="Black" Background="White" Foreground="Black" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">0</Label>
+</Grid>

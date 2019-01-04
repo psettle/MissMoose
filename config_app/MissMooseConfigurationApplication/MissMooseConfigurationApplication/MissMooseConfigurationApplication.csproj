@@ -82,6 +82,9 @@
     <Compile Include="UIComponents\PageSwitcherButton.xaml.cs">
       <DependentUpon>PageSwitcherButton.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UIComponents\PageSwitcherNumberBox.xaml.cs">
+      <DependentUpon>PageSwitcherNumberBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UIComponents\PageSwitcherTextbox.xaml.cs">
       <DependentUpon>PageSwitcherTextbox.xaml</DependentUpon>
     </Compile>
@@ -118,6 +121,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="UIComponents\PageSwitcherButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UIComponents\PageSwitcherNumberBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
