@@ -30,6 +30,10 @@
 /* TWI instance ID. */
 #define TWI_INSTANCE_ID             0
 
+#define LIDAR_TWI_SDA_PIN           29 ///< J102.11
+#define LIDAR_TWI_SCL_PIN           30 ///< J102.13
+#define LIDAR_ENABLE_PIN            22 ///< J102.18
+
 #define LIDAR_ADDR                  (0x62U)
 #define BUFFER_LENGTH               (2)
 #define ZEROS_TO_ROLL_OUT           (6)  // Maximum number of times to take unused measurements to roll out the zeros from the lidar.
@@ -58,8 +62,10 @@ typedef enum
 {
     NOT_SAMPLING = 0,   ///< In this state when the enable pin is pulled low and the lidar is off
     ROLLING_OUT_ZEROS,  ///< In this state after first turning on the lidar, and trying to get rid of 0 measurements
-    WARMUP_WAITING,     ///< In this state after getting rid of the zero measurements, but waiting for the full warmup period.
-    SAMPLING            ///< In this state until we get a successful non-0 reading after deliberately trying to roll the 0s out.
+    WARMUP_WAITING,     ///< In this state after getting rid of the zero measurements, but waiting for the full warmup period as
+                        ///< recommended in the LIDAR datasheets. No measurements are done during this time, to save power.
+    SAMPLING            ///< In this state until we get a successful non-0 reading after deliberately trying to roll the 0s out. and
+                        ///< waiting the warmup period.
                         ///< If we transition back to ROLLING_OUT_ZEROS in order to start taking the next measurement while still
                         ///< In this phase, that should cause some flag that the most recent lidar measurement failed.
 }lidar_sampling_states_t;
@@ -75,7 +81,6 @@ void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context);
 
 static void timer_event_handler(void * p_context);
 
-static uint8_t control_pin = 18;
 static uint8_t sample_readings = 0;
 static lidar_error_code_type_t error_code;
 
@@ -169,8 +174,8 @@ void twi_init(void)
     ret_code_t err_code;
 
     const nrf_drv_twi_config_t twi_lidar_config = {
-       .scl                = 30,
-       .sda                = 29,
+       .scl                = LIDAR_TWI_SCL_PIN,
+       .sda                = LIDAR_TWI_SDA_PIN,
        .frequency          = NRF_TWI_FREQ_400K,
        .interrupt_priority = APP_IRQ_PRIORITY_HIGH,
        .clear_bus_init     = false
@@ -259,7 +264,7 @@ static void lidar_process_distance(void)
         }
 
         lidar_sampling_state = NOT_SAMPLING;
-        nrf_drv_gpiote_out_clear(control_pin); // Pull the power enable pin low to save power
+        nrf_drv_gpiote_out_clear(LIDAR_ENABLE_PIN); // Pull the power enable pin low to save power
         error_code = LIDAR_ERROR_NONE;
     }
 }
@@ -333,7 +338,7 @@ void lidar_init(void)
 
     nrf_drv_gpiote_out_config_t out_config = GPIOTE_CONFIG_OUT_SIMPLE(false);
 
-    err_code = nrf_drv_gpiote_out_init(control_pin, &out_config);
+    err_code = nrf_drv_gpiote_out_init(LIDAR_ENABLE_PIN, &out_config);
     APP_ERROR_CHECK(err_code);
 
     xfer_done = true;
@@ -381,7 +386,7 @@ static void timer_event_handler(void * p_context)
         }
         lidar_sampling_state = ROLLING_OUT_ZEROS;
         sample_readings = 0;
-        nrf_drv_gpiote_out_set(control_pin); // Stop pulling the power enable pin low
+        nrf_drv_gpiote_out_set(LIDAR_ENABLE_PIN); // Stop pulling the power enable pin low
     }
     switch(lidar_sampling_state)
     {
@@ -390,6 +395,7 @@ static void timer_event_handler(void * p_context)
             break;
 
         case ROLLING_OUT_ZEROS:
+            // Take measurements until we stop getting 0's.
             xfer_done = true;
             lidar_twi_state = READING_START_FLAG;
             if(sample_readings >= ZEROS_TO_ROLL_OUT)
@@ -400,6 +406,7 @@ static void timer_event_handler(void * p_context)
             break;
 
         case WARMUP_WAITING:
+            // Waiting the full 22ms warmup as recommended in the datasheets. No measurements are done, to save power.
             if(timer_iteration_count >= 10) // by now, 22ms. Should be enough time for the lidar to warm up.
             {
                 lidar_sampling_state = SAMPLING;
