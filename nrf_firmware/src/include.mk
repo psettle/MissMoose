@@ -48,6 +48,7 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensors/ir_led/ir_led_transmit.c \
   $(PROJ_DIR)/src/sensors/lidar/lidar.c \
   $(PROJ_DIR)/src/peripherals/mm_rgb_led.c \
+  $(PROJ_DIR)/src/peripherals/mm_power_bank_timer.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \

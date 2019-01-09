@@ -66,10 +66,10 @@ int main(void)
 
     //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
     //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
-    pir_st_00081_init(3);
+    // pir_st_00081_init(2);
 
     // lidar_init();
-    // mm_rgb_led_init();
+    mm_rgb_led_init(false);
 
     while(true)
     {
