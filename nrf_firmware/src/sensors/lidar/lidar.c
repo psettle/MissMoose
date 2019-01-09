@@ -32,7 +32,7 @@
 
 #define LIDAR_TWI_SDA_PIN           29 ///< J102.11
 #define LIDAR_TWI_SCL_PIN           30 ///< J102.13
-#define LIDAR_ENABLE_PIN            22 ///< J102.18
+#define LIDAR_ENABLE_PIN            4  ///< J102.18
 
 #define LIDAR_ADDR                  (0x62U)
 #define BUFFER_LENGTH               (2)
