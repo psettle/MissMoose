@@ -20,7 +20,6 @@ notes:
                         PROJECT INCLUDES
 **********************************************************/
 
-#include "pir_28027_pub.h"
 #include "pir_st_00081_pub.h"
 #include "ir_led_transmit_pub.h"
 #include "ky_022_receive_pub.h"
@@ -67,8 +66,7 @@ int main(void)
 
     //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
     //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
-    //pir_28027_init();
-    //pir_st_00081_init();
+    pir_st_00081_init(3);
 
     // lidar_init();
     // mm_rgb_led_init();
