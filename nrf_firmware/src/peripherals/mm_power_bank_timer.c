@@ -25,7 +25,7 @@ notes: The power bank we have chosen will turn off if
                         CONSTANTS
 **********************************************************/
 
-#define POWER_BANK_PIN 4 ///< J102.05
+#define POWER_BANK_PIN 21 ///< J101.06 Note that this is technically the reset pin, but it can be configured as a gpio.
 #define LED_DEBUG true
 
 /**********************************************************

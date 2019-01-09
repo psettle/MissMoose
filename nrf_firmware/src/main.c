@@ -69,7 +69,7 @@ int main(void)
     // pir_st_00081_init(2);
 
     // lidar_init();
-    mm_rgb_led_init(false);
+    // mm_rgb_led_init(false);
 
     while(true)
     {
