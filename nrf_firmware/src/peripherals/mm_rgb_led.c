@@ -310,9 +310,9 @@ void mm_rgb_set_on_off_cycle(uint16_t on_ticks_ms, uint16_t off_ticks_ms)
     /* Power bank control */
     if(control_power_bank)
     {
-        if(on_cycle_length_ms > 0)
+        if(on_cycle_length_ms > POWER_BANK_DEFAULT_ON_DURATION)
         {
-            /* If we're keeping the LEDs on, stop drawing extra current from the power bank. */
+            /* If we're keeping the LEDs on long enough, stop drawing extra current from the power bank. */
             mm_power_bank_set_on_off_cycle(0, POWER_BANK_DEFAULT_OFF_DURATION);
         }
         else
