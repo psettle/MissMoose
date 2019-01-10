@@ -36,7 +36,7 @@ namespace MissMooseConfigurationApplication.UIPages
             RightButton.Button.Click += DirectionClick;
             LeftButton.Button.Click += DirectionClick;
 
-            new AntControl(this);
+            AntControl.Instance.AddConfigUI(this);
         }
 
         public void AddNewNode(SensorNode node)

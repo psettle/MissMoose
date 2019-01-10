@@ -50,6 +50,10 @@ namespace MissMooseConfigurationApplication
 
     public partial class SensorNode : UserControl
     {
+        #region Public Members
+        public const int MaxOffset = 5;
+        #endregion
+
         #region Private Members
         private HardwareConfiguration configuration;
         private int NodeID;
@@ -61,8 +65,9 @@ namespace MissMooseConfigurationApplication
 
         private int xoffset = 0;
         private int yoffset = 0;
-        public const int MaxOffset = 5;
 
+        private LedColour ledColour;
+        private StatusColour statusColour;
         #endregion
 
         #region Public Methods
@@ -96,6 +101,8 @@ namespace MissMooseConfigurationApplication
 
         public void SetLedColour(LedColour colour)
         {
+            ledColour = colour;
+
             if(configuration == HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS)
             {
                 switch(colour)
@@ -115,6 +122,8 @@ namespace MissMooseConfigurationApplication
 
         public void SetStatusColour(StatusColour colour)
         {
+            statusColour = colour;
+
             SolidColorBrush finalColour;
 
             switch(colour)
@@ -185,6 +194,19 @@ namespace MissMooseConfigurationApplication
         public int GetNodeID()
         {
             return NodeID;
+        }
+
+        public SensorNode Clone()
+        {
+            var node = new SensorNode(configuration, NodeID);
+
+            node.SetOffset(xoffset, yoffset);
+            node.SetPosition(xpos, ypos);
+            node.SetRotation(rotation);
+            node.SetLedColour(ledColour);
+            node.SetStatusColour(statusColour);
+
+            return node;
         }
 
         #endregion
