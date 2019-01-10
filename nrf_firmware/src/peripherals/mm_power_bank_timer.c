@@ -26,7 +26,7 @@ notes: The power bank we have chosen will turn off if
 **********************************************************/
 
 #define POWER_BANK_PIN 21 ///< J101.06 Note that this is technically the reset pin, but it can be configured as a gpio.
-#define LED_DEBUG true
+#define LED_DEBUG false
 
 /**********************************************************
                            TYPES
@@ -45,7 +45,7 @@ void mm_power_bank_disable(void);
 **********************************************************/
 APP_TIMER_DEF(power_bank_timer_id);
 
-static uint32_t pin_active_high = true;     /* Whether we treat the pin as active high or active low. Active high is typical. */
+static uint32_t pin_active_high;        /* Whether we treat the pin as active high or active low. Active high is typical. */
 static uint16_t on_length_ms;           /* The amount of time the LEDs should stay on for in a big on-off cycle */
 static uint16_t off_length_ms;          /* The amount of time the LEDs should stay off for in a big on-off cycle */
 static bool     current_draw_state;     /* Keeps track of whether we're in the state where we draw current or not. */
@@ -127,7 +127,7 @@ void mm_power_bank_set_on_off_cycle(uint16_t on_ticks_ms, uint16_t off_ticks_ms)
 }
 
 /**
- * @brief Helper function to set the corrent state of the pin
+ * @brief Helper function to set the state of the pin
  * to draw current or not, given whether the pin is active high or low.
  *
  * @param[in] draw_current     True to draw current, false to not draw current.

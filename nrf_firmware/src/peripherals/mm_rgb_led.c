@@ -31,8 +31,8 @@ notes:
 #define RGB_LED_GREEN_MASK  (1<<RGB_LED_GREEN)
 #define RGB_LED_BLUE_MASK   (1<<RGB_LED_BLUE)
 
-#define BUTTON_CONTROL   true           ///< Allow using the on-board buttons to change the LED colour and on-off cycle
-#define LED_DEBUG        true
+#define BUTTON_CONTROL   false          ///< Allow using the on-board buttons to change the LED colour and on-off cycle
+#define LED_DEBUG        false
 #define LED_STARTUP_TEST true           ///< Whether or not to have a brief period of 5s on startup with the LEDs set to WHTE.
 
 #define LED_DEFAULT_ON_DURATION  0      ///< In ms. In other words, off.
@@ -103,6 +103,110 @@ static low_power_pwm_t low_power_pwm_blue;
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
+
+/**
+ * @brief Function for initializing the RGB LED, utilizing the PWM library.
+ *
+ * @param[in] trick_power_bank  Whether or not to do some trickery to keep the power bank on.
+ */
+void mm_rgb_led_init(bool trick_power_bank)
+{
+    ret_code_t err_code;
+    low_power_pwm_config_t low_power_pwm_config;
+    control_power_bank = trick_power_bank;
+
+    #if BUTTON_CONTROL
+        /* Sense a push on the control pin. Pull up the pin,
+         * since we expect to use an IO board button for this. */
+        nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
+        in_config.pull = NRF_GPIO_PIN_PULLUP;
+
+        // One button for changing the colour
+        err_code = nrf_drv_gpiote_in_init(BSP_BUTTON_0, &in_config, control_pin_handler);
+        APP_ERROR_CHECK(err_code);
+        nrf_drv_gpiote_in_event_enable(BSP_BUTTON_0, true);
+
+        // One button for changing how often the leds are on/off.
+        err_code = nrf_drv_gpiote_in_init(BSP_BUTTON_2, &in_config, control_pin_handler);
+        APP_ERROR_CHECK(err_code);
+        nrf_drv_gpiote_in_event_enable(BSP_BUTTON_2, true);
+
+    #endif
+
+    // Trick the power bank if requested
+    if(control_power_bank)
+    {
+        mm_power_bank_init(true);
+        mm_power_bank_set_on_off_cycle(POWER_BANK_DEFAULT_ON_DURATION, POWER_BANK_DEFAULT_OFF_DURATION);
+    }
+
+    /* Initialize and enable PWM - RED. */
+    APP_TIMER_DEF(lpp_timer_red);
+    low_power_pwm_config.active_high    = true;
+    low_power_pwm_config.period         = LOW_POWER_PWM_CONFIG_PERIOD;
+    low_power_pwm_config.bit_mask       = RGB_LED_RED_MASK;
+    low_power_pwm_config.p_timer_id     = &lpp_timer_red;
+    low_power_pwm_config.p_port         = NRF_GPIO;
+
+    err_code = low_power_pwm_init((&low_power_pwm_red), &low_power_pwm_config, rgb_led_pwm_handler);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_duty_set(&low_power_pwm_red, MM_RGB_LED_DUTY_0);
+    APP_ERROR_CHECK(err_code);
+
+    /* Initialize and enable PWM - GREEN. */
+    APP_TIMER_DEF(lpp_timer_green);
+    low_power_pwm_config.active_high    = true;
+    low_power_pwm_config.period         = LOW_POWER_PWM_CONFIG_PERIOD;
+    low_power_pwm_config.bit_mask       = RGB_LED_GREEN_MASK;
+    low_power_pwm_config.p_timer_id     = &lpp_timer_green;
+    low_power_pwm_config.p_port         = NRF_GPIO;
+
+    err_code = low_power_pwm_init((&low_power_pwm_green), &low_power_pwm_config, rgb_led_pwm_handler);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_duty_set(&low_power_pwm_green, MM_RGB_LED_DUTY_0);
+    APP_ERROR_CHECK(err_code);
+
+    /* Initialize and enable PWM - BLUE. */
+    APP_TIMER_DEF(lpp_timer_blue);
+    low_power_pwm_config.active_high    = true;
+    low_power_pwm_config.period         = LOW_POWER_PWM_CONFIG_PERIOD;
+    low_power_pwm_config.bit_mask       = RGB_LED_BLUE_MASK;
+    low_power_pwm_config.p_timer_id     = &lpp_timer_blue;
+    low_power_pwm_config.p_port         = NRF_GPIO;
+
+    err_code = low_power_pwm_init((&low_power_pwm_blue), &low_power_pwm_config, rgb_led_pwm_handler);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_duty_set(&low_power_pwm_blue, MM_RGB_LED_DUTY_0);
+    APP_ERROR_CHECK(err_code);
+
+    /* Actually start all the pwm instances */
+    err_code = low_power_pwm_start((&low_power_pwm_red), low_power_pwm_red.bit_mask);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_start((&low_power_pwm_green), low_power_pwm_green.bit_mask);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_start((&low_power_pwm_blue), low_power_pwm_blue.bit_mask);
+    APP_ERROR_CHECK(err_code);
+
+    // Create a timer for changing when the LEDs turn on and off
+    err_code = app_timer_create(&power_cycle_timer_id, APP_TIMER_MODE_SINGLE_SHOT, rgb_led_power_cycle_timer_handler);
+    APP_ERROR_CHECK(err_code);
+
+    #if LED_STARTUP_TEST
+        // Initially set the LEDs to be on.
+        current_colour = LED_STARTUP_COLOUR;
+        on_off_cycle_state = LEDS_ON;
+        rgb_led_apply_colour(current_colour);
+        mm_rgb_set_on_off_cycle(LED_STARTUP_DURATION, LED_STARTUP_DURATION);
+        led_startup_test_done = false;
+    #else
+        led_startup_test_done = true;
+        // Initially set the LEDs to be off.
+        current_colour = MM_RGB_LED_DUTY_0;
+        on_off_cycle_state = LEDS_OFF;
+        mm_rgb_set_on_off_cycle(LED_DEFAULT_ON_DURATION, LED_DEFAULT_OFF_DURATION);
+    #endif
+
+}
 
 /**
  * @brief sets the desired colour of the LEDs
@@ -278,110 +382,6 @@ static void rgb_led_power_cycle_timer_handler(void * p_context)
             APP_ERROR_CHECK(err_code);
         }
     }
-}
-
-/**
- * @brief Function for initializing the RGB LED, utilizing the PWM library.
- *
- * @param[in] trick_power_bank  Whether or not to do some trickery to keep the power bank on.
- */
-void mm_rgb_led_init(bool trick_power_bank)
-{
-    ret_code_t err_code;
-    low_power_pwm_config_t low_power_pwm_config;
-    control_power_bank = trick_power_bank;
-
-    #if BUTTON_CONTROL
-        /* Sense a push on the control pin. Pull up the pin,
-         * since we expect to use an IO board button for this. */
-        nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
-        in_config.pull = NRF_GPIO_PIN_PULLUP;
-
-        // One button for changing the colour
-        err_code = nrf_drv_gpiote_in_init(BSP_BUTTON_0, &in_config, control_pin_handler);
-        APP_ERROR_CHECK(err_code);
-        nrf_drv_gpiote_in_event_enable(BSP_BUTTON_0, true);
-
-        // One button for changing how often the leds are on/off.
-        err_code = nrf_drv_gpiote_in_init(BSP_BUTTON_2, &in_config, control_pin_handler);
-        APP_ERROR_CHECK(err_code);
-        nrf_drv_gpiote_in_event_enable(BSP_BUTTON_2, true);
-
-    #endif
-
-    // Trick the power bank if requested
-    if(control_power_bank)
-    {
-        mm_power_bank_init(true);
-        mm_power_bank_set_on_off_cycle(POWER_BANK_DEFAULT_ON_DURATION, POWER_BANK_DEFAULT_OFF_DURATION);
-    }
-
-    /* Initialize and enable PWM - RED. */
-    APP_TIMER_DEF(lpp_timer_red);
-    low_power_pwm_config.active_high    = true;
-    low_power_pwm_config.period         = LOW_POWER_PWM_CONFIG_PERIOD;
-    low_power_pwm_config.bit_mask       = RGB_LED_RED_MASK;
-    low_power_pwm_config.p_timer_id     = &lpp_timer_red;
-    low_power_pwm_config.p_port         = NRF_GPIO;
-
-    err_code = low_power_pwm_init((&low_power_pwm_red), &low_power_pwm_config, rgb_led_pwm_handler);
-    APP_ERROR_CHECK(err_code);
-    err_code = low_power_pwm_duty_set(&low_power_pwm_red, MM_RGB_LED_DUTY_0);
-    APP_ERROR_CHECK(err_code);
-
-    /* Initialize and enable PWM - GREEN. */
-    APP_TIMER_DEF(lpp_timer_green);
-    low_power_pwm_config.active_high    = true;
-    low_power_pwm_config.period         = LOW_POWER_PWM_CONFIG_PERIOD;
-    low_power_pwm_config.bit_mask       = RGB_LED_GREEN_MASK;
-    low_power_pwm_config.p_timer_id     = &lpp_timer_green;
-    low_power_pwm_config.p_port         = NRF_GPIO;
-
-    err_code = low_power_pwm_init((&low_power_pwm_green), &low_power_pwm_config, rgb_led_pwm_handler);
-    APP_ERROR_CHECK(err_code);
-    err_code = low_power_pwm_duty_set(&low_power_pwm_green, MM_RGB_LED_DUTY_0);
-    APP_ERROR_CHECK(err_code);
-
-    /* Initialize and enable PWM - BLUE. */
-    APP_TIMER_DEF(lpp_timer_blue);
-    low_power_pwm_config.active_high    = true;
-    low_power_pwm_config.period         = LOW_POWER_PWM_CONFIG_PERIOD;
-    low_power_pwm_config.bit_mask       = RGB_LED_BLUE_MASK;
-    low_power_pwm_config.p_timer_id     = &lpp_timer_blue;
-    low_power_pwm_config.p_port         = NRF_GPIO;
-
-    err_code = low_power_pwm_init((&low_power_pwm_blue), &low_power_pwm_config, rgb_led_pwm_handler);
-    APP_ERROR_CHECK(err_code);
-    err_code = low_power_pwm_duty_set(&low_power_pwm_blue, MM_RGB_LED_DUTY_0);
-    APP_ERROR_CHECK(err_code);
-
-    /* Actually start all the pwm instances */
-    err_code = low_power_pwm_start((&low_power_pwm_red), low_power_pwm_red.bit_mask);
-    APP_ERROR_CHECK(err_code);
-    err_code = low_power_pwm_start((&low_power_pwm_green), low_power_pwm_green.bit_mask);
-    APP_ERROR_CHECK(err_code);
-    err_code = low_power_pwm_start((&low_power_pwm_blue), low_power_pwm_blue.bit_mask);
-    APP_ERROR_CHECK(err_code);
-
-    // Create a timer for changing when the LEDs turn on and off
-    err_code = app_timer_create(&power_cycle_timer_id, APP_TIMER_MODE_SINGLE_SHOT, rgb_led_power_cycle_timer_handler);
-    APP_ERROR_CHECK(err_code);
-
-    #if LED_STARTUP_TEST
-        // Initially set the LEDs to be on.
-        current_colour = LED_STARTUP_COLOUR;
-        on_off_cycle_state = LEDS_ON;
-        rgb_led_apply_colour(current_colour);
-        mm_rgb_set_on_off_cycle(LED_STARTUP_DURATION, LED_STARTUP_DURATION);
-        led_startup_test_done = false;
-    #else
-        led_startup_test_done = true;
-        // Initially set the LEDs to be off.
-        current_colour = MM_RGB_LED_DUTY_0;
-        on_off_cycle_state = LEDS_OFF;
-        mm_rgb_set_on_off_cycle(LED_DEFAULT_ON_DURATION, LED_DEFAULT_OFF_DURATION);
-    #endif
-
 }
 
 #if BUTTON_CONTROL
