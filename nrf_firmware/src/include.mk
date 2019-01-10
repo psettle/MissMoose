@@ -24,6 +24,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/strerror/nrf_strerror.c \
   $(SDK_ROOT)/components/libraries/sensorsim/sensorsim.c \
   $(SDK_ROOT)/components/libraries/pwm/app_pwm.c \
+  $(SDK_ROOT)/components/libraries/low_power_pwm/low_power_pwm.c \
   $(SDK_ROOT)/components/drivers_nrf/clock/nrf_drv_clock.c \
   $(SDK_ROOT)/components/drivers_nrf/common/nrf_drv_common.c \
   $(SDK_ROOT)/components/drivers_nrf/gpiote/nrf_drv_gpiote.c \
@@ -46,6 +47,8 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensors/ir_led/ky_022_receive.c \
   $(PROJ_DIR)/src/sensors/ir_led/ir_led_transmit.c \
   $(PROJ_DIR)/src/sensors/lidar/lidar.c \
+  $(PROJ_DIR)/src/peripherals/mm_rgb_led.c \
+  $(PROJ_DIR)/src/peripherals/mm_power_bank_timer.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
   $(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
@@ -83,6 +86,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/drivers_nrf/timer \
   $(SDK_ROOT)/components/drivers_nrf/twi_master \
   $(SDK_ROOT)/components/libraries/pwm \
+  $(SDK_ROOT)/components/libraries/low_power_pwm \
   $(PROJ_DIR)/src/sensors/pir \
   $(PROJ_DIR)/src/sensors/ir_led \
   ../config \
@@ -101,6 +105,7 @@ INC_FOLDERS += \
   $(PROJ_DIR)/src/wireless/ant \
   $(PROJ_DIR)/src/wireless/blaze \
   $(PROJ_DIR)/src/protocols \
+  $(PROJ_DIR)/src/peripherals \
 
 # Libraries
 ifeq ($(IS_BLAZE_GATEWAY),1)
