@@ -13,6 +13,7 @@ notes:
 
 #include "mm_ant_control.h"
 #include "mm_blaze_control.h"
+#include "mm_ant_page_manager.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -80,7 +81,7 @@ void mm_node_config_init(void)
 
     mm_ant_payload_t payload;
     encode_node_status_page(&payload);
-    mm_ant_set_payload(&payload);
+    mm_ant_page_manager_add_page(NODE_STATUS_PAGE, &payload, 1);
 
     //configure control button
     uint32_t err_code;
@@ -146,7 +147,7 @@ static void process_ant_evt(ant_evt_t * evt)
 
                         mm_ant_payload_t payload;
                         encode_node_status_page(&payload);
-                        mm_ant_set_payload(&payload);
+                        mm_ant_page_manager_replace_all_pages(NODE_STATUS_PAGE, &payload);
                     }
                 }
             }

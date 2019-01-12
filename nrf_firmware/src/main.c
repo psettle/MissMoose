@@ -29,6 +29,7 @@ notes:
 #include "mm_blaze_control.h"
 #include "mm_node_config.h"
 #include "mm_rgb_led_pub.h"
+#include "mm_ant_page_manager.h"
 
 /**********************************************************
                         CONSTANTS
@@ -54,6 +55,7 @@ int main(void)
     utils_setup();
     mm_softdevice_init();
     mm_ant_init();
+    mm_ant_page_manager_init();
 
     #ifdef NODE_ID_FROM_CONFIG_APP
     // If getting node ID from the configuration app,
