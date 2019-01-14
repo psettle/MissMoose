@@ -17,6 +17,7 @@ namespace MissMooseConfigurationApplication
 {
     public enum HardwareConfiguration
     {
+        UNKOWN,
         HARDWARECONFIGURATION_2_PIR,
         HARDWARECONFIGURATION_1_PIR_1_LIDAR,
         HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS,
@@ -146,6 +147,11 @@ namespace MissMooseConfigurationApplication
                 default:
                     throw new InvalidOperationException("Unknown hardware configuration");
             }
+        }
+
+        public HardwareConfiguration GetHardwareConfiguration()
+        {
+            return configuration;
         }
 
         public void SetRotation(NodeRotation rotation)

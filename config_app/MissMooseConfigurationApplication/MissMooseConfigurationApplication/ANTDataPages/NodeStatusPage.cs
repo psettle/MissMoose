@@ -13,7 +13,7 @@ namespace MissMooseConfigurationApplication
         private static readonly byte dataPageNumber = 0x01;
         private UInt16 nodeId;
         private UInt16 networkId;
-        private NodeType nodeType;
+        private HardwareConfiguration nodeType;
         private bool isGatewayNode;
 
         #endregion
@@ -37,7 +37,7 @@ namespace MissMooseConfigurationApplication
             set { networkId = value; OnPropertyChanged("NetworkId"); }
         }
 
-        public NodeType NodeType
+        public HardwareConfiguration NodeType
         {
             get { return nodeType; }
             set { nodeType = value; OnPropertyChanged("NodeType"); }
@@ -84,7 +84,7 @@ namespace MissMooseConfigurationApplication
             BitManipulation.SetByte0(ref networkId, rxBuffer[3]);
             BitManipulation.SetByte1(ref networkId, rxBuffer[4]);
 
-            NodeType = (NodeType)(rxBuffer[5] & 0x03);
+            NodeType = (HardwareConfiguration)(rxBuffer[5] & 0x03);
 
             IsGatewayNode = (rxBuffer[5] & 0x80) != 0;
         }
