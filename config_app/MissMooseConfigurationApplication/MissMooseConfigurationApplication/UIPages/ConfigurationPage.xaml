@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:MissMooseConfigurationApplication.UIPages"
       xmlns:missmooseconfigurationapplication="clr-namespace:MissMooseConfigurationApplication"
+      xmlns:uicomponents="clr-namespace:MissMooseConfigurationApplication.UIComponents"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="ConfigurationPage">
@@ -12,161 +13,80 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="450"/>
+            <ColumnDefinition Width="4*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <Grid Grid.Row="0" Grid.Column="0">
-            <Rectangle Stroke="Black" Height="150" Margin="0,0,0,0" Width="125"/>
-            <Viewbox Name="NewSensorViewbox" Width="100" Height="100" Stretch="Fill">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
+            <Viewbox Margin="20,140">
+                <Grid>
+                    <Rectangle Stroke="Black" Margin="0,0,0,0" Height="150"/>
+                    <Viewbox Name="NewSensorViewbox" Width="100" Height="100" Stretch="Fill">
+                        <Viewbox.RenderTransform>
+                            <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                        </Viewbox.RenderTransform>
+                    </Viewbox>
+                    <Label Name="NewNodeLabel" Content="New Node!" Margin="0,0,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="125"/>
+                </Grid>
             </Viewbox>
-            <Label Name="NewNodeLabel" Content="New Node!" Margin="25,150,25,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="125"/>
         </Grid>
 
-
         <Grid Grid.Row="0" Grid.Column="1">
-            <Line X1="50" Y1="50" X2="50" Y2="400" Stroke="Black"/>
-            <Line X1="225" Y1="50" X2="225" Y2="400" Stroke="Black"/>
-            <Line X1="400" Y1="50" X2="400" Y2="400" Stroke="Black"/>
-
-            <Line X1="50" Y1="50" X2="400" Y2="50" Stroke="Black"/>
-            <Line X1="50" Y1="225" X2="400" Y2="225" Stroke="Black"/>
-            <Line X1="50" Y1="400" X2="400" Y2="400" Stroke="Black"/>
-
-
-            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,0,350,350">
-                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_0_0"/>
+            <Viewbox>
+                <uicomponents:ConfigurationGrid x:Name="ConfigGrid"/>
             </Viewbox>
-            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,0,0,350">
-                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_1_0"/>
-            </Viewbox>
-            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="350,0,0,350">
-                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_2_0"/>
-            </Viewbox>
-
-            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,175,350,175">
-                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_0_1"/>
-            </Viewbox>
-            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,175,0,175">
-                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_1_1"/>
-            </Viewbox>
-            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="350,175,0,175">
-                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_2_1"/>
-            </Viewbox>
-
-            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,350,350,0">
-                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_0_2"/>
-            </Viewbox>
-            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,350,0,0">
-                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_1_2"/>
-            </Viewbox>
-            <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="350,350,0,0">
-                <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_2_2"/>
-            </Viewbox>
-
-            <Viewbox Name="SensorViewbox_0_0" Width="100" Height="100" Stretch="Fill" Margin="0,0,350,350">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_0_1" Width="100" Height="100" Stretch="Fill" Margin="0,175,350,175">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_0_2" Width="100" Height="100" Stretch="Fill" Margin="0,350,350,0">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-
-            <Viewbox Name="SensorViewbox_1_0" Width="100" Height="100" Stretch="Fill" Margin="175,0,175,350">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_1_1" Width="100" Height="100" Stretch="Fill" Margin="175">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_1_2" Width="100" Height="100" Stretch="Fill" Margin="175,350,175,0">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-
-            <Viewbox Name="SensorViewbox_2_0" Width="100" Height="100" Stretch="Fill" Margin="350,0,0,350">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_2_1" Width="100" Height="100" Stretch="Fill" Margin="350,175,0,175">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_2_2" Width="100" Height="100" Stretch="Fill" Margin="350,350,0,0">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-
         </Grid>
 
         <Grid Grid.Row="0" Grid.Column="2">
-            <Rectangle Stroke="Black" Fill="DarkGray" Height="180" Margin="0,30,0,0" Width="125"/>
+            <Viewbox>
+                <Grid Margin="20,0,20,0">
+                    <Rectangle Stroke="Black" Fill="DarkGray" Height="180" Margin="0,0,0,0" Width="125"/>
 
-            <Label Name="NodeNameLabel" Content="Node X" Foreground="White" Margin="0,150,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="125"/>
+                    <Label Name="NodeNameLabel" Content="Node X" Foreground="White" Margin="0,0,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="125"/>
 
-            <Viewbox Name="Up" Width="30" Height="40" Stretch="Fill" Margin="0,15,0,0">
-                <missmooseconfigurationapplication:ArrowButton x:Name="UpButton"/>
+                    <Viewbox Name="Up" Width="30" Height="40" Stretch="Fill" Margin="0,15,0,0">
+                        <missmooseconfigurationapplication:ArrowButton x:Name="UpButton"/>
+                    </Viewbox>
+
+                    <Viewbox Name="Right" Width="30" Height="40"  Stretch="Fill" Margin="65,78,0,0">
+                        <missmooseconfigurationapplication:ArrowButton x:Name="RightButton"/>
+                        <Viewbox.RenderTransform>
+                            <RotateTransform Angle="90" CenterX="15" CenterY="20"/>
+                        </Viewbox.RenderTransform>
+                    </Viewbox>
+
+                    <Viewbox Name="Down" Width="30" Height="40"  Stretch="Fill" Margin="0,140,0,0">
+                        <missmooseconfigurationapplication:ArrowButton x:Name="DownButton"/>
+                        <Viewbox.RenderTransform>
+                            <RotateTransform Angle="180" CenterX="15" CenterY="20"/>
+                        </Viewbox.RenderTransform>
+                    </Viewbox>
+
+                    <Viewbox Name="Left" Width="30" Height="40"  Stretch="Fill" Margin="-65,78,0,0">
+                        <missmooseconfigurationapplication:ArrowButton x:Name="LeftButton"/>
+                        <Viewbox.RenderTransform>
+                            <RotateTransform Angle="270" CenterX="15" CenterY="20"/>
+                        </Viewbox.RenderTransform>
+                    </Viewbox>
+
+                    <Viewbox Name="RotateClockwise" Width="50" Height="50" Stretch="Fill" Margin="65,-35,0,0">
+                        <missmooseconfigurationapplication:CurvedArrowButton x:Name="ClockwiseButton"/>
+                        <Viewbox.RenderTransform>
+                            <RotateTransform Angle="90" CenterX="25" CenterY="25"/>
+                        </Viewbox.RenderTransform>
+                    </Viewbox>
+
+                    <Viewbox Name="RotateCounterClockwise" Width="50" Height="50" Stretch="Fill" Margin="40,-35,0,0">
+                        <missmooseconfigurationapplication:CurvedArrowButton x:Name="CounterClockwiseButton"/>
+                        <Viewbox.RenderTransform>
+                            <TransformGroup>
+                                <RotateTransform Angle="90" CenterX="25" CenterY="25"/>
+                                <ScaleTransform ScaleX="-1" />
+                            </TransformGroup>
+                        </Viewbox.RenderTransform>
+                    </Viewbox>
+                </Grid>
             </Viewbox>
-
-            <Viewbox Name="Right" Width="30" Height="40"  Stretch="Fill" Margin="65,78,0,0">
-                <missmooseconfigurationapplication:ArrowButton x:Name="RightButton"/>
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="90" CenterX="15" CenterY="20"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-
-            <Viewbox Name="Down" Width="30" Height="40"  Stretch="Fill" Margin="0,140,0,0">
-                <missmooseconfigurationapplication:ArrowButton x:Name="DownButton"/>
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="180" CenterX="15" CenterY="20"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-
-            <Viewbox Name="Left" Width="30" Height="40"  Stretch="Fill" Margin="-65,78,0,0">
-                <missmooseconfigurationapplication:ArrowButton x:Name="LeftButton"/>
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="270" CenterX="15" CenterY="20"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-
-            <Viewbox Name="RotateClockwise" Width="50" Height="50" Stretch="Fill" Margin="65,-35,0,0">
-                <missmooseconfigurationapplication:CurvedArrowButton x:Name="ClockwiseButton"/>
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="90" CenterX="25" CenterY="25"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-
-            <Viewbox Name="RotateCounterClockwise" Width="50" Height="50" Stretch="Fill" Margin="40,-35,0,0">
-                <missmooseconfigurationapplication:CurvedArrowButton x:Name="CounterClockwiseButton"/>
-                <Viewbox.RenderTransform>
-                    <TransformGroup>
-                        <RotateTransform Angle="90" CenterX="25" CenterY="25"/>
-                        <ScaleTransform ScaleX="-1" />
-                    </TransformGroup>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-
         </Grid>
-
-
-
     </Grid>
 </Page>

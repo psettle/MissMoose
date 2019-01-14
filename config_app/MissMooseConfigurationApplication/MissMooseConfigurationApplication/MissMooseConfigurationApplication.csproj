@@ -85,6 +85,12 @@
     <Compile Include="UIComponents\ArrowButton.xaml.cs">
       <DependentUpon>ArrowButton.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UIComponents\ConfigurationGrid.xaml.cs">
+      <DependentUpon>ConfigurationGrid.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UIComponents\MonitoringGrid.xaml.cs">
+      <DependentUpon>MonitoringGrid.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UIComponents\PulsingCircle.xaml.cs">
       <DependentUpon>PulsingCircle.xaml</DependentUpon>
     </Compile>
@@ -138,6 +144,14 @@
     <Page Include="UIComponents\ArrowButton.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UIComponents\ConfigurationGrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UIComponents\MonitoringGrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UIComponents\PulsingCircle.xaml">
       <Generator>MSBuild:Compile</Generator>

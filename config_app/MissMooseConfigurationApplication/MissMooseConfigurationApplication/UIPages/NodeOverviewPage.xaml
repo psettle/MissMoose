@@ -10,35 +10,45 @@
       Title="NodeOverviewPage">
 
     <Grid>
-        <Viewbox Name="MainSensorViewbox" Width="200" Height="200" Margin="10,10,10,10">
-            <Viewbox.RenderTransform>
-                <RotateTransform Angle="0" CenterX="100" CenterY="100"/>
-            </Viewbox.RenderTransform>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Viewbox Grid.Column="1"  Margin="0,0,0,0">
+            <Grid>
+                <Viewbox Name="MainSensorViewbox" Width="200" Height="200" Margin="10,10,10,10">
+                    <Viewbox.RenderTransform>
+                        <RotateTransform Angle="0" CenterX="100" CenterY="100"/>
+                    </Viewbox.RenderTransform>
+                </Viewbox>
+                <Viewbox Name="TopSensorViewbox" Width="100" Height="100" Margin="350,10,350,340">
+                    <Viewbox.RenderTransform>
+                        <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                    </Viewbox.RenderTransform>
+                </Viewbox>
+                <Viewbox Name="LeftSensorViewbox" Width="100" Height="100" Margin="185,175,515,175">
+                    <Viewbox.RenderTransform>
+                        <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                    </Viewbox.RenderTransform>
+                </Viewbox>
+                <Viewbox Name="RightSensorViewbox" Width="100" Height="100" Margin="515,175,185,175">
+                    <Viewbox.RenderTransform>
+                        <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                    </Viewbox.RenderTransform>
+                </Viewbox>
+                <Viewbox Name="BottomSensorViewbox" Width="100" Height="100" Margin="350,340,350,10">
+                    <Viewbox.RenderTransform>
+                        <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
+                    </Viewbox.RenderTransform>
+                </Viewbox>
+            </Grid>
         </Viewbox>
-        <Viewbox Name="TopSensorViewbox" Width="100" Height="100" Margin="350,10,350,340">
-            <Viewbox.RenderTransform>
-                <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-            </Viewbox.RenderTransform>
-        </Viewbox>
-        <Viewbox Name="LeftSensorViewbox" Width="100" Height="100" Margin="185,175,515,175">
-            <Viewbox.RenderTransform>
-                <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-            </Viewbox.RenderTransform>
-        </Viewbox>
-        <Viewbox Name="RightSensorViewbox" Width="100" Height="100" Margin="515,175,185,175">
-            <Viewbox.RenderTransform>
-                <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-            </Viewbox.RenderTransform>
-        </Viewbox>
-        <Viewbox Name="BottomSensorViewbox" Width="100" Height="100" Margin="350,340,350,10">
-            <Viewbox.RenderTransform>
-                <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-            </Viewbox.RenderTransform>
-        </Viewbox>
-        <TextBlock Margin="605,0,0,0" HorizontalAlignment="Left" Width="195" TextWrapping="Wrap" >
+
+        <TextBlock Grid.Column="0" TextWrapping="Wrap" Margin="0" >
             Node Status Info TBD Node Status Info TBD Node Status Info TBD Node Status Info TBD Node Status Info TBD
         </TextBlock>
-        <TextBlock HorizontalAlignment="Left" Width="195" TextWrapping="Wrap" >
+        <TextBlock Grid.Column="2" TextWrapping="Wrap" Margin="0" >
             Node Status Info TBD Node Status Info TBD Node Status Info TBD Node Status Info TBD Node Status Info TBD
         </TextBlock>
     </Grid>

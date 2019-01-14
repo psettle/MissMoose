@@ -24,16 +24,18 @@ namespace MissMooseConfigurationApplication
             this.ConfigUI = ConfigUI;
 
             //demo: add existing node
-            var node = new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS, 2);
-            node.SetPosition(1, 1);
-            node.SetRotation(NodeRotation.NODEROTATION_135);
-            node.SetOffset(-3, 3);
+            var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2);
+            node.xpos = 1;
+            node.ypos = 1;
+            node.Rotation = new NodeRotation(NodeRotation.R90);
+            node.xoffset = -3;
+            node.yoffset = 3;
 
             ConfigUI.AddExistingNode(node);
 
 
             //demo: add new node
-            ConfigUI.AddNewNode(new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_2_PIR, 3));
+            ConfigUI.AddNewNode(new SensorNode(HardwareConfiguration.Pir2, 3));
 
 
             //demo: read input state
@@ -45,39 +47,45 @@ namespace MissMooseConfigurationApplication
             this.MonitoringUI = MonitoringUI;
 
             //demo: add existing node
-            var node = new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS, 2);
-            node.SetPosition(1, 1);
-            node.SetRotation(NodeRotation.NODEROTATION_135);
-            node.SetOffset(-3, 3);
+            var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2);
+            node.xpos = 1;
+            node.ypos = 1;
+            node.Rotation = new NodeRotation(NodeRotation.R90);
+            node.xoffset = -3;
+            node.yoffset = 3;
 
             MonitoringUI.AddNode(node);
 
             //demo: remove, modify, add node
             MonitoringUI.RemoveNode(node);
-            node.SetOffset(1, 1);
-            node.SetRotation(NodeRotation.NODEROTATION_180);
+            node.xoffset = 1;
+            node.yoffset = 1;
+            node.Rotation = new NodeRotation(NodeRotation.R180);
             MonitoringUI.AddNode(node);
 
             //demo: Display sensor data
-            MonitoringUI.MarkSensorDetection(node, LineDirection.Down, StatusColour.STATUSCOLOUR_RED);
+            MonitoringUI.MarkSensorDetection(node, LineDirection.Down, StatusColour.Red);
 
             //demo: add existing node
-            node = new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_2_PIR, 3);
-            node.SetPosition(1, 2);
-            node.SetRotation(NodeRotation.NODEROTATION_135);
-            node.SetOffset(-3, 3);
+            node = new SensorNode(HardwareConfiguration.Pir2, 3);
+            node.xpos = 1;
+            node.ypos = 2;
+            node.Rotation = new NodeRotation(NodeRotation.R90);
+            node.xoffset = -3;
+            node.yoffset = 3;
 
             MonitoringUI.AddNode(node);
 
             //demo: remove, modify, add node
             MonitoringUI.RemoveNode(node);
-            node.SetOffset(0, 0);
-            node.SetRotation(NodeRotation.NODEROTATION_0);
+            node.xoffset = 0;
+            node.yoffset = 0;
+            node.Rotation = new NodeRotation(NodeRotation.R0);
             MonitoringUI.AddNode(node);
 
             //demo: Display sensor data
-            MonitoringUI.MarkSensorDetection(node, LineDirection.Up, StatusColour.STATUSCOLOUR_RED);
-            MonitoringUI.MarkSensorDetection(node, LineDirection.Left, StatusColour.STATUSCOLOUR_YELLOW);
+            MonitoringUI.MarkSensorDetection(node, LineDirection.Up, StatusColour.Red);
+            MonitoringUI.MarkSensorDetection(node, LineDirection.Left, StatusColour.Yellow);
         }
     }
 }

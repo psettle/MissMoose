@@ -4,17 +4,18 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:MissMooseConfigurationApplication"
+      xmlns:uicomponents="clr-namespace:MissMooseConfigurationApplication.UIComponents"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="SystemOverviewPage">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="500"></ColumnDefinition>
+            <ColumnDefinition Width="6*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"></RowDefinition>
-            <RowDefinition Height="400"></RowDefinition>
+            <RowDefinition Height="12*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Grid.ColumnSpan="2" Background="#2e2e2e">
             <Grid.RowDefinitions>
@@ -38,91 +39,8 @@
             </Grid>
         </Grid>
         <Grid Grid.Column="0" Grid.Row="1">
-
-            <!--<Polygon Points="50,50 50,200 250,200 250,50" Fill="LightBlue"/>
-            <Polygon Points="250,50 250,200 450,200 450,50" Fill="LightBlue"/>
-            <Polygon Points="50,200 50,350 250,350 250,200" Fill="LightBlue"/>
-            <Polygon Points="250,200 250,350 450,350 450,200" Fill="LightBlue"/>
-            
-            ^^ P: A quick attempt at region fills, it looks gross and doesn't really match our sensors at this point, so I'm leaving it out.
-            -->
-
-            <Line Name="Line_0_0_Down" X1="50" Y1="50" X2="50" Y2="125" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_0_1_Up"   X1="50" Y1="125" X2="50" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_0_1_Down" X1="50" Y1="200" X2="50" Y2="275" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_0_2_Up"   X1="50" Y1="275" X2="50" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-
-            <Line Name="Line_1_0_Down" X1="250" Y1="50" X2="250" Y2="125" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_1_1_Up"   X1="250" Y1="125" X2="250" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_1_1_Down" X1="250" Y1="200" X2="250" Y2="275" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_1_2_Up"   X1="250" Y1="275" X2="250" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-
-            <Line Name="Line_2_0_Down" X1="450" Y1="50" X2="450" Y2="125" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_2_1_Up"   X1="450" Y1="125" X2="450" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_2_1_Down" X1="450" Y1="200" X2="450" Y2="275" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_2_2_Up"   X1="450" Y1="275" X2="450" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-
-            <Line Name="Line_0_0_Right" X1="50" Y1="50" X2="150" Y2="50" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_1_0_Left"  X1="150" Y1="50" X2="250" Y2="50" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_1_0_Right" X1="250" Y1="50" X2="350" Y2="50" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_2_0_Left"  X1="350" Y1="50" X2="450" Y2="50" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-
-            <Line Name="Line_0_1_Right" X1="50" Y1="200" X2="150" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_1_1_Left"  X1="150" Y1="200" X2="250" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_1_1_Right" X1="250" Y1="200" X2="350" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_2_1_Left"  X1="350" Y1="200" X2="450" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-
-            <Line Name="Line_0_2_Right" X1="50" Y1="350" X2="150" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_1_2_Left"  X1="150" Y1="350" X2="250" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_1_2_Right" X1="250" Y1="350" X2="350" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-            <Line Name="Line_2_2_Left"  X1="350" Y1="350" X2="450" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-
-            <Viewbox Name="SensorViewbox_0_0" Width="100" Height="100" Stretch="Fill" Margin="0,0,400,300">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_0_1" Width="100" Height="100" Stretch="Fill" Margin="0,150,400,150">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_0_2" Width="100" Height="100" Stretch="Fill" Margin="0,300,400,0">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-
-            <Viewbox Name="SensorViewbox_1_0" Width="100" Height="100" Stretch="Fill" Margin="200,0,200,300">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_1_1" Width="100" Height="100" Stretch="Fill" Margin="200,150,200,150">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_1_2" Width="100" Height="100" Stretch="Fill" Margin="200,300,200,0">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-
-            <Viewbox Name="SensorViewbox_2_0" Width="100" Height="100" Stretch="Fill" Margin="400,0,0,300">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_2_1" Width="100" Height="100" Stretch="Fill" Margin="400,150,0,150">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
-            </Viewbox>
-            <Viewbox Name="SensorViewbox_2_2" Width="100" Height="100" Stretch="Fill" Margin="400,300,0,0">
-                <Viewbox.RenderTransform>
-                    <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
-                </Viewbox.RenderTransform>
+            <Viewbox>
+                <uicomponents:MonitoringGrid x:Name="MonitGrid"/>
             </Viewbox>
         </Grid>
     </Grid>
