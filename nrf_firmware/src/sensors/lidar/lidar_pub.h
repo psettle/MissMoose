@@ -55,10 +55,34 @@ typedef enum
 } lidar_error_code_type_t;
 
 /**
- * @brief
+ * @brief Different sampling rates for the LIDAR
+ */
+typedef enum
+{
+    LIDAR_EVENT_CODE_MEASUREMENT_SETTLE, ///< Means that the measurement is stable
+    LIDAR_EVENT_CODE_MEASUREMENT_CHANGE, ///< Means that the measurement has just recently changed.
+    LIDAR_EVENT_CODE_COUNT,
+} lidar_event_type_t;
+
+/**@brief LIDAR event structure. */
+typedef struct
+{
+    uint16_t distance;         ///< Measurement distance.
+    lidar_event_type_t event;  ///< Event code.
+} lidar_evt_t;
+
+/**@brief Application ANT stack event handler type. */
+typedef void (*lidar_evt_handler_t) (lidar_evt_t * lidar_evt);
+
+/**
+ * @brief This function needs to be called regularly from main in order to keep things going.
  */
 void lidar_update_main(void);
 
+/**
+ * @brief Add a new lidar event listener!
+ */
+void lidar_evt_handler_set(lidar_evt_handler_t lidar_evt_handler);
 
 /**
  * @brief Set the sample rate!

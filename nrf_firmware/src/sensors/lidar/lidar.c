@@ -20,7 +20,7 @@
                        (b > c) ? (a > c) ? a : c : b)
 
 #define LED_DEBUG                   true
-#define ANT_BROADCAST_DEBUG         true // Always broadcast the most recent filtered sample over ANT.
+#define ANT_BROADCAST_DEBUG         false // If true, broadcast the most recent filtered sample over ANT.
 
 /* Register definitions for the LIDAR. */
 #define DISTANCE_VALUE_REGISTER     (0x8FU)
@@ -42,6 +42,8 @@
 
 #define MEDIAN_FILTER_SIZE          (3)  // Store the last 3 samples.
 #define MEDIAN_FILTER_DIFF_THRES    (30) // How different 2 consecutive median-filtered samples have to be noted as a detection.
+
+#define MAX_EVT_HANDLERS ( 10 )
 
 /**
  * @brief States of the twi reading/writing state machine.
@@ -74,12 +76,17 @@ typedef enum
                        DECLARATIONS
 **********************************************************/
 
+void lidar_event_dispatch(uint16_t distance, lidar_event_type_t event);
 static void lidar_process_distance(void);
 static ret_code_t set_register_value(uint8_t reg, uint8_t val);
 static ret_code_t write_register(uint8_t reg);
 void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context);
 
 static void timer_event_handler(void * p_context);
+
+/**********************************************************
+                        VARIABLES
+**********************************************************/
 
 static uint8_t sample_readings = 0;
 static lidar_error_code_type_t error_code;
@@ -89,6 +96,8 @@ static uint16_t median_filtered_distance;
 static uint8_t  median_filter_index;
 static bool     median_filter_warmup;
 static bool     distance_changed_warning_flag;
+
+static lidar_evt_handler_t lidar_evt_handlers[MAX_EVT_HANDLERS];
 
 // How many times a 2ms timer must elapse before we trigger a reading.
 static const uint16_t rate_to_2ms_periods_conversion[LIDAR_SAMPLE_RATE_COUNT] = {25,50,100,125,250,500};
@@ -226,6 +235,8 @@ static void lidar_process_distance(void)
         if(median_filter_index >= MEDIAN_FILTER_SIZE)
         {
             median_filter_index = 0;
+            // Only if we're just starting and our filters haven't filled out yet, assign the median of the buffer to
+            // median_filtered_distance right away.
             if(!median_filter_warmup)
             {
                 median_filtered_distance = MEDIAN(sample_buffer[0], sample_buffer[1], sample_buffer[2]);
@@ -243,6 +254,11 @@ static void lidar_process_distance(void)
                 #if(LED_DEBUG)
                     bsp_board_led_on(2);
                 #endif
+                if(distance_changed_warning_flag != true)
+                {
+                    // The distance has suddenly changed when it was stable.
+                    lidar_event_dispatch(new_filtered_distance, LIDAR_EVENT_CODE_MEASUREMENT_CHANGE);
+                }
                 distance_changed_warning_flag = true;
             }
             else
@@ -250,6 +266,11 @@ static void lidar_process_distance(void)
                 #if(LED_DEBUG)
                     bsp_board_led_off(2);
                 #endif
+                if(distance_changed_warning_flag != false)
+                {
+                    // The distance has now become stable.
+                    lidar_event_dispatch(new_filtered_distance, LIDAR_EVENT_CODE_MEASUREMENT_SETTLE);
+                }
                 distance_changed_warning_flag = false;
             }
             median_filtered_distance = new_filtered_distance;
@@ -268,6 +289,51 @@ static void lidar_process_distance(void)
         error_code = LIDAR_ERROR_NONE;
     }
 }
+
+/**
+ * @brief Tell the listeners that there's recently been a change in the distance,
+ *        and whether the distance is just becoming unstable or settling.
+ */
+void lidar_event_dispatch(uint16_t distance, lidar_event_type_t event)
+{
+    lidar_evt_t lidar_event;
+    lidar_event.distance = distance;
+    lidar_event.event = event;
+    // Forward LIDAR event to listeners
+	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
+	{
+		if (lidar_evt_handlers[i] != NULL)
+		{
+			lidar_evt_handlers[i](&lidar_event);
+		}
+		else
+		{
+			break;
+		}
+	}
+}
+
+/**
+ * @brief Add a new lidar event listener!
+ *
+ * @param[in] lidar_evt_handler The event handler to add as a listener.
+ */
+void lidar_evt_handler_set(lidar_evt_handler_t lidar_evt_handler)
+{
+	uint32_t i;
+
+	for (i = 0; i < MAX_EVT_HANDLERS; i++)
+	{
+		if (lidar_evt_handlers[i] == NULL)
+		{
+			lidar_evt_handlers[i] = lidar_evt_handler;
+			break;
+		}
+	}
+
+	APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
+}
+
 /**
  * @brief Check if there's been an alarming change in distance recently
  *
