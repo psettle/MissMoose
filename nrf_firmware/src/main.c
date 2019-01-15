@@ -30,6 +30,7 @@ notes:
 #include "mm_node_config.h"
 #include "mm_rgb_led_pub.h"
 #include "mm_ant_page_manager.h"
+#include "mm_monitoring_dispatch.h"
 
 /**********************************************************
                         CONSTANTS
@@ -66,6 +67,10 @@ int main(void)
     mm_blaze_init(0, 0);
     #endif
 
+#ifdef MM_BLAZE_GATEWAY
+    mm_monitoring_dispatch_init();
+#endif
+
     //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
     //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
     // pir_st_00081_init(2);
@@ -77,6 +82,10 @@ int main(void)
     {
     	// lidar_update_main();
 		mm_node_config_main();
+        
+#ifdef MM_BLAZE_GATEWAY
+        mm_monitoring_dispatch_main();
+#endif
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }
