@@ -45,7 +45,6 @@ namespace MissMooseConfigurationApplication
             txBuffer[0] = DataPageNumber;
 
             txBuffer[1] = BitManipulation.GetByte0(NodeId);
-            txBuffer[2] = BitManipulation.ReservedZeros;
             txBuffer[2] = BitManipulation.GetByte1(NodeId);
 
             txBuffer[3] = BitManipulation.GetByte0(NetworkId);

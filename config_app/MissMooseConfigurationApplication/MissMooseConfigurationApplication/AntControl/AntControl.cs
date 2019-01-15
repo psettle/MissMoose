@@ -64,6 +64,9 @@ namespace MissMooseConfigurationApplication
         bool deviceRunning = false;
         bool sendConfiguration = false;
 
+        // Default wait time in milliseconds for ANT function calls
+        static readonly ushort waitTime = 500;
+
         #endregion
 
         #region Public Methods
@@ -171,7 +174,7 @@ namespace MissMooseConfigurationApplication
                 device.getChannel(0).channelResponse += new dChannelResponseHandler(channelResponse);
 
                 // Check whether the connected ANT USB device supports the required capabilities
-                ANT_DeviceCapabilities capabilities = device.getDeviceCapabilities(500);
+                ANT_DeviceCapabilities capabilities = device.getDeviceCapabilities(waitTime);
                 if (!capabilities.SearchList)
                 {
                     Console.WriteLine("Connected ANT USB device does not support exclusion search list");
@@ -186,7 +189,13 @@ namespace MissMooseConfigurationApplication
                 {
                     device.enableRxExtendedMessages(true);
 
-                    setupAndOpenChannel(device, channelType);
+                    // Get an unused ANT channel from the device
+                    channel = device.getChannel(0);
+
+                    // Initialize a page sender with the channel
+                    pageSender = new PageSender(channel);
+
+                    setupAndOpenChannel(channelType);
                 }                
             }
             catch (Exception e)
@@ -205,46 +214,67 @@ namespace MissMooseConfigurationApplication
             deviceRunning = false;
         }
 
-        private void setupAndOpenChannel(ANT_Device deviceToSetup, ANT_ReferenceLibrary.ChannelType channelType)
+        private void setupAndOpenChannel(ANT_ReferenceLibrary.ChannelType channelType)
         {
             //We try-catch and forward exceptions to the calling function to handle and pass the errors to the user
             try
             {
-                // Get an unused ANT channel from the device
-                channel = deviceToSetup.getChannel(0);
-
-                // Initialize a page sender with the channel
-                pageSender = new PageSender(channel);
-
                 // Assign the channel with the given channel type
                 // Use network 0, which has the public network key by default
-                if (channel.assignChannel(channelType, 0, 500))
+                if (channel.assignChannel(channelType, 0, waitTime))
+                {
                     Console.WriteLine("Ch assigned to " + channelType + " on net 0.");
+                }
                 else
+                {
                     throw new Exception("Channel assignment operation failed.");
+                }
 
                 // Set the channel ID
-                if (channel.setChannelID(deviceNumber, false, deviceType, transmissionType, 500))
+                if (channel.setChannelID(deviceNumber, false, deviceType, transmissionType, waitTime))
+                {
                     Console.WriteLine("Set channel ID to " + deviceNumber + ", " + deviceType + ", " + transmissionType);
+                }
                 else
+                {
                     throw new Exception("Set channel ID operation failed.");
+                }
 
-                // Configure exclusion list
-                channel.includeExcludeList_Configure(0, true);
+                if (masterDeviceNumber == 0)
+                {
+                    // Configure exclusion list to be empty if we haven't yet paired to a node device
+                    channel.includeExcludeList_Configure(0, true);
+                }
+                else
+                {
+                    // Put the previously paired node's device number in the exclusion list so that we don't just re-pair to it immediately
+                    channel.includeExcludeList_addChannel(masterDeviceNumber, 0, 0, 0);
+
+                    // Configure exclusion list to include 1 channel
+                    channel.includeExcludeList_Configure(1, true);
+                }
 
                 // Set the RF frequency for the channel
-                if (channel.setChannelFreq(rfFrequency, 500))
+                if (channel.setChannelFreq(rfFrequency, waitTime))
+                {
                     Console.WriteLine("RF frequency set to " + (rfFrequency + 2400));
+                }
 
                 // Set the channel period to match the rate at which the nodes broadcast
-                if (channel.setChannelPeriod(channelPeriod, 500))
+                if (channel.setChannelPeriod(channelPeriod, waitTime))
+                {
                     Console.WriteLine("Message rate set to 4Hz");
+                }
 
                 // Open the channel
-                if (channel.openChannel(500))
+                if (channel.openChannel(waitTime))
+                {
                     Console.WriteLine("Opened channel");
+                }
                 else
+                {
                     throw new Exception("Channel open operation failed.");
+                }
             }
             catch (Exception ex)
             {
@@ -255,7 +285,7 @@ namespace MissMooseConfigurationApplication
         /*
          * Handles the ANT device response
          */
-        void deviceResponse(ANT_Response response)
+        private void deviceResponse(ANT_Response response)
         {
             switch ((ANT_ReferenceLibrary.ANTMessageID)response.responseID)
             {
@@ -281,42 +311,18 @@ namespace MissMooseConfigurationApplication
                             channel.includeExcludeList_Configure(0, true);
 
                             // Unassign the channel
-                            if (channel.unassignChannel(500))
+                            if (channel.unassignChannel(waitTime))
+                            {
                                 Console.WriteLine("Unassigned channel");
+                            }
                             else
+                            {
                                 throw new Exception("Channel unassign operation failed.");
+                            }
 
-                            // Reassign the channel
-                            if (channel.assignChannel(channelType, 0, 500))
-                                Console.WriteLine("Ch assigned to " + channelType + " on net 0.");
-                            else
-                                throw new Exception("Channel assignment operation failed.");
-
-                            // Reset the channel ID
-                            if (channel.setChannelID(deviceNumber, false, deviceType, transmissionType, 500))
-                                Console.WriteLine("Set channel ID to " + deviceNumber + ", " + deviceType + ", " + transmissionType);
-                            else
-                                throw new Exception("Set channel ID operation failed.");
-
-                            // Put the previously paired node's device number in the exclusion list so that we don't just re-pair to it immediately
-                            channel.includeExcludeList_addChannel(masterDeviceNumber, 0, 0, 0);
-
-                            // Configure exclusion list
-                            channel.includeExcludeList_Configure(1, true);
-
-                            // Set the RF frequency for the channel
-                            if (channel.setChannelFreq(rfFrequency, 500))
-                                Console.WriteLine("RF frequency set to " + (rfFrequency + 2400));
-
-                            // Set the channel period to match the rate at which the nodes broadcast
-                            if (channel.setChannelPeriod(channelPeriod, 500))
-                                Console.WriteLine("Message rate set to 4Hz");
-
-                            // Open the channel
-                            if (channel.openChannel(500))
-                                Console.WriteLine("Opened channel");
-                            else
-                                throw new Exception("Channel open operation failed."); channel.openChannel();
+                            // Reassign and open the channel, excluding the current master device number from the search
+                            // so we don't just pair to it again
+                            setupAndOpenChannel(channelType);
 
                             break;
                     }
@@ -327,7 +333,7 @@ namespace MissMooseConfigurationApplication
         /*
          * Handles the ANT channel response
          */
-        void channelResponse(ANT_Response response)
+        private void channelResponse(ANT_Response response)
         {
             if (response.responseID == (byte)ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40)
             {
@@ -353,7 +359,9 @@ namespace MissMooseConfigurationApplication
                 dynamic dataPage = pageParser.Parse(rxBuffer);
 
                 if (dataPage != null)
+                {
                     handlePage(dataPage);
+                }
             }
         }        
 
@@ -407,10 +415,14 @@ namespace MissMooseConfigurationApplication
                 nodeDeviceNumbers.Add(masterDeviceNumber);
 
                 // Close the channel
-                if (channel.closeChannel(500))
+                if (channel.closeChannel(waitTime))
+                {
                     Console.WriteLine("Closed channel");
+                }
                 else
+                {
                     throw new Exception("Channel close operation failed.");
+                }
                 
                 // We will reopen the channel once we receive the channel closed event
             }

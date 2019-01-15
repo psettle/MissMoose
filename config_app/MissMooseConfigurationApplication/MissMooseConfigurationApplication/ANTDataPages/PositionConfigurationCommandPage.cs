@@ -10,7 +10,7 @@ namespace MissMooseConfigurationApplication
     {
         #region Private Members
 
-        private static readonly byte dataPageNumber = 0x10;
+        private static readonly byte dataPageNumber = 0x11;
         private UInt16 nodeId;
         private HardwareConfiguration nodeType;
         private NodeRotation nodeRotation;
@@ -52,7 +52,6 @@ namespace MissMooseConfigurationApplication
             txBuffer[0] = DataPageNumber;
 
             txBuffer[1] = BitManipulation.GetByte0(NodeId);
-            txBuffer[2] = BitManipulation.ReservedZeros;
             txBuffer[2] = BitManipulation.GetByte1(NodeId);
 
             txBuffer[3] = (byte)NodeType;
@@ -70,9 +69,9 @@ namespace MissMooseConfigurationApplication
             BitManipulation.SetByte0(ref nodeId, rxBuffer[1]);
             BitManipulation.SetByte1(ref nodeId, (byte)(rxBuffer[2] & 0x01));
 
-            NodeType = (HardwareConfiguration)(rxBuffer[3] | 0x03);
+            NodeType = (HardwareConfiguration)(rxBuffer[3] & 0x03);
 
-            NodeRotation = (NodeRotation)(rxBuffer[4] | 0x07);
+            NodeRotation = (NodeRotation)(rxBuffer[4] & 0x07);
         }
 
         #endregion        

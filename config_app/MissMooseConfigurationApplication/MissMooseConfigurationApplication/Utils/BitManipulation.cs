@@ -19,7 +19,7 @@ namespace MissMooseConfigurationApplication
         public static void SetBit(ref byte field, byte bitIndex, bool value)
         {
             field &= (byte) (~(0x01 << bitIndex));
-            field |= (byte) (value? 0x00 : 0x01 << bitIndex);
+            field |= (byte) (value ? 0x01 << bitIndex : 0x00);
         }
 
         public static byte GetByte0(UInt16 field)
