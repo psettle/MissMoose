@@ -43,7 +43,7 @@
 #define MEDIAN_FILTER_SIZE          (3)  // Store the last 3 samples.
 #define MEDIAN_FILTER_DIFF_THRES    (30) // How different 2 consecutive median-filtered samples have to be noted as a detection.
 
-#define MAX_EVT_HANDLERS ( 10 )
+#define MAX_EVT_HANDLERS ( 4 )
 
 /**
  * @brief States of the twi reading/writing state machine.
@@ -318,7 +318,7 @@ void lidar_event_dispatch(uint16_t distance, lidar_event_type_t event)
  *
  * @param[in] lidar_evt_handler The event handler to add as a listener.
  */
-void lidar_evt_handler_set(lidar_evt_handler_t lidar_evt_handler)
+void lidar_evt_handler_register(lidar_evt_handler_t lidar_evt_handler)
 {
 	uint32_t i;
 

@@ -67,8 +67,8 @@ typedef enum
 /**@brief LIDAR event structure. */
 typedef struct
 {
-    uint16_t distance;         ///< Measurement distance.
     lidar_event_type_t event;  ///< Event code.
+    uint16_t distance;         ///< Measurement distance.
 } lidar_evt_t;
 
 /**@brief Application ANT stack event handler type. */
@@ -82,7 +82,7 @@ void lidar_update_main(void);
 /**
  * @brief Add a new lidar event listener!
  */
-void lidar_evt_handler_set(lidar_evt_handler_t lidar_evt_handler);
+void lidar_evt_handler_register(lidar_evt_handler_t lidar_evt_handler);
 
 /**
  * @brief Set the sample rate!
