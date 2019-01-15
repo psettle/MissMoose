@@ -28,35 +28,7 @@ namespace MissMooseConfigurationApplication
             this.channel = channel;
 
             this.channel.channelResponse += new dChannelResponseHandler(channelResponse);
-        }
-
-        private void channelResponse(ANT_Response response)
-        {
-            if (response.responseID == (byte)ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40)
-            {
-                switch (response.getChannelEventCode())
-                {
-                    case ANT_ReferenceLibrary.ANTEventID.EVENT_TRANSFER_TX_COMPLETED_0x05:
-                        retryCount = 0;
-                        expectingAck = false;
-                        break;
-                    case ANT_ReferenceLibrary.ANTEventID.EVENT_TRANSFER_TX_FAILED_0x06:
-                        if (expectingAck)
-                        {
-                            if (retryCount < maxRetries)
-                            {
-                                channel.sendAcknowledgedData(acknowledgedMessage);
-                                retryCount++;
-                            }
-                            else
-                            {
-                                expectingAck = false;
-                            }
-                        }
-                        break;
-                }
-            }
-        }
+        }        
 
         public void SendBroadcast(DataPage page)
         {
@@ -93,6 +65,38 @@ namespace MissMooseConfigurationApplication
                 }
 
                 channel.sendAcknowledgedData(txBuffer);
+            }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void channelResponse(ANT_Response response)
+        {
+            if (response.responseID == (byte)ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40)
+            {
+                switch (response.getChannelEventCode())
+                {
+                    case ANT_ReferenceLibrary.ANTEventID.EVENT_TRANSFER_TX_COMPLETED_0x05:
+                        retryCount = 0;
+                        expectingAck = false;
+                        break;
+                    case ANT_ReferenceLibrary.ANTEventID.EVENT_TRANSFER_TX_FAILED_0x06:
+                        if (expectingAck)
+                        {
+                            if (retryCount < maxRetries)
+                            {
+                                channel.sendAcknowledgedData(acknowledgedMessage);
+                                retryCount++;
+                            }
+                            else
+                            {
+                                expectingAck = false;
+                            }
+                        }
+                        break;
+                }
             }
         }
 
