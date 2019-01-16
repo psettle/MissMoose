@@ -52,15 +52,13 @@ namespace MissMooseConfigurationApplication.UIPages
         {
             node.Button.Click += NodeClick;
 
-            node.GetPos(out int xpos, out int ypos);
-            var viewbox = sensorViewboxes[xpos][ypos];
+            var viewbox = sensorViewboxes[node.xpos][node.ypos];
             viewbox.Child = node;
             nodes.Add(node);
 
-            node.GetOffset(out int xoffset, out int yoffset);
-            AddViewboxOffset(viewbox, xoffset, yoffset);
+            AddViewboxOffset(viewbox, node.xoffset, node.yoffset);
             
-            SetNodeRotation(viewbox, node.GetRotation());
+            SetNodeRotation(viewbox, node.Rotation);
             UpdatePulseStates();
 
             SetActiveViewbox(viewbox);
@@ -142,16 +140,15 @@ namespace MissMooseConfigurationApplication.UIPages
 
             var node = ActiveViewbox.Child as SensorNode;
 
-            NodeNameLabel.Content = "Node " + node.GetNodeID();
+            NodeNameLabel.Content = "Node " + node.NodeID;
         }
 
         private void TransferNode(Viewbox source, Viewbox destination)
         {
             SensorNode node = source.Child as SensorNode;
 
-            node.GetOffset(out int x, out int y);
-            AddViewboxOffset(source, -x, -y);
-            node.SetOffset(0, 0);
+            AddViewboxOffset(source, -node.xoffset, -node.yoffset);
+            node.xoffset = 0; node.yoffset = 0;
 
             source.Child = null;
             destination.Child = node;
@@ -162,7 +159,7 @@ namespace MissMooseConfigurationApplication.UIPages
                 nodes.Add(node);
             }
 
-            SetNodeRotation(destination, node.GetRotation());
+            SetNodeRotation(destination, node.Rotation);
             UpdatePulseStates();
 
             int row, col;
@@ -172,7 +169,8 @@ namespace MissMooseConfigurationApplication.UIPages
                 {
                     if(sensorViewboxes[row][col] == destination)
                     {
-                        node.SetPosition(row, col);
+                        node.xpos = row;
+                        node.ypos = col;
                         break;
                     }
                 }
@@ -181,43 +179,11 @@ namespace MissMooseConfigurationApplication.UIPages
 
         private void SetNodeRotation(Viewbox viewbox, NodeRotation rotation)
         {
-            double newAngle = 0;
-
-            switch(rotation)
-            {
-                case NodeRotation.NODEROTATION_0:
-                    newAngle = 0.0;
-                    break;
-                case NodeRotation.NODEROTATION_45:
-                    newAngle = 45.0;
-                    break;
-                case NodeRotation.NODEROTATION_90:
-                    newAngle = 90.0;
-                    break;
-                case NodeRotation.NODEROTATION_135:
-                    newAngle = 135.0;
-                    break;
-                case NodeRotation.NODEROTATION_180:
-                    newAngle = 180.0;
-                    break;
-                case NodeRotation.NODEROTATION_225:
-                    newAngle = 225.0;
-                    break;
-                case NodeRotation.NODEROTATION_270:
-                    newAngle = 270.0;
-                    break;
-                case NodeRotation.NODEROTATION_315:
-                    newAngle = 315.0;
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid Angle");
-            }
-
             SensorNode node = viewbox.Child as SensorNode;
-            node.SetRotation(rotation);
+            node.Rotation = new NodeRotation(rotation.Val);
 
             var r = viewbox.RenderTransform as RotateTransform;
-            r.Angle = newAngle;
+            r.Angle = rotation.Val;
         }
 
         private void InitializePulses()
@@ -226,21 +192,21 @@ namespace MissMooseConfigurationApplication.UIPages
             {
                 new List<PulsingCircle>
                 {
-                    Pulse_0_0,
-                    Pulse_0_1,
-                    Pulse_0_2
+                    ConfigGrid.Pulse_0_0,
+                    ConfigGrid.Pulse_0_1,
+                    ConfigGrid.Pulse_0_2
                 },
                 new List<PulsingCircle>
                 {
-                    Pulse_1_0,
-                    Pulse_1_1,
-                    Pulse_1_2
+                    ConfigGrid.Pulse_1_0,
+                    ConfigGrid.Pulse_1_1,
+                    ConfigGrid.Pulse_1_2
                 },
                 new List<PulsingCircle>
                 {
-                    Pulse_2_0,
-                    Pulse_2_1,
-                    Pulse_2_2
+                    ConfigGrid.Pulse_2_0,
+                    ConfigGrid.Pulse_2_1,
+                    ConfigGrid.Pulse_2_2
                 }
             };
 
@@ -312,21 +278,21 @@ namespace MissMooseConfigurationApplication.UIPages
             {
                 new List<Viewbox>
                 {
-                    SensorViewbox_0_0,
-                    SensorViewbox_0_1,
-                    SensorViewbox_0_2
+                    ConfigGrid.SensorViewbox_0_0,
+                    ConfigGrid.SensorViewbox_0_1,
+                    ConfigGrid.SensorViewbox_0_2
                 },
                 new List<Viewbox>
                 {
-                    SensorViewbox_1_0,
-                    SensorViewbox_1_1,
-                    SensorViewbox_1_2
+                    ConfigGrid.SensorViewbox_1_0,
+                    ConfigGrid.SensorViewbox_1_1,
+                    ConfigGrid.SensorViewbox_1_2
                 },
                 new List<Viewbox>
                 {
-                    SensorViewbox_2_0,
-                    SensorViewbox_2_1,
-                    SensorViewbox_2_2
+                    ConfigGrid.SensorViewbox_2_0,
+                    ConfigGrid.SensorViewbox_2_1,
+                    ConfigGrid.SensorViewbox_2_2
                 }
             };
         }
@@ -339,37 +305,9 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             var node = ActiveViewbox.Child as SensorNode;
-            var rotation = node.GetRotation();
+            node.Rotation.Add(NodeRotation.R90);
 
-            switch(rotation)
-            {
-                case NodeRotation.NODEROTATION_0:
-                    rotation = NodeRotation.NODEROTATION_45;
-                    break;
-                case NodeRotation.NODEROTATION_45:
-                    rotation = NodeRotation.NODEROTATION_90;
-                    break;
-                case NodeRotation.NODEROTATION_90:
-                    rotation = NodeRotation.NODEROTATION_135;
-                    break;
-                case NodeRotation.NODEROTATION_135:
-                    rotation = NodeRotation.NODEROTATION_180;
-                    break;
-                case NodeRotation.NODEROTATION_180:
-                    rotation = NodeRotation.NODEROTATION_225;
-                    break;
-                case NodeRotation.NODEROTATION_225:
-                    rotation = NodeRotation.NODEROTATION_270;
-                    break;
-                case NodeRotation.NODEROTATION_270:
-                    rotation = NodeRotation.NODEROTATION_315;
-                    break;
-                case NodeRotation.NODEROTATION_315:
-                    rotation = NodeRotation.NODEROTATION_0;
-                    break;
-            }
-
-            SetNodeRotation(ActiveViewbox, rotation);
+            SetNodeRotation(ActiveViewbox, node.Rotation);
         }
 
         private void RotateCounterClockwise_Click(object sender, RoutedEventArgs e)
@@ -380,37 +318,9 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             var node = ActiveViewbox.Child as SensorNode;
-            var rotation = node.GetRotation();
+            node.Rotation.Add(-NodeRotation.R90);
 
-            switch (rotation)
-            {
-                case NodeRotation.NODEROTATION_0:
-                    rotation = NodeRotation.NODEROTATION_315;
-                    break;
-                case NodeRotation.NODEROTATION_45:
-                    rotation = NodeRotation.NODEROTATION_0;
-                    break;
-                case NodeRotation.NODEROTATION_90:
-                    rotation = NodeRotation.NODEROTATION_45;
-                    break;
-                case NodeRotation.NODEROTATION_135:
-                    rotation = NodeRotation.NODEROTATION_90;
-                    break;
-                case NodeRotation.NODEROTATION_180:
-                    rotation = NodeRotation.NODEROTATION_135;
-                    break;
-                case NodeRotation.NODEROTATION_225:
-                    rotation = NodeRotation.NODEROTATION_180;
-                    break;
-                case NodeRotation.NODEROTATION_270:
-                    rotation = NodeRotation.NODEROTATION_225;
-                    break;
-                case NodeRotation.NODEROTATION_315:
-                    rotation = NodeRotation.NODEROTATION_270;
-                    break;
-            }
-
-            SetNodeRotation(ActiveViewbox, rotation);
+            SetNodeRotation(ActiveViewbox, node.Rotation);
         }
 
         private void DirectionClick(object sender, RoutedEventArgs e)
@@ -422,48 +332,38 @@ namespace MissMooseConfigurationApplication.UIPages
 
             var node = ActiveViewbox.Child as SensorNode;
 
-            node.GetOffset(out int x, out int y);
-            AddViewboxOffset(ActiveViewbox, -x, -y);
+            AddViewboxOffset(ActiveViewbox, -node.xoffset, -node.yoffset);
 
             if (sender == UpButton.Button)
             {
-                y++;
+                if (node.yoffset < SensorNode.MaxOffset)
+                {
+                    node.yoffset++;
+                }
             }
             else if(sender == DownButton.Button)
             {
-                y--;
+                if (node.yoffset > -SensorNode.MaxOffset)
+                {
+                    node.yoffset--;
+                }
             }
             else if(sender == LeftButton.Button)
             {
-                x--;
+                if (node.xoffset > -SensorNode.MaxOffset)
+                {
+                    node.xoffset--;
+                }
             }
             else if(sender == RightButton.Button)
             {
-                x++;
+                if (node.xoffset < SensorNode.MaxOffset)
+                {
+                    node.xoffset++;
+                }
             }
 
-            if(x > SensorNode.MaxOffset)
-            {
-                x = SensorNode.MaxOffset;
-            }
-
-            if (x < -SensorNode.MaxOffset)
-            {
-                x = -SensorNode.MaxOffset;
-            }
-
-            if (y > SensorNode.MaxOffset)
-            {
-                y = SensorNode.MaxOffset;
-            }
-
-            if (y < -SensorNode.MaxOffset)
-            {
-                y = -SensorNode.MaxOffset;
-            }
-
-            node.SetOffset(x, y);
-            AddViewboxOffset(ActiveViewbox, x, y);  
+            AddViewboxOffset(ActiveViewbox, node.xoffset, node.yoffset);  
         }
 
         private void AddViewboxOffset(Viewbox viewbox, int offsetx, int offsety)

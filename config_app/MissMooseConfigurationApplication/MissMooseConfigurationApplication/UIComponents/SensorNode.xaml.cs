@@ -17,57 +17,86 @@ namespace MissMooseConfigurationApplication
 {
     public enum HardwareConfiguration
     {
-        HARDWARECONFIGURATION_2_PIR,
-        HARDWARECONFIGURATION_1_PIR_1_LIDAR,
-        HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS,
+        Pir2,
+        PirLidar,
+        PirLidarLed,
     }
 
-    public enum LedColour
+    public class LedColour
     {
-        LEDCOLOUR_RED,
-        LEDCOLOUR_YELLOW,
-        LEDCOLOUR_GREEN
+        public static readonly Brush Red = Brushes.Red;
+        public static readonly Brush Yellow = Brushes.Yellow;
+        public static readonly Brush Green = Brushes.Green;
     }
 
-    public enum StatusColour
+    public class StatusColour
     {
-        STATUSCOLOUR_RED,
-        STATUSCOLOUR_YELLOW,
-        STATUSCOLOUR_BLUE
+        public static readonly Brush Red = Brushes.Red;
+        public static readonly Brush Yellow = Brushes.Yellow;
+        public static readonly Brush Blue = Brushes.Blue;
     }
 
-    public enum NodeRotation
+    public class NodeRotation
     {
-        NODEROTATION_0,
-        NODEROTATION_45,
-        NODEROTATION_90,
-        NODEROTATION_135,
-        NODEROTATION_180,
-        NODEROTATION_225,
-        NODEROTATION_270,
-        NODEROTATION_315
+        public double Val { get; private set; }
+
+        public NodeRotation(double val)
+        {
+            Val = val;
+        }
+
+        public void Add(double val)
+        {
+            Val += val;
+            while(Val < 0.0)
+            {
+                Val += R360;
+            }
+
+            while(Val >= 360)
+            {
+                Val -= R360;
+            }
+        }
+
+        public void Add(NodeRotation val)
+        {
+            Add(val.Val);
+        }
+
+        public static readonly double R0 = 0.0;
+        public static readonly double R45 = 45.0;
+        public static readonly double R90 = 90.0;
+        public static readonly double R135 = 135.0;
+        public static readonly double R180 = 180.0;
+        public static readonly double R225 = 225.0;
+        public static readonly double R270 = 270.0;
+        public static readonly double R315 = 315.0;
+        private static readonly double R360 = 360.0;
     }
 
     public partial class SensorNode : UserControl
     {
         #region Public Members
         public const int MaxOffset = 5;
+
+        public int NodeID { get; set; }
+
+        public NodeRotation Rotation { get; set; } = new NodeRotation(NodeRotation.R0);
+
+        public int xpos { get; set; } = -1;
+        public int ypos { get; set; } = -1;
+
+        public int xoffset { get; set; } = 0;
+        public int yoffset { get; set; } = 0;
         #endregion
 
         #region Private Members
         private HardwareConfiguration configuration;
-        private int NodeID;
 
-        private NodeRotation rotation = NodeRotation.NODEROTATION_0;
 
-        private int xpos = -1;
-        private int ypos = -1;
-
-        private int xoffset = 0;
-        private int yoffset = 0;
-
-        private LedColour ledColour;
-        private StatusColour statusColour;
+        private Brush ledColour;
+        private Brush statusColour;
         #endregion
 
         #region Public Methods
@@ -82,127 +111,60 @@ namespace MissMooseConfigurationApplication
 
             switch(configuration)
             {
-                case HardwareConfiguration.HARDWARECONFIGURATION_2_PIR:
+                case HardwareConfiguration.Pir2:
                     PIR_0_Deg.Visibility = Visibility.Visible;
                     PIR_270_Deg.Visibility = Visibility.Visible;
                     Lidar_270_Deg.Visibility = Visibility.Hidden;
                     break;
-                case HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR:
-                case HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS:
+                case HardwareConfiguration.PirLidar:
+                case HardwareConfiguration.PirLidarLed:
                     PIR_0_Deg.Visibility = Visibility.Visible;
                     PIR_270_Deg.Visibility = Visibility.Hidden;
                     Lidar_270_Deg.Visibility = Visibility.Visible;
                     break;
             }
 
-            SetStatusColour(StatusColour.STATUSCOLOUR_BLUE);
-            SetLedColour(LedColour.LEDCOLOUR_GREEN);
+            SetStatusColour(StatusColour.Blue);
+            SetLedColour(LedColour.Green);
         }
 
-        public void SetLedColour(LedColour colour)
+        public void SetLedColour(Brush colour)
         {
-            ledColour = colour;
-
-            if(configuration == HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS)
+            if(configuration == HardwareConfiguration.PirLidarLed)
             {
-                switch(colour)
-                {
-                    case LedColour.LEDCOLOUR_GREEN:
-                        OuterRing.Fill = Brushes.Green;
-                        break;
-                    case LedColour.LEDCOLOUR_RED:
-                        OuterRing.Fill = Brushes.Red;
-                        break;
-                    case LedColour.LEDCOLOUR_YELLOW:
-                        OuterRing.Fill = Brushes.Yellow;
-                        break;
-                }
+                ledColour = colour;
+                OuterRing.Fill = colour;
             }
         }
 
-        public void SetStatusColour(StatusColour colour)
+        public void SetStatusColour(Brush colour)
         {
             statusColour = colour;
 
-            SolidColorBrush finalColour;
-
-            switch(colour)
-            {
-                case StatusColour.STATUSCOLOUR_BLUE:
-                    finalColour = Brushes.Blue;
-                    break;
-                case StatusColour.STATUSCOLOUR_YELLOW:
-                    finalColour = Brushes.Yellow;
-                    break;
-                case StatusColour.STATUSCOLOUR_RED:
-                    finalColour = Brushes.Red;
-                    break;
-                default:
-                    throw new InvalidOperationException("Unknown status colour");
-            }
-
             switch(configuration)
             {
-                case HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR:
-                    OuterRing.Fill = finalColour;
+                case HardwareConfiguration.Pir2:
+                case HardwareConfiguration.PirLidar:
+                    OuterRing.Fill = colour;
                     break;
-                case HardwareConfiguration.HARDWARECONFIGURATION_2_PIR:
-                    OuterRing.Fill = finalColour;
-                    break;
-                case HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS:
-                    InnerRing.Fill = finalColour;
+                case HardwareConfiguration.PirLidarLed:
+                    InnerRing.Fill = colour;
                     break;
                 default:
                     throw new InvalidOperationException("Unknown hardware configuration");
             }
         }
 
-        public void SetRotation(NodeRotation rotation)
-        {
-            this.rotation = rotation;
-        }
-
-        public NodeRotation GetRotation()
-        {
-            return rotation;
-        }
-
-        public void SetPosition(int x, int y)
-        {
-            xpos = x;
-            ypos = y;
-        }
-
-        public void GetPos(out int xpos, out int ypos)
-        {
-            xpos = this.xpos;
-            ypos = this.ypos;
-        }
-
-        public void SetOffset(int x, int y)
-        {
-            xoffset = x;
-            yoffset = y;
-        }
-
-        public void GetOffset(out int x, out int y)
-        {
-            x = xoffset;
-            y = yoffset;
-        }
-
-        public int GetNodeID()
-        {
-            return NodeID;
-        }
-
         public SensorNode Clone()
         {
-            var node = new SensorNode(configuration, NodeID);
-
-            node.SetOffset(xoffset, yoffset);
-            node.SetPosition(xpos, ypos);
-            node.SetRotation(rotation);
+            var node = new SensorNode(configuration, NodeID)
+            {
+                xoffset = xoffset,
+                yoffset = yoffset,
+                xpos = xpos,
+                ypos = ypos,
+                Rotation = new NodeRotation(Rotation.Val)
+            };
             node.SetLedColour(ledColour);
             node.SetStatusColour(statusColour);
 

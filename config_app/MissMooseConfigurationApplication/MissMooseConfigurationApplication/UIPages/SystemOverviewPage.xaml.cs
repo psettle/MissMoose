@@ -59,20 +59,18 @@ namespace MissMooseConfigurationApplication
 
             node.Button.Click += NodeClick;
 
-            node.GetPos(out int xpos, out int ypos);
-            var viewbox = sensorViewboxes[xpos][ypos];
+            var viewbox = sensorViewboxes[node.xpos][node.ypos];
             viewbox.Child = node;
             nodes.Add(node);
 
-            node.GetOffset(out int xoffset, out int yoffset);
-            AddViewboxOffset(viewbox, xoffset, yoffset);
+            AddViewboxOffset(viewbox, node.xoffset, node.yoffset);
 
-            SetNodeRotation(viewbox, node.GetRotation());
+            SetNodeRotation(viewbox, node.Rotation);
 
-            MarkSensorDetection(node, LineDirection.Up, StatusColour.STATUSCOLOUR_BLUE);
-            MarkSensorDetection(node, LineDirection.Right, StatusColour.STATUSCOLOUR_BLUE);
-            MarkSensorDetection(node, LineDirection.Down, StatusColour.STATUSCOLOUR_BLUE);
-            MarkSensorDetection(node, LineDirection.Left, StatusColour.STATUSCOLOUR_BLUE);
+            MarkSensorDetection(node, LineDirection.Up, StatusColour.Blue);
+            MarkSensorDetection(node, LineDirection.Right, StatusColour.Blue);
+            MarkSensorDetection(node, LineDirection.Down, StatusColour.Blue);
+            MarkSensorDetection(node, LineDirection.Left, StatusColour.Blue);
         }
 
         /// <summary>
@@ -85,7 +83,7 @@ namespace MissMooseConfigurationApplication
             //switch 'node' to point to the copy we made when it was added.
             foreach(var copy in nodes)
             {
-                if(copy.GetNodeID() == node.GetNodeID())
+                if(copy.NodeID == node.NodeID)
                 {
                     node = copy;
                     found = true;
@@ -99,58 +97,40 @@ namespace MissMooseConfigurationApplication
                 return;
             }
 
-            node.GetPos(out int xpos, out int ypos);
-            var viewbox = sensorViewboxes[xpos][ypos];
+            var viewbox = sensorViewboxes[node.xpos][node.ypos];
 
-            node.GetOffset(out int xoffset, out int yoffset);
-            AddViewboxOffset(viewbox, -xoffset, -yoffset);
+            AddViewboxOffset(viewbox, -node.xoffset, -node.yoffset);
 
             viewbox.Child = null;
 
             nodes.Remove(node);
 
-            if(lineSegmentAssociations[xpos][ypos].ContainsKey(LineDirection.Up))
+            if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Up))
             {
-                lineSegmentAssociations[xpos][ypos][LineDirection.Up].Visibility = Visibility.Hidden;
+                lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Up].Visibility = Visibility.Hidden;
             }
 
-            if (lineSegmentAssociations[xpos][ypos].ContainsKey(LineDirection.Right))
+            if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Right))
             {
-                lineSegmentAssociations[xpos][ypos][LineDirection.Right].Visibility = Visibility.Hidden;
+                lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Right].Visibility = Visibility.Hidden;
             }
 
-            if (lineSegmentAssociations[xpos][ypos].ContainsKey(LineDirection.Down))
+            if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Down))
             {
-                lineSegmentAssociations[xpos][ypos][LineDirection.Down].Visibility = Visibility.Hidden;
+                lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Down].Visibility = Visibility.Hidden;
             }
 
-            if (lineSegmentAssociations[xpos][ypos].ContainsKey(LineDirection.Left))
+            if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Left))
             {
-                lineSegmentAssociations[xpos][ypos][LineDirection.Left].Visibility = Visibility.Hidden;
+                lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Left].Visibility = Visibility.Hidden;
             }
         }
 
-        public void MarkSensorDetection(int xpos, int ypos, LineDirection direction, StatusColour colour)
+        public void MarkSensorDetection(int xpos, int ypos, LineDirection direction, Brush colour)
         {
             if (lineSegmentAssociations[xpos][ypos].ContainsKey(direction))
             {
-                Brush brush;
-                switch (colour)
-                {
-                    case StatusColour.STATUSCOLOUR_BLUE:
-                        brush = Brushes.Blue;
-                        break;
-                    case StatusColour.STATUSCOLOUR_RED:
-                        brush = Brushes.Red;
-                        break;
-                    case StatusColour.STATUSCOLOUR_YELLOW:
-                        brush = Brushes.Yellow;
-                        break;
-                    default:
-                        throw new InvalidOperationException("Unknown status colour");
-                }
-
-                lineSegmentAssociations[xpos][ypos][direction].Stroke = brush;
+                lineSegmentAssociations[xpos][ypos][direction].Stroke = colour;
                 lineSegmentAssociations[xpos][ypos][direction].Visibility = Visibility.Visible;
             }
             else
@@ -159,10 +139,9 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public void MarkSensorDetection(SensorNode node, LineDirection direction, StatusColour colour)
+        public void MarkSensorDetection(SensorNode node, LineDirection direction, Brush colour)
         {
-            node.GetPos(out int xpos, out int ypos);
-            MarkSensorDetection(xpos, ypos, direction, colour);
+            MarkSensorDetection(node.xpos, node.ypos, direction, colour);
         }
         #endregion
 
@@ -188,21 +167,21 @@ namespace MissMooseConfigurationApplication
             {
                 new List<Viewbox>
                 {
-                    SensorViewbox_0_0,
-                    SensorViewbox_0_1,
-                    SensorViewbox_0_2
+                    MonitGrid.SensorViewbox_0_0,
+                    MonitGrid.SensorViewbox_0_1,
+                    MonitGrid.SensorViewbox_0_2
                 },
                 new List<Viewbox>
                 {
-                    SensorViewbox_1_0,
-                    SensorViewbox_1_1,
-                    SensorViewbox_1_2
+                    MonitGrid.SensorViewbox_1_0,
+                    MonitGrid.SensorViewbox_1_1,
+                    MonitGrid.SensorViewbox_1_2
                 },
                 new List<Viewbox>
                 {
-                    SensorViewbox_2_0,
-                    SensorViewbox_2_1,
-                    SensorViewbox_2_2
+                    MonitGrid.SensorViewbox_2_0,
+                    MonitGrid.SensorViewbox_2_1,
+                    MonitGrid.SensorViewbox_2_2
                 }
             };
         }
@@ -215,60 +194,60 @@ namespace MissMooseConfigurationApplication
                 {
                     new Dictionary<LineDirection, Line>
                     {
-                        { LineDirection.Right, Line_0_0_Right },
-                        { LineDirection.Down, Line_0_0_Down },
+                        { LineDirection.Right, MonitGrid.Line_0_0_Right },
+                        { LineDirection.Down, MonitGrid.Line_0_0_Down },
                     },
                     new Dictionary<LineDirection, Line>
                     {
-                        { LineDirection.Right, Line_0_1_Right },
-                        { LineDirection.Down, Line_0_1_Down },
-                        { LineDirection.Up, Line_0_1_Up },
+                        { LineDirection.Right, MonitGrid.Line_0_1_Right },
+                        { LineDirection.Down, MonitGrid.Line_0_1_Down },
+                        { LineDirection.Up, MonitGrid.Line_0_1_Up },
                     },
                     new Dictionary<LineDirection, Line>
                     {
-                        { LineDirection.Right, Line_0_2_Right },
-                        { LineDirection.Up, Line_0_2_Up },
-                    },
-                },
-                new List<Dictionary<LineDirection, Line>>
-                {
-                    new Dictionary<LineDirection, Line>
-                    {
-                        { LineDirection.Right, Line_1_0_Right },
-                        { LineDirection.Down, Line_1_0_Down },
-                        { LineDirection.Left, Line_1_0_Left },
-                    },
-                    new Dictionary<LineDirection, Line>
-                    {
-                        { LineDirection.Right, Line_1_1_Right },
-                        { LineDirection.Down, Line_1_1_Down },
-                        { LineDirection.Up, Line_1_1_Up },
-                        { LineDirection.Left, Line_1_1_Left },
-                    },
-                    new Dictionary<LineDirection, Line>
-                    {
-                        { LineDirection.Right, Line_1_2_Right },
-                        { LineDirection.Up, Line_1_2_Up },
-                        { LineDirection.Left, Line_1_2_Left },
+                        { LineDirection.Right, MonitGrid.Line_0_2_Right },
+                        { LineDirection.Up, MonitGrid.Line_0_2_Up },
                     },
                 },
                 new List<Dictionary<LineDirection, Line>>
                 {
                     new Dictionary<LineDirection, Line>
                     {
-                        { LineDirection.Left, Line_2_0_Left },
-                        { LineDirection.Down, Line_2_0_Down },
+                        { LineDirection.Right, MonitGrid.Line_1_0_Right },
+                        { LineDirection.Down, MonitGrid.Line_1_0_Down },
+                        { LineDirection.Left, MonitGrid.Line_1_0_Left },
                     },
                     new Dictionary<LineDirection, Line>
                     {
-                        { LineDirection.Left, Line_2_1_Left },
-                        { LineDirection.Down, Line_2_1_Down },
-                        { LineDirection.Up, Line_2_1_Up },
+                        { LineDirection.Right, MonitGrid.Line_1_1_Right },
+                        { LineDirection.Down, MonitGrid.Line_1_1_Down },
+                        { LineDirection.Up, MonitGrid.Line_1_1_Up },
+                        { LineDirection.Left, MonitGrid.Line_1_1_Left },
                     },
                     new Dictionary<LineDirection, Line>
                     {
-                        { LineDirection.Left, Line_2_2_Left },
-                        { LineDirection.Up, Line_2_2_Up },
+                        { LineDirection.Right, MonitGrid.Line_1_2_Right },
+                        { LineDirection.Up, MonitGrid.Line_1_2_Up },
+                        { LineDirection.Left, MonitGrid.Line_1_2_Left },
+                    },
+                },
+                new List<Dictionary<LineDirection, Line>>
+                {
+                    new Dictionary<LineDirection, Line>
+                    {
+                        { LineDirection.Left, MonitGrid.Line_2_0_Left },
+                        { LineDirection.Down, MonitGrid.Line_2_0_Down },
+                    },
+                    new Dictionary<LineDirection, Line>
+                    {
+                        { LineDirection.Left, MonitGrid.Line_2_1_Left },
+                        { LineDirection.Down, MonitGrid.Line_2_1_Down },
+                        { LineDirection.Up, MonitGrid.Line_2_1_Up },
+                    },
+                    new Dictionary<LineDirection, Line>
+                    {
+                        { LineDirection.Left, MonitGrid.Line_2_2_Left },
+                        { LineDirection.Up, MonitGrid.Line_2_2_Up },
                     },
                 }
             };
@@ -286,43 +265,8 @@ namespace MissMooseConfigurationApplication
 
         private void SetNodeRotation(Viewbox viewbox, NodeRotation rotation)
         {
-            double newAngle = 0;
-
-            switch (rotation)
-            {
-                case NodeRotation.NODEROTATION_0:
-                    newAngle = 0.0;
-                    break;
-                case NodeRotation.NODEROTATION_45:
-                    newAngle = 45.0;
-                    break;
-                case NodeRotation.NODEROTATION_90:
-                    newAngle = 90.0;
-                    break;
-                case NodeRotation.NODEROTATION_135:
-                    newAngle = 135.0;
-                    break;
-                case NodeRotation.NODEROTATION_180:
-                    newAngle = 180.0;
-                    break;
-                case NodeRotation.NODEROTATION_225:
-                    newAngle = 225.0;
-                    break;
-                case NodeRotation.NODEROTATION_270:
-                    newAngle = 270.0;
-                    break;
-                case NodeRotation.NODEROTATION_315:
-                    newAngle = 315.0;
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid Angle");
-            }
-
-            SensorNode node = viewbox.Child as SensorNode;
-            node.SetRotation(rotation);
-
             var r = viewbox.RenderTransform as RotateTransform;
-            r.Angle = newAngle;
+            r.Angle = rotation.Val;
         }
         #endregion
     }
