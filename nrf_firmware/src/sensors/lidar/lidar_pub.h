@@ -102,14 +102,12 @@ bool lidar_get_distance_change_flag(void);
 uint16_t lidar_get_filtered_distance(void);
 
 /**
- * @brief
- *
+ * @brief Initializes LIDAR sensor.
  */
-void lidar_init(void);
+void lidar_init(bool use_led_debug);
 
 /**
- * @brief
- *
+ * @brief Deinitializes LIDAR sensor.
  */
 void lidar_deinit(void);
 

@@ -8,6 +8,8 @@
 extern "C" {
 #endif
 
+#include "stdbool.h"
+
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
@@ -30,10 +32,11 @@ typedef struct pir_pinout_struct {
 
 /**
  * @brief Function for initializing the wide-angle PIR sensor.
- * 
+ *
  * @param[in] num_pir_sensors The number of PIR sensors on the node (Maximum 3!).
+ * @param[in] use_led_debug   Whether or not to use the on-board LEDs for debugging.
  */
-void pir_st_00081_init(uint8_t num_pir_sensors);
+void pir_st_00081_init(uint8_t num_pir_sensors, bool use_led_debug);
 
 /**
  * @brief Function for disabling the wide-angle PIR sensor.

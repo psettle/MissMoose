@@ -19,7 +19,6 @@
 #define MEDIAN(a,b,c) ((a > b) ? (b > c) ? b : (a > c) ? c : a : \
                        (b > c) ? (a > c) ? a : c : b)
 
-#define LED_DEBUG                   true
 #define ANT_BROADCAST_DEBUG         false // If true, broadcast the most recent filtered sample over ANT.
 
 /* Register definitions for the LIDAR. */
@@ -87,6 +86,9 @@ static void timer_event_handler(void * p_context);
 /**********************************************************
                         VARIABLES
 **********************************************************/
+
+/* Whether or not to utilize on-board LEDs for debugging. */
+static bool led_debug;
 
 static uint8_t sample_readings = 0;
 static lidar_error_code_type_t error_code;
@@ -251,9 +253,10 @@ static void lidar_process_distance(void)
             new_filtered_distance = MEDIAN(sample_buffer[0], sample_buffer[1], sample_buffer[2]); // Ok to be honest i'm not even sure why i bothered making everything else dynamic because in the end it's just gonna be a median of 3 samples anyway??? smh.
             if(abs(new_filtered_distance - median_filtered_distance) > MEDIAN_FILTER_DIFF_THRES)
             {
-                #if(LED_DEBUG)
-                    bsp_board_led_on(2);
-                #endif
+                if(led_debug)
+                {
+                    bsp_board_led_on(1);
+                }
                 if(distance_changed_warning_flag != true)
                 {
                     // The distance has suddenly changed when it was stable.
@@ -263,9 +266,10 @@ static void lidar_process_distance(void)
             }
             else
             {
-                #if(LED_DEBUG)
-                    bsp_board_led_off(2);
-                #endif
+                if(led_debug)
+                {
+                    bsp_board_led_off(1);
+                }
                 if(distance_changed_warning_flag != false)
                 {
                     // The distance has now become stable.
@@ -386,9 +390,11 @@ static void timed_reading_init(void)
 
 /**
  * @brief Initializes LIDAR sensor.
+ * @param[in] use_led_debug   Whether or not to use the on-board LEDs for debugging.
  */
-void lidar_init(void)
+void lidar_init(bool use_led_debug)
 {
+    led_debug = use_led_debug;
     timer_iteration_count = 0;
     lidar_twi_state = READING_DONE;
     lidar_sampling_state = NOT_SAMPLING;
@@ -441,14 +447,18 @@ static void timer_event_handler(void * p_context)
     timer_iteration_count++;
     if(timer_iteration_count >= periods_between_sample_acquisition)
     {
-        bsp_board_led_invert(0); // Flashy flashy every time we start a new sample acquisition sequence.
+        if(led_debug)
+        {
+            bsp_board_led_invert(2); // Flashy flashy every time we start a new sample acquisition sequence.
+        }
         timer_iteration_count = 0;
         if(lidar_sampling_state != NOT_SAMPLING)
         {
             error_code = LIDAR_ERROR_SAMPLING_FAIL;
-            #if(LED_DEBUG)
+            if(led_debug)
+            {
                 bsp_board_led_on(3);
-            #endif
+            }
         }
         lidar_sampling_state = ROLLING_OUT_ZEROS;
         sample_readings = 0;
