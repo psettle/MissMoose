@@ -38,25 +38,24 @@ namespace MissMooseConfigurationApplication
 
     public class NodeRotation
     {
-        private double val { get; set; }
-        public double Val { get { return val; } }
+        public double Val { get; private set; }
 
         public NodeRotation(double val)
         {
-            this.val = val;
+            Val = val;
         }
 
         public void Add(double val)
         {
-            this.val += val;
-            while(this.val < 0.0)
+            Val += val;
+            while(Val < 0.0)
             {
-                this.val += 360.0;
+                Val += R360;
             }
 
-            while(this.val >= 360)
+            while(Val >= 360)
             {
-                this.val -= 360.0;
+                Val -= R360;
             }
         }
 
