@@ -62,9 +62,9 @@ void mm_ant_page_manager_init( void )
 	APP_ERROR_CHECK(err_code);
 }
 
-void mm_ant_page_manager_add_page( uint8_t page_number, mm_ant_payload_t const * payload, uint8_t duplicates )
+void mm_ant_page_manager_add_page( uint8_t page_number, mm_ant_payload_t const * payload, uint8_t copies )
 {
-	for ( int i = 0; i < duplicates; i++ )
+	for ( uint8_t i = 0; i < copies; i++ )
 	{
 		add_page_single( page_number, payload );
 	}
@@ -72,7 +72,7 @@ void mm_ant_page_manager_add_page( uint8_t page_number, mm_ant_payload_t const *
 
 void mm_ant_page_manager_remove_all_pages( uint8_t page_number )
 {
-	for ( int i = 0; i < ANT_PAGE_MANAGER_MAX_QUEUE_SIZE; i++ )
+	for ( uint8_t i = 0; i < ANT_PAGE_MANAGER_MAX_QUEUE_SIZE; i++ )
 	{
 		if (ant_page_manager_message_queue[i].page_number == page_number )
 		{
@@ -92,7 +92,7 @@ void mm_ant_page_manager_remove_all_pages( uint8_t page_number )
 
 void mm_ant_page_manager_replace_all_pages(uint8_t page_number, mm_ant_payload_t const * payload)
 {
-	for ( int i = 0; i < ANT_PAGE_MANAGER_MAX_QUEUE_SIZE; i++ )
+	for ( uint8_t i = 0; i < ANT_PAGE_MANAGER_MAX_QUEUE_SIZE; i++ )
 	{
 		if (ant_page_manager_message_queue[i].page_number == page_number )
 		{
