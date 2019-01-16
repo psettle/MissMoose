@@ -23,11 +23,11 @@
 #define TIMEOUT_PERIOD_MS				( TIMEOUT_PERIOD_S * 1000 )
 #define TIMER_TICKS APP_TIMER_TICKS		( TIMEOUT_PERIOD_MS )
 
-#define NODE_TYPE_MASK					( 0xC0 )
-#define NODE_ROTATION_MASK				( 0xE0 )
+#define NODE_TYPE_MASK					( 0x03 )
+#define NODE_ROTATION_MASK				( 0x07 )
 
-#define GRID_POSITION_X_MASK			( 0xF0 )
-#define GRID_POSITION_Y_MASK			( 0x0F )
+#define GRID_POSITION_X_MASK			( 0x0F )
+#define GRID_POSITION_Y_MASK			( 0xF0 )
 
 /**********************************************************
                         ENUMS
