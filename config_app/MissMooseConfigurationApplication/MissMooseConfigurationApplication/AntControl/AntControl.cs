@@ -98,7 +98,6 @@ namespace MissMooseConfigurationApplication
 
             //ConfigUI.AddExistingNode(node);
 
-
             ////demo add new node
             //ConfigUI.AddNewNode(new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_2_PIR, 3));
 
@@ -112,39 +111,45 @@ namespace MissMooseConfigurationApplication
             this.MonitoringUI = MonitoringUI;
 
             //demo: add existing node
-            var node = new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS, 2);
-            node.SetPosition(1, 1);
-            node.SetRotation(NodeRotation.NODEROTATION_135);
-            node.SetOffset(-3, 3);
+            var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2);
+            node.xpos = 1;
+            node.ypos = 1;
+            node.Rotation = new NodeRotation(NodeRotation.R90);
+            node.xoffset = -3;
+            node.yoffset = 3;
 
             MonitoringUI.AddNode(node);
 
             //demo: remove, modify, add node
             MonitoringUI.RemoveNode(node);
-            node.SetOffset(1, 1);
-            node.SetRotation(NodeRotation.NODEROTATION_180);
+            node.xoffset = 1;
+            node.yoffset = 1;
+            node.Rotation = new NodeRotation(NodeRotation.R180);
             MonitoringUI.AddNode(node);
 
             //demo: Display sensor data
-            MonitoringUI.MarkSensorDetection(node, LineDirection.Down, StatusColour.STATUSCOLOUR_RED);
+            MonitoringUI.MarkSensorDetection(node, LineDirection.Down, StatusColour.Red);
 
             //demo: add existing node
-            node = new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_2_PIR, 3);
-            node.SetPosition(1, 2);
-            node.SetRotation(NodeRotation.NODEROTATION_135);
-            node.SetOffset(-3, 3);
+            node = new SensorNode(HardwareConfiguration.Pir2, 3);
+            node.xpos = 1;
+            node.ypos = 2;
+            node.Rotation = new NodeRotation(NodeRotation.R90);
+            node.xoffset = -3;
+            node.yoffset = 3;
 
             MonitoringUI.AddNode(node);
 
             //demo: remove, modify, add node
             MonitoringUI.RemoveNode(node);
-            node.SetOffset(0, 0);
-            node.SetRotation(NodeRotation.NODEROTATION_0);
+            node.xoffset = 0;
+            node.yoffset = 0;
+            node.Rotation = new NodeRotation(NodeRotation.R0);
             MonitoringUI.AddNode(node);
 
             //demo: Display sensor data
-            MonitoringUI.MarkSensorDetection(node, LineDirection.Up, StatusColour.STATUSCOLOUR_RED);
-            MonitoringUI.MarkSensorDetection(node, LineDirection.Left, StatusColour.STATUSCOLOUR_YELLOW);
+            MonitoringUI.MarkSensorDetection(node, LineDirection.Up, StatusColour.Red);
+            MonitoringUI.MarkSensorDetection(node, LineDirection.Left, StatusColour.Yellow);
         }
 
         #endregion
@@ -396,13 +401,13 @@ namespace MissMooseConfigurationApplication
                 sendNodeConfigurationToGateway();                
             }
             // If this is not a gateway node, save the node ID and node type to send to the gateway
-            else if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.UNKOWN)
+            else if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
             {
-                addToNodeConfigList(dataPage.NodeId, new NodeConfigurationData(dataPage.NodeType, NodeRotation.NODEROTATION_0));
+                addToNodeConfigList(dataPage.NodeId, new NodeConfigurationData(dataPage.NodeType, new NodeRotation(NodeRotation.R0)));
             }
 
             if (!nodeDeviceNumbers.Contains(masterDeviceNumber)
-                && dataPage.NodeType != HardwareConfiguration.UNKOWN
+                && dataPage.NodeType != HardwareConfiguration.Unknown
                 && dataPage.NodeId != 0)
             {
                 // Add a new node to the UI for the user
@@ -468,7 +473,7 @@ namespace MissMooseConfigurationApplication
             // Update the list to be sent
             foreach (SensorNode node in nodes)
             {
-                addToNodeConfigList((ushort)node.GetNodeID(), new NodeConfigurationData(node.GetHardwareConfiguration(), node.GetRotation()));
+                addToNodeConfigList((ushort)node.NodeID, new NodeConfigurationData(node.configuration, node.Rotation));
             }
         }
 
@@ -519,6 +524,11 @@ namespace MissMooseConfigurationApplication
 
                 return (this.nodeType == nodeConfigData.nodeType
                     && this.nodeRotation == nodeConfigData.nodeRotation);
+            }
+
+            public override int GetHashCode()
+            {
+                throw new InvalidOperationException("Shouldn't be called");
             }
         }
 

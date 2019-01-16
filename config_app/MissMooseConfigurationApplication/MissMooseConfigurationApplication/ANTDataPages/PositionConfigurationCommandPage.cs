@@ -56,7 +56,7 @@ namespace MissMooseConfigurationApplication
 
             txBuffer[3] = (byte)NodeType;
 
-            txBuffer[4] = (byte)NodeRotation;
+            txBuffer[4] = (byte)NodeRotation.ToEnum();
 
             txBuffer[5] = BitManipulation.ReservedOnes;
             txBuffer[6] = BitManipulation.ReservedOnes;
@@ -71,7 +71,7 @@ namespace MissMooseConfigurationApplication
 
             NodeType = (HardwareConfiguration)(rxBuffer[3] & 0x03);
 
-            NodeRotation = (NodeRotation)(rxBuffer[4] & 0x07);
+            NodeRotation.FromEnum((byte)(rxBuffer[4] & 0x07));
         }
 
         #endregion        
