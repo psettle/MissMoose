@@ -29,6 +29,8 @@ notes:
 #include "mm_blaze_control.h"
 #include "mm_node_config.h"
 #include "mm_rgb_led_pub.h"
+#include "mm_ant_page_manager.h"
+#include "mm_monitoring_dispatch.h"
 
 /**********************************************************
                         CONSTANTS
@@ -54,6 +56,7 @@ int main(void)
     utils_setup();
     mm_softdevice_init();
     mm_ant_init();
+    mm_ant_page_manager_init();
 
     #ifdef NODE_ID_FROM_CONFIG_APP
     // If getting node ID from the configuration app,
@@ -63,6 +66,10 @@ int main(void)
     // Otherwise, just start up BLAZE directly
     mm_blaze_init(0, 0);
     #endif
+
+#ifdef MM_BLAZE_GATEWAY
+    mm_monitoring_dispatch_init();
+#endif
 
     //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
     //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
@@ -75,6 +82,10 @@ int main(void)
     {
     	// lidar_update_main();
 		mm_node_config_main();
+        
+#ifdef MM_BLAZE_GATEWAY
+        mm_monitoring_dispatch_main();
+#endif
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }

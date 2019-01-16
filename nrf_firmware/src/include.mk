@@ -1,5 +1,5 @@
 #control constants
-IS_BLAZE_GATEWAY = 0
+IS_BLAZE_GATEWAY = 1
 
 ifeq ($(IS_BLAZE_GATEWAY),1)
   CFLAGS += -DMM_BLAZE_GATEWAY
@@ -40,8 +40,10 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/bsp/bsp_nfc.c \
   $(PROJ_DIR)/src/main.c \
   $(PROJ_DIR)/src/wireless/ant/mm_ant_control.c \
+  $(PROJ_DIR)/src/wireless/ant/mm_ant_page_manager.c \
   $(PROJ_DIR)/src/wireless/blaze/mm_blaze_control.c \
   $(PROJ_DIR)/src/protocols/mm_node_config.c \
+  $(PROJ_DIR)/src/protocols/mm_monitoring_dispatch.c \
   $(PROJ_DIR)/src/sensors/pir/pir_st_00081.c \
   $(PROJ_DIR)/src/sensors/pir/pir_28027.c \
   $(PROJ_DIR)/src/sensors/ir_led/ky_022_receive.c \
