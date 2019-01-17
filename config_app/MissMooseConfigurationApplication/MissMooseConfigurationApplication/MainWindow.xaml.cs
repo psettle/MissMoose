@@ -54,7 +54,7 @@ namespace MissMooseConfigurationApplication
             };
             if(File.Exists(ConfigurationSaveFileName))
             {
-                LoadConfiguration();
+                //LoadConfiguration();
             }
             // app starts on config screen
             PageSwitchClick(ConfigPageButton);

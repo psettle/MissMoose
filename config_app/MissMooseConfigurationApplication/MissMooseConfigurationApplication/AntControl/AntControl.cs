@@ -442,7 +442,7 @@ namespace MissMooseConfigurationApplication
             if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
             {
                 // Save the node ID and node type to send to the gateway
-                addToNodeConfigList(dataPage.NodeId, new NodeConfigurationData(dataPage.NodeType, new NodeRotation(NodeRotation.R0)));
+                addToNodeConfigList(dataPage.NodeId, new NodeConfigurationData(dataPage.NodeType, new NodeRotation(NodeRotation.R0), -1, -1, 0, 0));
 
                 if (!nodeDeviceNumbers.Contains(masterDeviceNumber))
                 {
@@ -521,6 +521,16 @@ namespace MissMooseConfigurationApplication
                 positionPage.NodeId = dataToSend.Key;
                 positionPage.NodeType = dataToSend.Value.nodeType;
                 positionPage.NodeRotation = dataToSend.Value.nodeRotation;
+                positionPage.xpos = dataToSend.Value.xpos;
+                positionPage.ypos = dataToSend.Value.xpos;
+                positionPage.xoffset = dataToSend.Value.xpos;
+                positionPage.yoffset = dataToSend.Value.xpos;
+
+                //check if node is on grid, don't send page if it isn't yet.
+                if(positionPage.xpos == -1 || positionPage.ypos == -1)
+                {
+                    return;
+                }
 
                 // Send the node data as an acknowledged message, retrying up to 5 times
                 if (gatewayPageSender.SendAcknowledged(positionPage, true, 5))
@@ -540,7 +550,7 @@ namespace MissMooseConfigurationApplication
             // Update the list to be sent
             foreach (SensorNode node in nodes)
             {
-                addToNodeConfigList((ushort)node.NodeID, new NodeConfigurationData(node.configuration, node.Rotation));
+                addToNodeConfigList((ushort)node.NodeID, new NodeConfigurationData(node.configuration, node.Rotation, node.xpos, node.ypos, node.xoffset, node.yoffset));
             }
         }
 
@@ -572,12 +582,20 @@ namespace MissMooseConfigurationApplication
         {
             public HardwareConfiguration nodeType;
             public NodeRotation nodeRotation;
+            public int xpos;
+            public int ypos;
+            public int xoffset;
+            public int yoffset;
             public bool isSent = false;
 
-            public NodeConfigurationData(HardwareConfiguration nodeType, NodeRotation nodeRotation)
+            public NodeConfigurationData(HardwareConfiguration nodeType, NodeRotation nodeRotation, int xpos, int ypos, int xoffset, int yoffset)
             {
                 this.nodeType = nodeType;
                 this.nodeRotation = nodeRotation;
+                this.xpos = xpos;
+                this.ypos = ypos;
+                this.xoffset = xoffset;
+                this.yoffset = yoffset;
             }
 
             public override bool Equals(object obj)
@@ -585,6 +603,14 @@ namespace MissMooseConfigurationApplication
                 var nodeConfigData = obj as NodeConfigurationData;
 
                 if (nodeConfigData == null)
+                {
+                    return false;
+                }
+
+                if( (nodeConfigData.xpos != xpos) ||
+                    (nodeConfigData.ypos !=ypos) ||
+                    (nodeConfigData.xoffset != xoffset) ||
+                    (nodeConfigData.yoffset != yoffset) )
                 {
                     return false;
                 }
