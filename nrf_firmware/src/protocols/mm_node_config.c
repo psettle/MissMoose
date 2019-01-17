@@ -13,6 +13,7 @@ notes:
 
 #include "mm_ant_control.h"
 #include "mm_blaze_control.h"
+#include "mm_switch_config.h"
 #include "mm_ant_page_manager.h"
 
 #include "bsp.h"
@@ -160,9 +161,17 @@ static void process_ant_evt(ant_evt_t * evt)
 
 static void encode_node_status_page(mm_ant_payload_t * payload)
 {
-    payload->data[0] = NODE_STATUS_PAGE_NUM;
+	memset(&payload->data[0], 0x00, 8);
+
+	payload->data[0] = NODE_STATUS_PAGE_NUM;
     payload->data[1] = node_config_status;
-    memset(&payload->data[2], 0xFF, 6);
+    payload->data[5] = read_hardware_config();
+
+#ifdef MM_BLAZE_GATEWAY
+    payload->data[5] |= (1 << 7);
+#endif
+
+    memset(&payload->data[6], 0xFF, 2);
 }
 
 static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)

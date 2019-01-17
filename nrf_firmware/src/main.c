@@ -28,6 +28,7 @@ notes:
 #include "mm_blaze_static_config.h"
 #include "mm_blaze_control.h"
 #include "mm_node_config.h"
+#include "mm_switch_config.h"
 #include "mm_rgb_led_pub.h"
 #include "mm_ant_page_manager.h"
 #include "mm_monitoring_dispatch.h"
@@ -107,4 +108,6 @@ int main(void)
      APP_ERROR_CHECK(err_code);
 
      bsp_board_leds_init();
+
+     mm_switch_config_init();
  }

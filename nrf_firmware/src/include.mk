@@ -43,6 +43,7 @@ SRC_FILES += \
   $(PROJ_DIR)/src/wireless/ant/mm_ant_page_manager.c \
   $(PROJ_DIR)/src/wireless/blaze/mm_blaze_control.c \
   $(PROJ_DIR)/src/protocols/mm_node_config.c \
+  $(PROJ_DIR)/src/protocols/mm_switch_config.c \
   $(PROJ_DIR)/src/protocols/mm_monitoring_dispatch.c \
   $(PROJ_DIR)/src/sensors/pir/pir_st_00081.c \
   $(PROJ_DIR)/src/sensors/pir/pir_28027.c \
