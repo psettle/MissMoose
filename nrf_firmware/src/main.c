@@ -34,6 +34,8 @@ notes:
 #include "mm_monitoring_dispatch.h"
 #include "mm_hardware_test_pub.h"
 #include "mm_position_config.h"
+#include "sensor_manager.h"
+#include "sensor_transmission.h"
 
 /**********************************************************
                         CONSTANTS
@@ -44,6 +46,10 @@ notes:
 **********************************************************/
 
 static void utils_setup(void);
+
+#ifndef NODE_ID_FROM_CONFIG_APP
+	static void sensor_data_evt_handler( sensor_evt_t const * evt);
+#endif
 
 /**********************************************************
                        VARIABLES
@@ -72,6 +78,8 @@ int main(void)
     #else
     // Otherwise, just start up BLAZE directly
     mm_blaze_init(0, 0);
+    mm_sensor_transmission_init();
+    mm_register_sensor_data( sensor_data_evt_handler );
     #endif
 
 	#ifdef MM_BLAZE_GATEWAY
@@ -80,6 +88,8 @@ int main(void)
 	mm_position_config_init();
 
 	#endif
+
+	mm_sensor_manager_init( true );
 
     //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
     //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
@@ -93,6 +103,7 @@ int main(void)
     {
         // mm_hardware_test_update_main();
 		mm_node_config_main();
+		mm_sensor_manager_main();
 
         #ifdef MM_BLAZE_GATEWAY
                 mm_monitoring_dispatch_main();
@@ -119,3 +130,30 @@ int main(void)
 
      mm_switch_config_init();
  }
+
+#ifndef NODE_ID_FROM_CONFIG_APP
+ static void sensor_data_evt_handler( sensor_evt_t const * evt)
+ {
+	switch (evt->sensor_type)
+	{
+	case SENSOR_TYPE_PIR:
+		mm_monitoring_dispatch_send_pir_data
+			(
+			evt->pir_data.node_id,
+			evt->pir_data.sensor_rotation,
+			evt->pir_data.detection
+			);
+		break;
+	case SENSOR_TYPE_LIDAR:
+		mm_monitoring_dispatch_send_lidar_data
+			(
+			evt->lidar_data.node_id,
+			evt->lidar_data.sensor_rotation,
+			evt->lidar_data.distance_measured
+			);
+		break;
+	default:
+		return;
+	}
+ }
+#endif

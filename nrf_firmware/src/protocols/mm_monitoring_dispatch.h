@@ -11,6 +11,8 @@ notes:
                         INCLUDES
 **********************************************************/
 
+#include "sensor_transmission.h"
+
 /**********************************************************
                         CONSTANTS
 **********************************************************/
@@ -18,23 +20,6 @@ notes:
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
-/*
-A sensors position on a node is defined as a clockwise angle from a 0° direction. 
-Similar to node rotation, the 0° direction of a node is defined as:
- If the node has a LIDAR sensor, the 0° direction is the direction of the most clockwise LIDAR sensor.
- If the node has only PIR sensors, its rotation is the direction of the most clockwise PIR sensor.
-*/
-typedef enum
-{
-    SENSOR_ROTATION_0,
-    SENSOR_ROTATION_45,
-    SENSOR_ROTATION_90,
-    SENSOR_ROTATION_135,
-    SENSOR_ROTATION_180,
-    SENSOR_ROTATION_225,
-    SENSOR_ROTATION_270,
-    SENSOR_ROTATION_315
-} sensor_rotation_t; 
 
 void mm_monitoring_dispatch_main(void);
 

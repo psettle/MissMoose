@@ -52,6 +52,8 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensors/ir_led/ir_led_transmit.c \
   $(PROJ_DIR)/src/sensors/lidar/lidar.c \
   $(PROJ_DIR)/src/sensors/mm_hardware_test.c \
+  $(PROJ_DIR)/src/sensor_management/sensor_manager.c \
+  $(PROJ_DIR)/src/sensor_management/sensor_transmission.c \
   $(PROJ_DIR)/src/peripherals/mm_rgb_led.c \
   $(PROJ_DIR)/src/peripherals/mm_power_bank_timer.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
@@ -96,6 +98,7 @@ INC_FOLDERS += \
   $(PROJ_DIR)/src/sensors/ir_led \
   $(PROJ_DIR)/src/sensors/lidar \
   $(PROJ_DIR)/src/sensors \
+  $(PROJ_DIR)/src/sensor_management/ \
   ../config \
   $(SDK_ROOT)/components/libraries/hardfault \
   $(SDK_ROOT)/components/libraries/util \

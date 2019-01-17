@@ -15,6 +15,8 @@ notes:
 #include "mm_blaze_control.h"
 #include "mm_switch_config.h"
 #include "mm_ant_page_manager.h"
+#include "sensor_transmission.h"
+#include "mm_monitoring_dispatch.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -60,6 +62,8 @@ static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t 
 
 /* Timer handler */
 static void timer_event(void * p_context);
+
+static void sensor_data_evt_handler( sensor_evt_t const * evt);
 
 /**********************************************************
                        VARIABLES
@@ -116,6 +120,8 @@ void mm_node_config_main(void)
         case BLAZE_INIT_PENDING:
             // Start BLAZE initialization
             mm_blaze_init(node_id, network_id);
+            mm_sensor_transmission_init();
+            mm_register_sensor_data( sensor_data_evt_handler );
             state = IDLE;
             break;
         default:
@@ -217,3 +223,27 @@ static void timer_event(void * p_context)
     }
 }
 
+static void sensor_data_evt_handler( sensor_evt_t const * evt)
+{
+	switch (evt->sensor_type)
+	{
+	case SENSOR_TYPE_PIR:
+		mm_monitoring_dispatch_send_pir_data
+			(
+			evt->pir_data.node_id,
+			evt->pir_data.sensor_rotation,
+		    evt->pir_data.detection
+		    );
+		break;
+	case SENSOR_TYPE_LIDAR:
+		mm_monitoring_dispatch_send_lidar_data
+			(
+			evt->lidar_data.node_id,
+			evt->lidar_data.sensor_rotation,
+		    evt->lidar_data.distance_measured
+		    );
+		break;
+	default:
+		return;
+	}
+}
