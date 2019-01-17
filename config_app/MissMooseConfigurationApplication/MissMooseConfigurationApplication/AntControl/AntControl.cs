@@ -23,49 +23,61 @@ namespace MissMooseConfigurationApplication
         private ConfigurationPage ConfigUI;
         private SystemOverviewPage MonitoringUI;
 
-        // ANT Device which opens a slave channel to search for node devices
-        ANT_Device device;        
+        // ANT Device which opens slave channels to pair to node devices
+        private ANT_Device device;        
 		
         // Slave channel to search for node devices
-        ANT_Channel channel;
+        private ANT_Channel nodeSearchChannel;
+        private static readonly int nodeSearchChannelNum = 0;
+
+        // Slave channel to communicate with the gateway node
+        private ANT_Channel gatewayChannel;
+        private static readonly int gatewayChannelNum = 1;
 
         // Parser to decode any valid received data pages
-        PageParser pageParser;
+        private PageParser pageParser;
 
-        // Handles sending data pages
-        PageSender pageSender;
+        // Handles sending data pages to nodes being configured
+        private PageSender nodeSearchPageSender;
 
-        // Properties for the ANT slave channel
-        static readonly byte rfFrequency = 66;  // 2466 MHz
-        byte transmissionType = 0;              // wildcard for search
-        static readonly byte deviceType = 1;    // search for node master device (nodes have device type 1)
-        UInt16 deviceNumber = 0;                // wildcard for search
-        static readonly UInt16 channelPeriod = 8192; // same channel period as node master devices
-        static readonly ANT_ReferenceLibrary.ChannelType channelType = ANT_ReferenceLibrary.ChannelType.BASE_Slave_Receive_0x00;
+        // Handles sending data pages to the gateway node
+        private PageSender gatewayPageSender;
+
+        // Properties for an ANT slave channel which can pair to node devices
+        private static readonly byte rfFrequency = 66;          // 2466 MHz
+        private static readonly byte deviceType = 1;            // search for node master device (nodes have device type 1)
+        private static readonly byte transmissionType = 0;      // wildcard for search
+        private static readonly UInt16 channelPeriod = 8192;    // same channel period as node master devices
+        private static readonly ANT_ReferenceLibrary.ChannelType channelType = ANT_ReferenceLibrary.ChannelType.BASE_Slave_Receive_0x00;
+
+        // Device number for node search ANT slave channel
+        private static readonly ushort nodeSearchDeviceNumber = 0; // wildcard for search
 
         // BLAZE node config properties
-        static readonly UInt16 maxNodeId = 512;
-        static UInt16 nextNodeId = 1;
-        static readonly UInt16 networkId = 20000;
+        private static readonly UInt16 maxNodeId = 512;
+        private static UInt16 nextNodeId = 1;
+        private static readonly UInt16 networkId = 20000;
 
         // Device number of the connected master device
-        ushort masterDeviceNumber = 0;
+        private ushort masterDeviceNumber = 0;
 
-        // Device numbers of all discovered nodes
-        List<ushort> nodeDeviceNumbers;
+        // All assigned node IDs, using device numbers as dictionary keys
+        private Dictionary<ushort, ushort> nodeIds;
 
-        // Device numbers of all discovered gateway devices, using network number as dictionary keys
-        Dictionary<ushort, ushort> gatewayDeviceNumbers;
+        // Device numbers of discovered gateway device
+        private ushort gatewayDeviceNumber;
 
         // Node configuration data waiting to be sent to a gateway node, using node ID as dictionary keys
-        Dictionary<ushort, NodeConfigurationData> nodeConfigList;
+        private Dictionary<ushort, NodeConfigurationData> nodeConfigList;
 
         // Booleans to keep track of state
-        bool deviceRunning = false;
-        bool sendConfiguration = false;
+        private bool deviceRunning = false;
+        private bool sendingNodeId = false;
+        private bool openedGatewayChannel = false;
+        private bool waitingForChannelClose = false;
 
         // Default wait time in milliseconds for ANT function calls
-        static readonly ushort waitTime = 500;
+        private static readonly ushort waitTime = 500;
 
         #endregion
 
@@ -78,8 +90,7 @@ namespace MissMooseConfigurationApplication
             pageParser.AddDataPage(new NodeStatusPage());
 
             // Create node data lists
-            nodeDeviceNumbers = new List<ushort>();
-            gatewayDeviceNumbers = new Dictionary<ushort, ushort>();
+            nodeIds = new Dictionary<ushort, ushort>();
             nodeConfigList = new Dictionary<ushort, NodeConfigurationData>();            
         }
 
@@ -160,23 +171,8 @@ namespace MissMooseConfigurationApplication
         {
             if (!deviceRunning)
             {
-                if (startSlaveChannel())
-                {
-                    deviceRunning = true;
-                    return;
-                }
-            }
-            //If we get here it means we failed startup or are stopping node configuration
-            shutdownConfigDevice();
-        }
-
-        private bool startSlaveChannel()
-        {
-            try
-            {
                 device = new ANT_Device();
-                device.deviceResponse += new ANT_Device.dDeviceResponseHandler(deviceResponse);
-                device.getChannel(0).channelResponse += new dChannelResponseHandler(channelResponse);
+                device.deviceResponse += deviceResponse;
 
                 // Check whether the connected ANT USB device supports the required capabilities
                 ANT_DeviceCapabilities capabilities = device.getDeviceCapabilities(waitTime);
@@ -192,23 +188,27 @@ namespace MissMooseConfigurationApplication
                 }
                 else
                 {
+                    deviceRunning = true;
                     device.enableRxExtendedMessages(true);
 
-                    // Get an unused ANT channel from the device
-                    channel = device.getChannel(0);
+                    try
+                    {
+                        // Get an unused ANT channel from the device
+                        nodeSearchChannel = device.getChannel(nodeSearchChannelNum);
+                        nodeSearchChannel.channelResponse += new dChannelResponseHandler(nodeSearchChannelResponse);
 
-                    // Initialize a page sender with the channel
-                    pageSender = new PageSender(channel);
+                        setupAndOpenChannel(nodeSearchChannel, nodeSearchDeviceNumber, true);
 
-                    setupAndOpenChannel(channelType);
-                }                
+                        // Initialize a page sender with the channel
+                        nodeSearchPageSender = new PageSender(nodeSearchChannel);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Can't start configuration slave channel: " + e.Message);
+                        shutdownConfigDevice();
+                    }
+                }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine("Can't start configuration slave channel: " + e.Message);
-                return false;
-            }
-            return true;
         }
 
         private void shutdownConfigDevice()
@@ -219,7 +219,7 @@ namespace MissMooseConfigurationApplication
             deviceRunning = false;
         }
 
-        private void setupAndOpenChannel(ANT_ReferenceLibrary.ChannelType channelType)
+        private void setupAndOpenChannel(ANT_Channel channel, ushort deviceNumber, bool useExclusionList)
         {
             //We try-catch and forward exceptions to the calling function to handle and pass the errors to the user
             try
@@ -245,19 +245,22 @@ namespace MissMooseConfigurationApplication
                     throw new Exception("Set channel ID operation failed.");
                 }
 
-                if (masterDeviceNumber == 0)
+                if (useExclusionList)
                 {
-                    // Configure exclusion list to be empty if we haven't yet paired to a node device
-                    channel.includeExcludeList_Configure(0, true);
-                }
-                else
-                {
-                    // Put the previously paired node's device number in the exclusion list so that we don't just re-pair to it immediately
-                    channel.includeExcludeList_addChannel(masterDeviceNumber, 0, 0, 0);
+                    if (masterDeviceNumber == 0)
+                    {
+                        // Configure exclusion list to be empty if we haven't yet paired to a node device
+                        channel.includeExcludeList_Configure(0, true);
+                    }
+                    else
+                    {
+                        // Put the previously paired node's device number in the exclusion list so that we don't just re-pair to it immediately
+                        channel.includeExcludeList_addChannel(masterDeviceNumber, 0, 0, 0);
 
-                    // Configure exclusion list to include 1 channel
-                    channel.includeExcludeList_Configure(1, true);
-                }
+                        // Configure exclusion list to include 1 channel
+                        channel.includeExcludeList_Configure(1, true);
+                    }
+                }                
 
                 // Set the RF frequency for the channel
                 if (channel.setChannelFreq(rfFrequency, waitTime))
@@ -312,11 +315,16 @@ namespace MissMooseConfigurationApplication
                     {
                         case ANT_ReferenceLibrary.ANTMessageID.CLOSE_CHANNEL_0x4C:
 
+                            if (waitingForChannelClose)
+                            {
+                                waitingForChannelClose = false;
+                            }
+
                             // Clear exclusion list
-                            channel.includeExcludeList_Configure(0, true);
+                            nodeSearchChannel.includeExcludeList_Configure(0, true);
 
                             // Unassign the channel
-                            if (channel.unassignChannel(waitTime))
+                            if (nodeSearchChannel.unassignChannel(waitTime))
                             {
                                 Console.WriteLine("Unassigned channel");
                             }
@@ -327,7 +335,7 @@ namespace MissMooseConfigurationApplication
 
                             // Reassign and open the channel, excluding the current master device number from the search
                             // so we don't just pair to it again
-                            setupAndOpenChannel(channelType);
+                            setupAndOpenChannel(nodeSearchChannel, nodeSearchDeviceNumber, true);
 
                             break;
                     }
@@ -336,16 +344,16 @@ namespace MissMooseConfigurationApplication
         }
 
         /*
-         * Handles the ANT channel response
+         * Handles the ANT channel response for the node search channel
          */
-        private void channelResponse(ANT_Response response)
+        private void nodeSearchChannelResponse(ANT_Response response)
         {
             if (response.responseID == (byte)ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40)
             {
                 // If a search timeout occurs, reopen the channel
                 if (response.getChannelEventCode() == ANT_ReferenceLibrary.ANTEventID.EVENT_RX_SEARCH_TIMEOUT_0x01)
                 {
-                    channel.openChannel();
+                    nodeSearchChannel.openChannel();
                 }
             }
             //This is a receive event, so handle the received ANT message
@@ -368,6 +376,36 @@ namespace MissMooseConfigurationApplication
                     handlePage(dataPage);
                 }
             }
+        }
+
+        /*
+         * Handles the ANT channel response for the gateway channel
+         */
+        private void gatewayChannelResponse(ANT_Response response)
+        {
+            if (response.responseID == (byte)ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40)
+            {
+                // If a search timeout occurs, reopen the channel
+                if (response.getChannelEventCode() == ANT_ReferenceLibrary.ANTEventID.EVENT_RX_SEARCH_TIMEOUT_0x01)
+                {
+                    gatewayChannel.openChannel();
+                }
+            }
+            //This is a receive event, so handle the received ANT message
+            else
+            {
+                byte[] rxBuffer = response.getDataPayload();
+
+                dynamic dataPage = pageParser.Parse(rxBuffer);
+
+                if (dataPage != null)
+                {
+                    handlePage(dataPage);
+                }
+
+                // Send config data about the other nodes to the gateway node
+                sendNodeConfigurationToGateway();
+            }
         }        
 
         /*
@@ -375,72 +413,92 @@ namespace MissMooseConfigurationApplication
          */
         private void handlePage(NodeStatusPage dataPage)
         {
-            // If the node does not have a node ID, send a Network Configuration Command page
-            if (dataPage.NodeId == 0)
+            // If the node is missing a node ID or a network ID, send a Network Configuration Command page
+            if (dataPage.NodeId == 0 || dataPage.NetworkId == 0)
             {
                 sendNetworkConfiguration();
-                sendConfiguration = true;                
+
+                if (dataPage.NodeId == 0)
+                {
+                    sendingNodeId = true;
+                }
             }
             // If the node has a node ID and we just configured it, increment the next node ID to be assigned
-            else if (sendConfiguration)
+            else if (sendingNodeId && !dataPage.IsGatewayNode)
             {
-                sendConfiguration = false;
-
-                if (nextNodeId < maxNodeId) nextNodeId++;
-                else Console.WriteLine("Maximum node ID (512) reached. Cannot configure another node.");
+                sendingNodeId = false;               
             }
 
-            // If this is a gateway node, save its device number and network ID
-            // so that we can communicate with it later.
-            // Also send any waiting node configuration data to the gateway.
             if (dataPage.IsGatewayNode)
             {
-                gatewayDeviceNumbers[dataPage.NetworkId] = masterDeviceNumber;
-
-                // If there is any node configuration data waiting to be sent to the gateway, send it
-                sendNodeConfigurationToGateway();                
-            }
-            // If this is not a gateway node, save the node ID and node type to send to the gateway
-            else if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
-            {
-                addToNodeConfigList(dataPage.NodeId, new NodeConfigurationData(dataPage.NodeType, new NodeRotation(NodeRotation.R0)));
-            }
-
-            if (!nodeDeviceNumbers.Contains(masterDeviceNumber)
-                && dataPage.NodeType != HardwareConfiguration.Unknown
-                && dataPage.NodeId != 0)
-            {
-                // Add a new node to the UI for the user
-                Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
-
-                    ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId));
-                });
-
-                // Save this node's device number
-                nodeDeviceNumbers.Add(masterDeviceNumber);
-
-                // Close the channel
-                if (channel.closeChannel(waitTime))
+                // If this gateway belongs to the network the app is set up to manage,
+                // open a second channel to pair to this gateway (only if not already opened)
+                if (!openedGatewayChannel && dataPage.NetworkId == networkId)
                 {
-                    Console.WriteLine("Closed channel");
+                    gatewayDeviceNumber = masterDeviceNumber;
+                    openGatewayChannel(masterDeviceNumber);
                 }
-                else
-                {
-                    throw new Exception("Channel close operation failed.");
-                }
-                
-                // We will reopen the channel once we receive the channel closed event
             }
-        }        
+
+            if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
+            {
+                if (!nodeIds.Keys.Contains(masterDeviceNumber) && (!dataPage.IsGatewayNode || gatewayDeviceNumber == masterDeviceNumber))
+                {
+                    // Add a new node to the UI for the useru
+                    Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
+
+                        ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId));
+                    });
+
+                    // Save this node's device number
+                    nodeIds.Add(masterDeviceNumber, dataPage.NodeId);
+
+                    // Close the channel
+                    if (nodeSearchChannel.closeChannel(waitTime))
+                    {
+                        waitingForChannelClose = true;
+                        Console.WriteLine("Closed channel");
+                    }
+                    else
+                    {
+                        throw new Exception("Channel close operation failed.");
+                    }
+
+                    // We will reopen the channel once we receive the channel closed event
+                }
+            }
+        }
+        
+        private void openGatewayChannel(ushort deviceNumber)
+        {
+            try
+            {
+                // Get an unused ANT channel from the device
+                gatewayChannel = device.getChannel(gatewayChannelNum);
+                gatewayChannel.channelResponse += new dChannelResponseHandler(gatewayChannelResponse);
+
+                setupAndOpenChannel(gatewayChannel, deviceNumber, false);
+
+                // Initialize a page sender with the channel
+                gatewayPageSender = new PageSender(gatewayChannel);
+
+                openedGatewayChannel = true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Can't start gateway slave channel: " + e.Message);
+                shutdownConfigDevice();
+            }
+        }
 
         private void sendNetworkConfiguration()
         {
             NetworkConfigurationCommandPage configPage = new NetworkConfigurationCommandPage();
 
-            configPage.NodeId = nextNodeId;
+            configPage.NodeId = getNextNodeId();
             configPage.NetworkId = networkId;
 
-            pageSender.SendAcknowledged(configPage, false);
+            nodeSearchPageSender.SendAcknowledged(configPage, false);
         }
 
         private void sendNodeConfigurationToGateway()
@@ -457,12 +515,14 @@ namespace MissMooseConfigurationApplication
                 positionPage.NodeType = dataToSend.Value.nodeType;
                 positionPage.NodeRotation = dataToSend.Value.nodeRotation;
 
+                dataToSend.Value.isSent = true;
+
                 // Send the node data as an acknowledged message, retrying up to 5 times
-                if (pageSender.SendAcknowledged(positionPage, true, 5))
+                if (!gatewayPageSender.SendAcknowledged(positionPage, true, 5))
                 {
-                    // If the message succeeded, mark the node data as sent
-                    // so we do not send it to the gateway again (unless it changes)
-                    dataToSend.Value.isSent = true;
+                    // If the message failed, mark the node data as unsent
+                    // so that we try to send it again
+                    dataToSend.Value.isSent = false;
                 }
             }
         }
@@ -475,7 +535,7 @@ namespace MissMooseConfigurationApplication
             // Update the list to be sent
             foreach (SensorNode node in nodes)
             {
-                addToNodeConfigList((ushort)node.NodeID, new NodeConfigurationData(node.configuration, node.Rotation));
+                addToNodeConfigList((ushort)node.NodeID, new NodeConfigurationData(node.configuration, new NodeRotation(node.Rotation.Val)));
             }
         }
 
@@ -496,6 +556,18 @@ namespace MissMooseConfigurationApplication
 
                 // TODO: Could trigger a visual indication that there is data waiting to be sent to the gateway node
             }
+        }
+
+        private ushort getNextNodeId()
+        {
+            while (nodeIds.Values.Contains(nextNodeId))
+            {
+                nextNodeId++;
+            }
+
+            if (nextNodeId > maxNodeId) Console.WriteLine("Maximum node ID (512) reached. Cannot configure another node.");
+
+            return nextNodeId;
         }
 
         #endregion
@@ -525,7 +597,7 @@ namespace MissMooseConfigurationApplication
                 }
 
                 return (this.nodeType == nodeConfigData.nodeType
-                    && this.nodeRotation == nodeConfigData.nodeRotation);
+                    && this.nodeRotation.ToEnum() == nodeConfigData.nodeRotation.ToEnum());
             }
 
             public override int GetHashCode()
