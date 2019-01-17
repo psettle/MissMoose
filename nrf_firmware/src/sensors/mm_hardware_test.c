@@ -23,6 +23,8 @@
 #define TIMED_UPDATE_PERIOD     10   ///< In ms
 #define LIDAR_COOLDOWN_PERIOD   5000 ///< In ms, the duration of time after a lidar detection
                                      ///< that we want to signal for
+#define PIR_COOLDOWN_PERIOD     5000 ///< In ms, the duration of time after a PIR detection
+                                     ///< that we want to signal for
 
 /**
  * @brief states that the more complicated case of using
@@ -45,6 +47,8 @@ static void timer_event_handler(void * p_context);
 
 static void process_lidar_evt(lidar_evt_t * evt);
 
+static void process_pir_evt(pir_evt_t * evt);
+
 static void state_transition_update(detection_test_states_t new_state);
 
 /**********************************************************
@@ -54,7 +58,7 @@ static void state_transition_update(detection_test_states_t new_state);
 /* This is used in main to check if we should call the lidar update function. */
 static bool lidar_in_use;
 static uint16_t lidar_event_cooldown = 0;
-static bool PIR1_active = false;
+static uint16_t pir_event_cooldown = 0;
 
 static detection_test_states_t state = NO_DETECTION;
 
@@ -95,8 +99,12 @@ void mm_hardware_test_init(hardware_config_t config)
             mm_rgb_led_init(false);
             pir_st_00081_init(1, true);
             lidar_init(true);
+
             /* Set ourselves up as a listener for the lidar */
             lidar_evt_handler_register(process_lidar_evt);
+
+            /* Set ourselves up as a listener for the pir sensors */
+            pir_evt_handler_register(process_pir_evt);
 
             /* If the configuration uses the LED strip, set up a timer for something fancier. */
             err_code = app_timer_create(&m_hardware_test_timer, APP_TIMER_MODE_REPEATED, timer_event_handler);
@@ -140,6 +148,26 @@ static void process_lidar_evt(lidar_evt_t * evt)
 }
 
 /**
+ * @brief Handles updates from the PIR sensors.
+ *
+ * @param[in] evt The event information from the pir detection.
+ */
+static void process_pir_evt(pir_evt_t * evt)
+{
+    switch (evt->event)
+    {
+        // For simplicity, let's only care about the fact that some PIR has suddenly detected something.
+        case PIR_EVENT_CODE_DETECTION:
+            /* Reset the cooldown period */
+            pir_event_cooldown = PIR_COOLDOWN_PERIOD;
+            break;
+
+        default:
+            break;
+    }
+}
+
+/**
  * @brief Handler for timer events.
  *
  * @param[in] p_context Unused information related to the timer event.
@@ -148,24 +176,24 @@ static void timer_event_handler(void * p_context)
 {
     /* Reduce the lidar event cooldown by however fast this update is happening */
     lidar_event_cooldown = lidar_event_cooldown == 0 ? 0 : lidar_event_cooldown - TIMED_UPDATE_PERIOD;
+    /* Reduce the pir event cooldown by however fast this update is happening */
+    pir_event_cooldown = pir_event_cooldown == 0 ? 0 : pir_event_cooldown - TIMED_UPDATE_PERIOD;
 
-    /* Check what the PIR sensor is doing */
-    PIR1_active = check_pir_st_00081_detecting(0);
 
     /* Determine what the current state should be */
-    if(!PIR1_active && lidar_event_cooldown == 0)
+    if(pir_event_cooldown == 0 && lidar_event_cooldown == 0)
     {
         state_transition_update(NO_DETECTION);
     }
-    else if(PIR1_active && lidar_event_cooldown == 0)
+    else if(pir_event_cooldown > 0 && lidar_event_cooldown == 0)
     {
         state_transition_update(PIR_DETECTION);
     }
-    else if(!PIR1_active && lidar_event_cooldown > 0)
+    else if(pir_event_cooldown == 0 && lidar_event_cooldown > 0)
     {
         state_transition_update(LIDAR_DETECTION);
     }
-    else if(PIR1_active && lidar_event_cooldown > 0)
+    else if(pir_event_cooldown > 0 && lidar_event_cooldown > 0)
     {
         state_transition_update(LIDAR_PIR_DETECTION);
     }

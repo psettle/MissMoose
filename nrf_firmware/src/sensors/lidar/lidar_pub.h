@@ -45,7 +45,7 @@ typedef enum
 } lidar_sample_rate_type_t;
 
 /**
- * @brief Different sampling rates for the LIDAR
+ * @brief Different error codes for the LIDAR.
  */
 typedef enum
 {
@@ -55,7 +55,7 @@ typedef enum
 } lidar_error_code_type_t;
 
 /**
- * @brief Different sampling rates for the LIDAR
+ * @brief Different events for the LIDAR
  */
 typedef enum
 {
@@ -71,7 +71,7 @@ typedef struct
     uint16_t distance;         ///< Measurement distance.
 } lidar_evt_t;
 
-/**@brief Application ANT stack event handler type. */
+/**@brief LIDAR event handler type. */
 typedef void (*lidar_evt_handler_t) (lidar_evt_t * lidar_evt);
 
 /**
@@ -91,13 +91,11 @@ void lidar_set_sample_rate(lidar_sample_rate_type_t rate);
 
 /**
  * @brief Check if there's been an alarming change in distance recently
- *
  */
 bool lidar_get_distance_change_flag(void);
 
 /**
  * @brief Get the most recent median-filtered sample from the lidar.
- *
  */
 uint16_t lidar_get_filtered_distance(void);
 

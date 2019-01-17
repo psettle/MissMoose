@@ -63,6 +63,8 @@ NOTE: 029 and 030 currently reserved for LIDAR (Dec 29, 2018)
 #define PIR2_PIN_EN_OUT     5  //Pin J102.07
 #define PIR3_PIN_EN_OUT     28 //Pin J102.09
 
+#define MAX_EVT_HANDLERS ( 4 )
+
 /* Whether or not to utilize on-board LEDs for debugging. */
 static bool led_debug;
 
@@ -80,6 +82,8 @@ static const uint8_t pir_enable_pins[] = {PIR1_PIN_EN_OUT, PIR2_PIN_EN_OUT, PIR3
 
 static void pir_gpiote_init(uint8_t num_pir_sensors);
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+static void pir_event_dispatch(bool detecting, uint8_t pir_index);
+
 #if BUTTON_ENABLE_TEST
     //Initializes enable
     static void pir_enable_button_init(uint8_t num_pir_sensors);
@@ -102,6 +106,8 @@ static bool pirs_detecting[3] = {false, false, false};
 **********************************************************/
 /* Array of structs to hold the pinouts for individual PIR sensors */
 pir_pinout_t pir_sensors[MAXIMUM_NUM_PIRS];
+
+static pir_evt_handler_t pir_evt_handlers[MAX_EVT_HANDLERS];
 
 /**
  * @brief Function for initializing the wide-angle PIR sensor.
@@ -269,16 +275,63 @@ static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t a
                     bsp_board_led_on(i);
                 }
                 pirs_detecting[i] = true;
+                pir_event_dispatch(true, i);
             }
             else{
                 if(led_debug){
                     bsp_board_led_off(i);
                 }
                 pirs_detecting[i] = false;
+                pir_event_dispatch(false, i);
             }
         }
     }
+}
 
+/**
+ * @brief Add a new pir event listener
+ *
+ * @param[in] pir_evt_handler The event handler to add as a listener.
+ */
+void pir_evt_handler_register(pir_evt_handler_t pir_evt_handler)
+{
+	uint32_t i;
+
+	for (i = 0; i < MAX_EVT_HANDLERS; i++)
+	{
+		if (pir_evt_handlers[i] == NULL)
+		{
+			pir_evt_handlers[i] = pir_evt_handler;
+			break;
+		}
+	}
+
+	APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
+}
+
+/**
+ * @brief Tell the listeners that there's recently been a change in detection,
+ *        and an index of the PIR that changed.
+ * @param[in] detecting Whether the sensor is detecting movement or not
+ * @param[in] pir_index The index of the PIR sensor that changed it's detection state.
+ */
+static void pir_event_dispatch(bool detecting, uint8_t pir_index)
+{
+    pir_evt_t pir_event;
+    pir_event.sensor_index = pir_index;
+    pir_event.event = detecting ? PIR_EVENT_CODE_DETECTION : PIR_EVENT_CODE_NO_DETECTION;
+    // Forward PIR event to listeners
+	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
+	{
+		if (pir_evt_handlers[i] != NULL)
+		{
+			pir_evt_handlers[i](&pir_event);
+		}
+		else
+		{
+			break;
+		}
+	}
 }
 
 #if BUTTON_ENABLE_TEST
