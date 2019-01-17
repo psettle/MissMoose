@@ -8,6 +8,8 @@
 extern "C" {
 #endif
 
+#include "stdbool.h"
+
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
@@ -29,24 +31,53 @@ typedef struct pir_pinout_struct {
 } pir_pinout_t;
 
 /**
- * @brief Function for initializing the wide-angle PIR sensor.
- * 
- * @param[in] num_pir_sensors The number of PIR sensors on the node (Maximum 3!).
+ * @brief Different detection events for the PIR. compatible with boolean as long as true == 1.
  */
-void pir_st_00081_init(uint8_t num_pir_sensors);
+typedef enum
+{
+    PIR_EVENT_CODE_NO_DETECTION, ///< Means that the sensor is not detecting anything
+    PIR_EVENT_CODE_DETECTION,    ///< Means that the sensor is currently detecting movement.
+    PIR_EVENT_CODE_COUNT,
+} pir_event_type_t;
+
+/**@brief PIR event structure. */
+typedef struct
+{
+    pir_event_type_t event;    ///< Event code.
+    uint8_t sensor_index;      ///< Index of the sensor that changed it's state.
+} pir_evt_t;
+
+/**@brief PIR event handler type. */
+typedef void (*pir_evt_handler_t) (pir_evt_t * pir_evt);
+
+/**
+ * @brief Function for initializing the wide-angle PIR sensor.
+ *
+ * @param[in] num_pir_sensors The number of PIR sensors on the node (Maximum 3!).
+ * @param[in] use_led_debug   Whether or not to use the on-board LEDs for debugging.
+ */
+void pir_st_00081_init(uint8_t num_pir_sensors, bool use_led_debug);
 
 /**
  * @brief Function for disabling the wide-angle PIR sensor.
  */
 void pir_st_00081_disable(uint8_t pir_sensor_id);
+
 /**
  * @brief Function for enabling the wide-angle PIR sensor.
  */
 void pir_st_00081_enable(uint8_t pir_sensor_id);
+
+/**
+ * @brief Function that can be called to add a register for PIR events.
+ */
+void pir_evt_handler_register(pir_evt_handler_t pir_evt_handler);
+
 /**
  * @brief Function for checking if the wide-angle PIR sensor is enabled or disabled.
  */
 bool check_pir_st_00081_enabled(uint8_t pir_sensor_id);
+
 /**
  * @brief Function for checking if the wide-angle PIR sensor is detecting anything or not.
  */

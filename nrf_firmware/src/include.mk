@@ -49,6 +49,7 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensors/ir_led/ky_022_receive.c \
   $(PROJ_DIR)/src/sensors/ir_led/ir_led_transmit.c \
   $(PROJ_DIR)/src/sensors/lidar/lidar.c \
+  $(PROJ_DIR)/src/sensors/mm_hardware_test.c \
   $(PROJ_DIR)/src/peripherals/mm_rgb_led.c \
   $(PROJ_DIR)/src/peripherals/mm_power_bank_timer.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
@@ -91,6 +92,8 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/low_power_pwm \
   $(PROJ_DIR)/src/sensors/pir \
   $(PROJ_DIR)/src/sensors/ir_led \
+  $(PROJ_DIR)/src/sensors/lidar \
+  $(PROJ_DIR)/src/sensors \
   ../config \
   $(SDK_ROOT)/components/libraries/hardfault \
   $(SDK_ROOT)/components/libraries/util \
