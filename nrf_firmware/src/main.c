@@ -29,6 +29,7 @@ notes:
 #include "mm_blaze_static_config.h"
 #include "mm_blaze_control.h"
 #include "mm_node_config.h"
+#include "mm_switch_config.h"
 
 /**********************************************************
                         CONSTANTS
@@ -95,12 +96,5 @@ int main(void)
 
      bsp_board_leds_init();
 
-     //Initializes the battery board switches as inputs.
-	 for (uint32_t pin = 0; pin < 32; pin++)
-	 {
-		 if((SWITCHES_MASK) & (1 << pin))
-		 {
-			 nrf_gpio_cfg_input(pin, SWITCH_PULL);
-		 }
-	 }
+     mm_switch_config_init();
  }
