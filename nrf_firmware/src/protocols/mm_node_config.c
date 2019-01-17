@@ -13,6 +13,7 @@ notes:
 
 #include "mm_ant_control.h"
 #include "mm_blaze_control.h"
+#include "mm_switch_config.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -38,13 +39,6 @@ typedef enum
     BLAZE_INIT_PENDING,
 } state_t;
 
-typedef enum
-{
-    PIR_PIR         = 0x00,	/* Switch 0 & 1 off */
-    PIR_LIDAR 	    = 0x01, /* Switch 0 on, switch 1 off */
-    PIR_LIDAR_LED   = 0x02  /* Switch 0 off, switch 1 on */
-} hardware_config_t;
-
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
@@ -59,8 +53,6 @@ static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t 
 
 /* Timer handler */
 static void timer_event(void * p_context);
-
-static uint8_t read_hardware_config(void);
 
 /**********************************************************
                        VARIABLES
@@ -155,7 +147,6 @@ static void process_ant_evt(ant_evt_t * evt)
 
                         mm_ant_payload_t payload;
                         encode_node_status_page(&payload);
-                        payload.data[5] = read_hardware_config();
                         mm_ant_set_payload(&payload);
                     }
                 }
@@ -169,9 +160,17 @@ static void process_ant_evt(ant_evt_t * evt)
 
 static void encode_node_status_page(mm_ant_payload_t * payload)
 {
-    payload->data[0] = NODE_STATUS_PAGE_NUM;
+	memset(&payload->data[0], 0x00, 8);
+
+	payload->data[0] = NODE_STATUS_PAGE_NUM;
     payload->data[1] = node_config_status;
-    memset(&payload->data[2], 0xFF, 6);
+    payload->data[5] = read_hardware_config();
+
+#ifdef MM_BLAZE_GATEWAY
+    payloard->data[5] |= (1 << 7);
+#endif
+
+    memset(&payload->data[6], 0xFF, 2);
 }
 
 static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
@@ -209,28 +208,5 @@ static void timer_event(void * p_context)
     {
         mm_ant_pause_broadcast();
     }
-}
-
-/* Read the dip switches to fetch the hardware configuration */
-static uint8_t read_hardware_config(void)
-{
-	uint8_t config;
-
-    config = (nrf_gpio_pin_read(SWITCH_1) << 0) |
-             (nrf_gpio_pin_read(SWITCH_2) << 1);
-    /* Error check config for known types. */
-    switch(config)
-    {
-    case PIR_PIR:
-    	break;
-    case PIR_LIDAR:
-    	break;
-    case PIR_LIDAR_LED:
-    	break;
-    default:
-    	APP_ERROR_CHECK(true);
-    }
-
-    return config;
 }
 
