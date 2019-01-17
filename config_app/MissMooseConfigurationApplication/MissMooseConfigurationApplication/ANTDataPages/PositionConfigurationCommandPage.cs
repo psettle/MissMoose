@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 
 namespace MissMooseConfigurationApplication
 {
-    public class ConfigurationCommandPage : DataPage
+    public class PositionConfigurationCommandPage : DataPage
     {
         #region Private Members
 
-        private static readonly byte dataPageNumber = 0x10;
+        private static readonly byte dataPageNumber = 0x11;
         private UInt16 nodeId;
-        private UInt16 networkId;
+        private HardwareConfiguration nodeType;
+        private NodeRotation nodeRotation;
 
         #endregion
 
@@ -29,10 +30,16 @@ namespace MissMooseConfigurationApplication
             set { nodeId = value; OnPropertyChanged("NodeId"); }
         }
 
-        public UInt16 NetworkId
+        public HardwareConfiguration NodeType
         {
-            get { return networkId; }
-            set { networkId = value; OnPropertyChanged("NetworkId"); }
+            get { return nodeType; }
+            set { nodeType = value; OnPropertyChanged("NodeType"); }
+        }
+
+        public NodeRotation NodeRotation
+        {
+            get { return nodeRotation; }
+            set { nodeRotation = value; OnPropertyChanged("NodeRotation"); }
         }
 
         #endregion
@@ -45,11 +52,11 @@ namespace MissMooseConfigurationApplication
             txBuffer[0] = DataPageNumber;
 
             txBuffer[1] = BitManipulation.GetByte0(NodeId);
-            txBuffer[2] = BitManipulation.ReservedZeros;
             txBuffer[2] = BitManipulation.GetByte1(NodeId);
 
-            txBuffer[3] = BitManipulation.GetByte0(NetworkId);
-            txBuffer[4] = BitManipulation.GetByte1(NetworkId);
+            txBuffer[3] = (byte)NodeType;
+
+            txBuffer[4] = (byte)NodeRotation.ToEnum();
 
             txBuffer[5] = BitManipulation.ReservedOnes;
             txBuffer[6] = BitManipulation.ReservedOnes;
@@ -59,23 +66,14 @@ namespace MissMooseConfigurationApplication
         /* Decodes the given rxBuffer into this page's data fields */
         public override void Decode(byte[] rxBuffer)
         {
-            BitManipulation.SetByte0(NodeId, rxBuffer[1]);
-            BitManipulation.SetByte1(NodeId, (byte)(rxBuffer[2] & 0x01));
+            BitManipulation.SetByte0(ref nodeId, rxBuffer[1]);
+            BitManipulation.SetByte1(ref nodeId, (byte)(rxBuffer[2] & 0x01));
 
-            BitManipulation.SetByte0(NetworkId, rxBuffer[3]);
-            BitManipulation.SetByte1(NetworkId, rxBuffer[4]);
+            NodeType = (HardwareConfiguration)(rxBuffer[3] & 0x03);
+
+            NodeRotation.FromEnum((byte)(rxBuffer[4] & 0x07));
         }
 
-        #endregion
-
-        #region Types
-
-        public enum ConfigurationStatus : byte
-        {
-            Unconfigured = 0,
-            Configured = 1,
-        }
-
-        #endregion
+        #endregion        
     }
 }

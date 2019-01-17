@@ -1,0 +1,44 @@
+﻿<UserControl x:Class="MissMooseConfigurationApplication.SensorNode"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MissMooseConfigurationApplication"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="450">
+    <Grid>
+        <Ellipse
+          Name="PIR_0_Deg" Width="200" Height="200"
+          Canvas.Left="20" Canvas.Top="0" Stretch="Fill"
+          Stroke="White" Fill="White" Margin="125,0,125,250">
+            <Ellipse.Clip>
+                <RectangleGeometry Rect="0,0,200,100"/>
+            </Ellipse.Clip>
+        </Ellipse>
+
+        <Ellipse
+          Name="PIR_270_Deg"
+          Width="200" Height="200"
+          Canvas.Left="20" Canvas.Top="0" Stretch="Fill" 
+          Stroke="White" Fill="White" Margin="0,125,250,125"
+          Visibility="Hidden">
+            <Ellipse.Clip>
+                <RectangleGeometry Rect="0,0,100,200"/>
+            </Ellipse.Clip>
+        </Ellipse>
+
+        <Polygon Name="Lidar_270_Deg" Fill="Black" Points="0,30 100,0 100,200 0,170 0,130 50,100 0,70" Margin="0,125,0,0"/>
+
+        <Ellipse Name="OuterRing" Fill="Blue" Height="300" Width="300" />
+        <Ellipse Name="Border" Fill="DarkGray" Height="260" Width="260" />
+        <Ellipse Name="InnerRing" Fill="DarkGray" Height="250" Width="250" />
+        <Ellipse Name="InnerCircle" Fill="DarkGray" Height="200" Width="200" />
+
+        <Label Name="NodeIDLabel" Content="X" Foreground="White" FontSize="120" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Button Name="Button" Opacity="0"></Button>
+
+
+        
+    </Grid>
+
+</UserControl>
