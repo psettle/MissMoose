@@ -92,7 +92,7 @@ namespace MissMooseConfigurationApplication
         #endregion
 
         #region Private Members
-        private HardwareConfiguration configuration;
+        public HardwareConfiguration configuration { get; private set; }
 
 
         private Brush ledColour;
