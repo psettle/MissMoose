@@ -27,7 +27,13 @@ notes:
 **********************************************************/
 
 #define CONTROL_PIN (BSP_BUTTON_1)
-#define TIMEOUT_PERIOD_S		( 60 )
+
+#ifdef MM_BLAZE_GATEWAY
+	#define TIMEOUT_PERIOD_S		( 600 )
+#else
+	#define TIMEOUT_PERIOD_S		( 60 )
+#endif
+
 #define TIMEOUT_PERIOD_MS		( TIMEOUT_PERIOD_S * 1000 )
 #define TIMER_TICKS APP_TIMER_TICKS(TIMEOUT_PERIOD_MS)
 
