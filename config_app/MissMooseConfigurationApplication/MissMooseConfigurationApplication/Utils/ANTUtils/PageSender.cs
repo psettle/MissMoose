@@ -14,11 +14,6 @@ namespace MissMooseConfigurationApplication
 
         private ANT_Channel channel;
 
-        private bool expectingAck = false;
-        private byte retryCount = 0;
-        private byte maxRetries;
-        private byte[] acknowledgedMessage;
-
         #endregion
 
         #region Public Methods
@@ -26,8 +21,6 @@ namespace MissMooseConfigurationApplication
         public PageSender(ANT_Channel channel)
         {
             this.channel = channel;
-
-            this.channel.channelResponse += new dChannelResponseHandler(channelResponse);
         }        
 
         public void SendBroadcast(DataPage page)
@@ -44,59 +37,30 @@ namespace MissMooseConfigurationApplication
             }            
         }
 
-        public void SendAcknowledged(DataPage page, bool retry, byte maxRetries=1)
+        public bool SendAcknowledged(DataPage page, bool retry, byte maxTries=1)
         {
             if (page.DataPageLength != 8)
             {
                 Console.WriteLine("Acknowledged messages must be 8 bytes long");
+                return false;
             }
             else
             {
                 byte[] txBuffer = new byte[8];
                 page.Encode(txBuffer);
 
-                if (retry)
-                {
-                    // Save this message buffer to send again if the ack fails
-                    acknowledgedMessage = txBuffer;
+                ANT_ReferenceLibrary.MessagingReturnCode returnCode = ANT_ReferenceLibrary.MessagingReturnCode.Fail;
+                byte retries = (byte) (retry ? maxTries : 1);
 
-                    this.maxRetries = maxRetries;
-                    retryCount = 0;
+                while (returnCode != ANT_ReferenceLibrary.MessagingReturnCode.Pass && retries > 0)
+                {
+                    retries--;
+                    returnCode = channel.sendAcknowledgedData(txBuffer, 500);
                 }
 
-                channel.sendAcknowledgedData(txBuffer);
-            }
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        private void channelResponse(ANT_Response response)
-        {
-            if (response.responseID == (byte)ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40)
-            {
-                switch (response.getChannelEventCode())
-                {
-                    case ANT_ReferenceLibrary.ANTEventID.EVENT_TRANSFER_TX_COMPLETED_0x05:
-                        retryCount = 0;
-                        expectingAck = false;
-                        break;
-                    case ANT_ReferenceLibrary.ANTEventID.EVENT_TRANSFER_TX_FAILED_0x06:
-                        if (expectingAck)
-                        {
-                            if (retryCount < maxRetries)
-                            {
-                                channel.sendAcknowledgedData(acknowledgedMessage);
-                                retryCount++;
-                            }
-                            else
-                            {
-                                expectingAck = false;
-                            }
-                        }
-                        break;
-                }
+                // If the message transmission has passed, return true.
+                // Otherwise, return false.
+                return returnCode == ANT_ReferenceLibrary.MessagingReturnCode.Pass ? true : false;
             }
         }
 

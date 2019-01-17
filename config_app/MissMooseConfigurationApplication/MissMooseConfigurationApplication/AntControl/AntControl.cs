@@ -458,10 +458,12 @@ namespace MissMooseConfigurationApplication
                 positionPage.NodeRotation = dataToSend.Value.nodeRotation;
 
                 // Send the node data as an acknowledged message, retrying up to 5 times
-                pageSender.SendAcknowledged(positionPage, true, 5);
-
-                // Mark the node data as sent so we do not send it to the gateway again (unless it changes)
-                dataToSend.Value.isSent = true;
+                if (pageSender.SendAcknowledged(positionPage, true, 5))
+                {
+                    // If the message succeeded, mark the node data as sent
+                    // so we do not send it to the gateway again (unless it changes)
+                    dataToSend.Value.isSent = true;
+                }
             }
         }
 
