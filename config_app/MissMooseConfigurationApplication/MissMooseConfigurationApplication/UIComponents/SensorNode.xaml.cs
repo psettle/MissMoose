@@ -163,11 +163,12 @@ namespace MissMooseConfigurationApplication
 
         public int xoffset { get; set; } = 0;
         public int yoffset { get; set; } = 0;
-
-        public HardwareConfiguration configuration;
+        public HardwareConfiguration configuration { get; private set; }
+		
         #endregion
 
         #region Private Members
+
         private Brush ledColour;
         private Brush statusColour;
         #endregion
