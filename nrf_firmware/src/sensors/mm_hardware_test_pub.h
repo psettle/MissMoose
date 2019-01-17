@@ -14,20 +14,11 @@ extern "C" {
                         INCLUDES
 **********************************************************/
 #include "app_error.h"
+#include "mm_switch_config.h"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
-
-/**
- * @brief This enum copied from patrick's incomplete code review.
- */
-typedef enum
-{
-    PIR_PIR         = 0x00,	/* Switch 0 & 1 off */
-    PIR_LIDAR 	    = 0x01, /* Switch 0 on, switch 1 off */
-    PIR_LIDAR_LED   = 0x02  /* Switch 0 off, switch 1 on */
-} hardware_config_t;
 
 /**********************************************************
                        DECLARATIONS
@@ -38,7 +29,7 @@ typedef enum
  *        configuration should be, then initializes sensors
  *        as appropriate.
  */
-void mm_hardware_test_init(hardware_config_t);
+void mm_hardware_test_init(hardware_config_t hardware_config);
 
 /**
  * @brief Function for updating the hardware test from main.

@@ -81,20 +81,20 @@ void mm_hardware_test_init(hardware_config_t config)
 
     switch(config)
     {
-        case PIR_PIR:
+        case HARDWARE_CONFIG_PIR_PIR:
             /* If the node type is just 2 PIRs, set up the PIRs using the LED debugging. */
             lidar_in_use = false;
             pir_st_00081_init(2, true);
             break;
 
-        case PIR_LIDAR:
+        case HARDWARE_CONFIG_PIR_LIDAR:
             /* If the node type is 1 PIR and 1 LIDAR, initialize them and use their own LED debugging. */
             lidar_in_use = true;
             pir_st_00081_init(1, true);
             lidar_init(true);
             break;
 
-        case PIR_LIDAR_LED:
+        case HARDWARE_CONFIG_PIR_LIDAR_LED:
             lidar_in_use = true;
             mm_rgb_led_init(false);
             pir_st_00081_init(1, true);
@@ -113,6 +113,9 @@ void mm_hardware_test_init(hardware_config_t config)
             err_code = app_timer_start(m_hardware_test_timer, APP_TIMER_TICKS(TIMED_UPDATE_PERIOD), NULL);
             APP_ERROR_CHECK(err_code);
             break;
+
+        default:
+        	APP_ERROR_CHECK(true);
     }
 }
 

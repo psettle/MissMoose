@@ -51,10 +51,11 @@ void mm_switch_config_init(void)
 
 hardware_config_t read_hardware_config(void)
 {
-	hardware_config_t config;
+	hardware_config_t config = HARDWARE_CONFIG_UNKNOWN;
 
     config = (nrf_gpio_pin_read(SWITCH_1) << 0) |
              (nrf_gpio_pin_read(SWITCH_2) << 1);
+
     /* Error check config for known types. */
     switch(config)
     {
