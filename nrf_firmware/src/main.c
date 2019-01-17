@@ -20,7 +20,6 @@ notes:
                         PROJECT INCLUDES
 **********************************************************/
 
-#include "pir_28027_pub.h"
 #include "pir_st_00081_pub.h"
 #include "ir_led_transmit_pub.h"
 #include "ky_022_receive_pub.h"
@@ -30,6 +29,9 @@ notes:
 #include "mm_blaze_control.h"
 #include "mm_node_config.h"
 #include "mm_switch_config.h"
+#include "mm_rgb_led_pub.h"
+#include "mm_ant_page_manager.h"
+#include "mm_monitoring_dispatch.h"
 
 /**********************************************************
                         CONSTANTS
@@ -55,6 +57,7 @@ int main(void)
     utils_setup();
     mm_softdevice_init();
     mm_ant_init();
+    mm_ant_page_manager_init();
 
     #ifdef NODE_ID_FROM_CONFIG_APP
     // If getting node ID from the configuration app,
@@ -65,17 +68,25 @@ int main(void)
     mm_blaze_init(0, 0);
     #endif
 
+#ifdef MM_BLAZE_GATEWAY
+    mm_monitoring_dispatch_init();
+#endif
+
     //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
     //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
-    //pir_28027_init();
-    //pir_st_00081_init();
+    // pir_st_00081_init(2);
 
     // lidar_init();
+    // mm_rgb_led_init(false);
 
     while(true)
     {
     	// lidar_update_main();
 		mm_node_config_main();
+        
+#ifdef MM_BLAZE_GATEWAY
+        mm_monitoring_dispatch_main();
+#endif
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }

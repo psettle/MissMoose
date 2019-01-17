@@ -14,6 +14,7 @@ notes:
 #include "mm_ant_control.h"
 #include "mm_blaze_control.h"
 #include "mm_switch_config.h"
+#include "mm_ant_page_manager.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -81,7 +82,7 @@ void mm_node_config_init(void)
 
     mm_ant_payload_t payload;
     encode_node_status_page(&payload);
-    mm_ant_set_payload(&payload);
+    mm_ant_page_manager_add_page(NODE_STATUS_PAGE, &payload, 1);
 
     //configure control button
     uint32_t err_code;
@@ -147,7 +148,7 @@ static void process_ant_evt(ant_evt_t * evt)
 
                         mm_ant_payload_t payload;
                         encode_node_status_page(&payload);
-                        mm_ant_set_payload(&payload);
+                        mm_ant_page_manager_replace_all_pages(NODE_STATUS_PAGE, &payload);
                     }
                 }
             }
@@ -167,7 +168,7 @@ static void encode_node_status_page(mm_ant_payload_t * payload)
     payload->data[5] = read_hardware_config();
 
 #ifdef MM_BLAZE_GATEWAY
-    payloard->data[5] |= (1 << 7);
+    payload->data[5] |= (1 << 7);
 #endif
 
     memset(&payload->data[6], 0xFF, 2);
