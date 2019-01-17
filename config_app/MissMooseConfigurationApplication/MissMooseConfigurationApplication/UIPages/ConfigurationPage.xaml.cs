@@ -155,7 +155,7 @@ namespace MissMooseConfigurationApplication.UIPages
 
             if(source == NewSensorViewbox)
             {
-                NewNodeLabel.Content = "";
+                NewNodeLabel.Content = "New Node Here";
                 nodes.Add(node);
             }
 
@@ -231,7 +231,7 @@ namespace MissMooseConfigurationApplication.UIPages
                 {
                     if (sensorViewboxes[row][column].Child == null)
                     {
-                        pulses[row][column].Configure(10, 20, 3);
+                        pulses[row][column].Configure(10, 20, 1.5);
                     }
                     else
                     {
