@@ -154,8 +154,8 @@ namespace MissMooseConfigurationApplication
                     sensornode.xoffset = node.xoffset;
                     sensornode.yoffset = node.yoffset;
                     sensornode.Rotation = new NodeRotation(node.rotation);
-                    // this is tested and working, commented out since application in still in a demo state
-                    //((ConfigurationPage)navigationItems[ConfigPageButton]).AddExistingNode(sensornode);
+                    ((ConfigurationPage)navigationItems[ConfigPageButton]).AddExistingNode(sensornode);
+                    ((SystemOverviewPage)navigationItems[SystemOverviewPageButton]).AddNode(sensornode);
                 }
             }
         }
