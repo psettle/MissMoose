@@ -468,12 +468,9 @@ namespace MissMooseConfigurationApplication
         }
 
         private void updateNodeConfigList()
-        {
-            // Get updated node data from the config UI
-            var nodes = ConfigUI.GetCurrentNodes();
-
+        {      
             // Update the list to be sent
-            foreach (SensorNode node in nodes)
+            foreach (SensorNode node in ConfigUI.nodes)
             {
                 addToNodeConfigList((ushort)node.NodeID, new NodeConfigurationData(node.configuration, node.Rotation));
             }
