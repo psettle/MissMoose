@@ -20,6 +20,7 @@
 #define GRID_POSITION_X_MASK			( 0x0F )
 #define GRID_POSITION_Y_MASK			( 0xF0 )
 
+// Number of bits that describe the grid position
 #define GRID_POSITION_SIZE				( 4 )
 
 /**********************************************************
