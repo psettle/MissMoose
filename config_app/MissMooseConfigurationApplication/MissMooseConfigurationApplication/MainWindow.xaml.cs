@@ -52,7 +52,10 @@ namespace MissMooseConfigurationApplication
                 { SystemProblemsPageButton, new SystemProblemsPage()},
                 { SystemOverviewPageButton, new SystemOverviewPage()}
             };
-            LoadConfiguration();
+            if(File.Exists(ConfigurationSaveFileName))
+            {
+                LoadConfiguration();
+            }
             // app starts on config screen
             PageSwitchClick(ConfigPageButton);
         }
