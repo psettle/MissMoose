@@ -39,10 +39,12 @@ extern "C" {
 #define MM_RGB_LED_DUTY_0   (0x000000)
 
 /* Define some colours with sets of duty cycle values for each colour */
-#define MM_RGB_COLOUR_RED   (0xFF0000)
-#define MM_RGB_COLOUR_GREEN (0x00FF00)
-#define MM_RGB_COLOUR_BLUE  (0x0000FF)
-#define MM_RGB_COLOUR_WHITE (0xFFFFFF)
+#define MM_RGB_COLOUR_RED    (0xFF0000)
+#define MM_RGB_COLOUR_GREEN  (0x00FF00)
+#define MM_RGB_COLOUR_BLUE   (0x0000FF)
+#define MM_RGB_COLOUR_YELLOW (0xFF8800)
+#define MM_RGB_COLOUR_PURPLE (0xFF00FF)
+#define MM_RGB_COLOUR_WHITE  (0xFFFFFF)
 
 /**********************************************************
                            TYPES

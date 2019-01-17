@@ -24,7 +24,7 @@ notes:
 #include "ir_led_transmit_pub.h"
 #include "ky_022_receive_pub.h"
 #include "mm_ant_control.h"
-#include "sensors/lidar/lidar_pub.h"
+#include "lidar_pub.h"
 #include "mm_blaze_static_config.h"
 #include "mm_blaze_control.h"
 #include "mm_node_config.h"
@@ -32,6 +32,7 @@ notes:
 #include "mm_rgb_led_pub.h"
 #include "mm_ant_page_manager.h"
 #include "mm_monitoring_dispatch.h"
+#include "mm_hardware_test_pub.h"
 
 /**********************************************************
                         CONSTANTS
@@ -78,15 +79,16 @@ int main(void)
 
     // lidar_init();
     // mm_rgb_led_init(false);
+    // mm_hardware_test_init(PIR_LIDAR_LED);
 
     while(true)
     {
-    	// lidar_update_main();
+        // mm_hardware_test_update_main();
 		mm_node_config_main();
-        
-#ifdef MM_BLAZE_GATEWAY
-        mm_monitoring_dispatch_main();
-#endif
+
+        #ifdef MM_BLAZE_GATEWAY
+                mm_monitoring_dispatch_main();
+        #endif
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }
