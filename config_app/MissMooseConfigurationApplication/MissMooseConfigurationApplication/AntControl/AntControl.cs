@@ -80,15 +80,15 @@ namespace MissMooseConfigurationApplication
             // Create node data lists
             nodeDeviceNumbers = new List<ushort>();
             gatewayDeviceNumbers = new Dictionary<ushort, ushort>();
-            nodeConfigList = new Dictionary<ushort, NodeConfigurationData>();
-
-            // Open the ANT slave channel to search for a node
-            startConfigDevice();
+            nodeConfigList = new Dictionary<ushort, NodeConfigurationData>();            
         }
 
         public void AddConfigUI(ConfigurationPage ConfigUI)
         {
             this.ConfigUI = ConfigUI;
+
+            // Open the ANT slave channel to search for a node
+            startConfigDevice();
 
             ////demo add existing node
             //var node = new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS, 2);
