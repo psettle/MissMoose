@@ -81,7 +81,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AntControl\AntControl.cs" />
-    <Compile Include="PageParser.cs" />
+    <Compile Include="ANTDataPages\PositionConfigurationCommandPage.cs" />
+    <Compile Include="Utils\ANTUtils\PageSender.cs" />
+    <Compile Include="Utils\ANTUtils\PageParser.cs" />
     <Compile Include="UIComponents\ArrowButton.xaml.cs">
       <DependentUpon>ArrowButton.xaml</DependentUpon>
     </Compile>
@@ -136,7 +138,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DataPages\DataPage.cs" />
+    <Compile Include="ANTDataPages\DataPage.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -203,8 +205,8 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataPages\ConfigurationCommandPage.cs" />
-    <Compile Include="DataPages\NodeStatusPage.cs" />
+    <Compile Include="ANTDataPages\NetworkConfigurationCommandPage.cs" />
+    <Compile Include="ANTDataPages\NodeStatusPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

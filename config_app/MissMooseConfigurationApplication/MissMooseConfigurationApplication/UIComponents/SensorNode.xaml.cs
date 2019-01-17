@@ -17,6 +17,7 @@ namespace MissMooseConfigurationApplication
 {
     public enum HardwareConfiguration
     {
+        Unknown,
         Pir2,
         PirLidar,
         PirLidarLed,
@@ -64,6 +65,79 @@ namespace MissMooseConfigurationApplication
             Add(val.Val);
         }
 
+        public int ToEnum()
+        {
+            double range = R45 / 2.0;
+
+            if (Val < R0 + range)
+            {
+                return 0;
+            }
+
+            if (Val < R45 + range)
+            {
+                return 1;
+            }
+
+            if (Val < R90 + range)
+            {
+                return 2;
+            }
+
+            if (Val < R135 + range)
+            {
+                return 3;
+            }
+
+            if (Val < R180 + range)
+            {
+                return 4;
+            }
+
+            if (Val < R225 + range)
+            {
+                return 5;
+            }
+
+            if (Val < R270 + range)
+            {
+                return 6;
+            }
+
+            return 7;
+        }
+
+        internal void FromEnum(byte e)
+        {
+            switch (e)
+            {
+            case 0:
+                Val = R0;
+                break;
+            case 1:
+                Val = R45;
+                break;
+            case 2:
+                Val = R90;
+                break;
+            case 3:
+                Val = R135;
+                break;
+            case 4:
+                Val = R180;
+                break;
+            case 5:
+                Val = R225;
+                break;
+            case 6:
+                Val = R270;
+                break;
+            case 7:
+                Val = R315;
+                break;
+            };
+        }
+
         public static readonly double R0 = 0.0;
         public static readonly double R45 = 45.0;
         public static readonly double R90 = 90.0;
@@ -80,7 +154,7 @@ namespace MissMooseConfigurationApplication
         #region Public Members
         public const int MaxOffset = 5;
 
-        public int NodeID { get; set; }
+        public int NodeID { get; }
 
         public NodeRotation Rotation { get; set; } = new NodeRotation(NodeRotation.R0);
 
@@ -89,11 +163,11 @@ namespace MissMooseConfigurationApplication
 
         public int xoffset { get; set; } = 0;
         public int yoffset { get; set; } = 0;
+        public HardwareConfiguration configuration { get; private set; }
+		
         #endregion
 
         #region Private Members
-        public HardwareConfiguration configuration { get; private set; }
-
 
         private Brush ledColour;
         private Brush statusColour;
@@ -107,7 +181,7 @@ namespace MissMooseConfigurationApplication
 
             this.configuration = configuration;
             this.NodeID = NodeID;
-            Name.Content = NodeID;
+            NodeIDLabel.Content = NodeID;
 
             switch(configuration)
             {
