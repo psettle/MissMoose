@@ -1,5 +1,5 @@
 /*
- * sensor_transmission.c
+ * mm_sensor_transmission.c
  *
  *  Created on: Jan 16, 2019
  *      Author: nataliewong
@@ -9,7 +9,7 @@
                         INCLUDES
 **********************************************************/
 
-#include "sensor_transmission.h"
+#include "mm_sensor_transmission.h"
 
 #include <string.h>
 #include "app_error.h"
@@ -51,7 +51,7 @@ void mm_sensor_transmission_init()
 	memset( &listeners[0], 0, sizeof( listeners ) );
 }
 
-void mm_register_sensor_data( sensor_data_evt_handler_t sensor_data_evt_handler )
+void mm_sensor_transmission_register_sensor_data( sensor_data_evt_handler_t sensor_data_evt_handler )
 {
 	for (uint16_t i = 0; i < MAX_NUMBER_LISTENERS; i++)
 	{

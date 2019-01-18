@@ -77,7 +77,7 @@ typedef void (*sensor_data_evt_handler_t) ( sensor_evt_t const * evt);
 
 void mm_sensor_transmission_init( void );
 
-void mm_register_sensor_data( sensor_data_evt_handler_t sensor_data_evt_handler );
+void mm_sensor_transmission_register_sensor_data( sensor_data_evt_handler_t sensor_data_evt_handler );
 
 void mm_send_pir_data
 	(

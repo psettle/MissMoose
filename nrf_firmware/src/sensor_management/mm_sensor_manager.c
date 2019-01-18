@@ -9,12 +9,12 @@
                         INCLUDES
 **********************************************************/
 
-#include "sensor_manager.h"
+#include "mm_sensor_manager.h"
 
 #include <string.h>
 
 #include "mm_switch_config.h"
-#include "sensor_transmission.h"
+#include "mm_sensor_transmission.h"
 #include "pir_st_00081_pub.h"
 #include "lidar_pub.h"
 

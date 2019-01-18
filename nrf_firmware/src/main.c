@@ -34,10 +34,13 @@ notes:
 #include "mm_monitoring_dispatch.h"
 #include "mm_hardware_test_pub.h"
 #include "mm_position_config.h"
+#include "mm_sensor_manager.h"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
+
+#define SENSOR_MANAGER_LED_DEBUG_ENABLED    ( false )
 
 /**********************************************************
                        DECLARATIONS
@@ -64,14 +67,14 @@ int main(void)
     mm_softdevice_init();
     mm_ant_init();
     mm_ant_page_manager_init();
+    mm_sensor_manager_init(SENSOR_MANAGER_LED_DEBUG_ENABLED);
 
     #ifdef NODE_ID_FROM_CONFIG_APP
     // If getting node ID from the configuration app,
     // start the node config procedure
     mm_node_config_init();
     #else
-    // Otherwise, just start up BLAZE directly
-    mm_blaze_init(0, 0);
+    APP_ERROR_CHECK(true); /* Used to initialize blaze here, that is no longer a supported mode. */
     #endif
 
 	#ifdef MM_BLAZE_GATEWAY
