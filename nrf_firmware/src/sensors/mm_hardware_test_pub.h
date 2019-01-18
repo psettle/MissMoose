@@ -29,7 +29,7 @@ extern "C" {
  *        configuration should be, then initializes sensors
  *        as appropriate.
  */
-void mm_hardware_test_init(hardware_config_t hardware_config);
+void mm_hardware_test_init(void);
 
 /**
  * @brief Function for updating the hardware test from main.

@@ -55,15 +55,16 @@ Available P0##'s that don't have Molex connections:
 028 (j102.09), 025 (j102.14), 026 (j102.16), 013 (j102.17), 027 (j102.18)
 NOTE: 029 and 030 currently reserved for LIDAR (Dec 29, 2018)
 */
-#define PIR1_PIN_IN         2 //Pin J102.01
-#define PIR2_PIN_IN         3 //Pin J102.03
-#define PIR3_PIN_IN         4 //Pin J102.05
+#define PIR1_PIN_IN         (2) //Pin J102.01
+#define PIR2_PIN_IN         (3) //Pin J102.03
+#define PIR3_PIN_IN         (4) //Pin J102.05
 
-#define PIR1_PIN_EN_OUT     18 //Pin J102.02
-#define PIR2_PIN_EN_OUT     5  //Pin J102.07
-#define PIR3_PIN_EN_OUT     28 //Pin J102.09
+#define PIR1_PIN_EN_OUT     (18) //Pin J102.02
+#define PIR2_PIN_EN_OUT     (5)  //Pin J102.07
+#define PIR3_PIN_EN_OUT     (28) //Pin J102.09
 
-#define MAX_EVT_HANDLERS ( 4 )
+#define MAX_EVT_HANDLERS    (4)
+#define MISSED_EVENT_CHECK  true // Make sure we're not missing events being sent out due to main updates being called less frequently than updates.
 
 /* Whether or not to utilize on-board LEDs for debugging. */
 static bool led_debug;
@@ -100,6 +101,9 @@ static uint8_t pir_sensor_count;
 static bool pirs_enabled[3] = {false, false, false};
 //The state of the PIR sensors - High or low (Detecting something or not detecting)
 static bool pirs_detecting[3] = {false, false, false};
+// The state of the PIR events that need to be distributed.
+// Set to true when a detection event happens, sent to false once distributed.
+static bool pirs_event_pending[3] = {false, false, false};
 
 /**********************************************************
                        DEFINITIONS
@@ -129,6 +133,22 @@ void pir_st_00081_init(uint8_t num_pir_sensors, bool use_led_debug)
     pir_gpiote_init(pir_sensor_count);
 }
 
+/**
+ * @brief This function needs to be called regularly from main in order to distribute events.
+ */
+void pir_update_main(void)
+{
+    for(uint8_t i = 0; i < pir_sensor_count; i++)
+    {
+        if(pirs_event_pending[i])
+        {
+            /* Set to false first so that an ISR can occur with a new event while dispatching this one. */
+            pirs_event_pending[i] = false;
+            /* Send out the current state of the sensor. */
+            pir_event_dispatch(pirs_detecting[i], i);
+        }
+    }
+}
 
 /**
  * @brief Function for disabling the wide-angle PIR sensor.
@@ -275,15 +295,23 @@ static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t a
                     bsp_board_led_on(i);
                 }
                 pirs_detecting[i] = true;
-                pir_event_dispatch(true, i);
             }
             else{
                 if(led_debug){
                     bsp_board_led_off(i);
                 }
                 pirs_detecting[i] = false;
-                pir_event_dispatch(false, i);
             }
+
+            /* Check to make sure there isn't such a huge delay in sending out events that
+               we're missing them. Note that if we start to see nodes freezing and crashing,
+               we may just want to remove this check completely or replace it with some other
+               warning event instead.
+               If main updates are running regularly, this should never be true by this point.*/
+            #if MISSED_EVENT_CHECK
+                APP_ERROR_CHECK(pirs_event_pending[i]);
+            #endif
+            pirs_event_pending[i] = true;
         }
     }
 }
