@@ -44,7 +44,7 @@ namespace MissMooseConfigurationApplication.UIPages
             NewSensorViewbox.Child = null;
             NewSensorViewbox.Child = node;
             node.Button.Click += NodeClick;
-            NewNodeLabel.Content = "New Node!";
+            NewNodeLabel.Content = "Unconfigured Node";
             SetActiveViewbox(NewSensorViewbox);
         }
 
@@ -155,7 +155,7 @@ namespace MissMooseConfigurationApplication.UIPages
 
             if(source == NewSensorViewbox)
             {
-                NewNodeLabel.Content = "New Node Here";
+                NewNodeLabel.Content = "Unconfigured Node";
                 nodes.Add(node);
             }
 

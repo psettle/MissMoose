@@ -26,7 +26,7 @@
                             <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
                         </Viewbox.RenderTransform>
                     </Viewbox>
-                    <Label Name="NewNodeLabel" Content="New Node!" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="125"/>
+                    <Label Name="NewNodeLabel" Content="Unconfigured Node" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="125"/>
                 </Grid>
             </Viewbox>
         </Grid>
