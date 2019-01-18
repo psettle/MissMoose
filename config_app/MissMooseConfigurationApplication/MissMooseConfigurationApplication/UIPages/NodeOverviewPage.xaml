@@ -45,10 +45,10 @@
             </Grid>
         </Viewbox>
 
-        <TextBlock Grid.Column="0" TextWrapping="Wrap" Margin="0" >
+        <TextBlock Name="LeftNodeStatusTextbox" Grid.Column="0" TextWrapping="Wrap">
             Node Status Info TBD Node Status Info TBD Node Status Info TBD Node Status Info TBD Node Status Info TBD
         </TextBlock>
-        <TextBlock Grid.Column="2" TextWrapping="Wrap" Margin="0" >
+        <TextBlock Name="RightNodeStatusTextbox" Grid.Column="2" TextWrapping="Wrap">
             Node Status Info TBD Node Status Info TBD Node Status Info TBD Node Status Info TBD Node Status Info TBD
         </TextBlock>
     </Grid>

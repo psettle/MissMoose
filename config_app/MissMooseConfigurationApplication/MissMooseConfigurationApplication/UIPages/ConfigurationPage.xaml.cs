@@ -14,12 +14,15 @@ namespace MissMooseConfigurationApplication.UIPages
         #region Private Members
         private List<List<PulsingCircle>> pulses;
         private List<List<Viewbox>> sensorViewboxes;
-        private List<SensorNode> nodes = new List<SensorNode>();
 
         private const int GridSize = 3;
         private const int OffsetScalePixels = 10;
 
         private Viewbox ActiveViewbox = null;
+        #endregion
+
+        #region Public Members
+        public List<SensorNode> nodes { get; private set; } = new List<SensorNode>();
         #endregion
 
         #region Public Methods
@@ -62,11 +65,6 @@ namespace MissMooseConfigurationApplication.UIPages
             UpdatePulseStates();
 
             SetActiveViewbox(viewbox);
-        }
-
-        public List<SensorNode> GetCurrentNodes()
-        {
-            return nodes;
         }
 
         #endregion
