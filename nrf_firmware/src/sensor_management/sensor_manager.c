@@ -66,7 +66,7 @@ void mm_sensor_manager_init( bool led_debug_enabled )
 
         case HARDWARE_CONFIG_PIR_LIDAR_LED:
             pir_st_00081_init(1, led_debug_enabled);
-            lidar_init(true);
+            lidar_init(led_debug_enabled);
 
             /* Set ourselves up as a listener for the lidar */
             lidar_evt_handler_register(process_lidar_evt);
