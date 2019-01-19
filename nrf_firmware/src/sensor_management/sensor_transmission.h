@@ -65,7 +65,7 @@ typedef struct
 
 typedef struct
 {
-    sensor_type_t sensor_type;  ///< Event code.
+    sensor_type_t sensor_type;
     union
     {
     	pir_evt_data_t 		pir_data;
@@ -73,18 +73,23 @@ typedef struct
     };
 } sensor_evt_t;
 
+/* Sensor data event callback */
 typedef void (*sensor_data_evt_handler_t) ( sensor_evt_t const * evt);
 
+/* Begins listening to blaze messages containing sensor data events. */
 void mm_sensor_transmission_init( void );
 
+/* Registers a listener to sensor data events. */
 void mm_register_sensor_data( sensor_data_evt_handler_t sensor_data_evt_handler );
 
+/* Sends a PIR data event over blaze to the gateway node for processing. */
 void mm_send_pir_data
 	(
 	sensor_rotation_t sensor_rotation,
 	bool detection
 	);
 
+/* Sends a LIDAR data event over blaze to the gateway node for processing. */
 void mm_send_lidar_data
 	(
 	sensor_rotation_t sensor_rotation,
