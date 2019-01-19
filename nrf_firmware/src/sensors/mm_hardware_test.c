@@ -13,6 +13,7 @@
 #include <string.h>
 #include "pir_st_00081_pub.h"
 #include "mm_rgb_led_pub.h"
+#include "mm_switch_config.h"
 #include "lidar_pub.h"
 #include "app_timer.h"
 
@@ -55,12 +56,11 @@ static void state_transition_update(detection_test_states_t new_state);
                         VARIABLES
 **********************************************************/
 
-/* This is used in main to check if we should call the lidar update function. */
-static bool lidar_in_use;
 static uint16_t lidar_event_cooldown = 0;
 static uint16_t pir_event_cooldown = 0;
 
 static detection_test_states_t state = NO_DETECTION;
+static hardware_config_t configuration;
 
 /* Timer instance. */
 APP_TIMER_DEF(m_hardware_test_timer);
@@ -69,33 +69,31 @@ APP_TIMER_DEF(m_hardware_test_timer);
                        DEFINITIONS
 **********************************************************/
 
-
 /**
  * @brief Reads the dip switches to find out what the hardware
  *        configuration should be, then initializes sensors
  *        as appropriate.
  */
-void mm_hardware_test_init(hardware_config_t config)
+void mm_hardware_test_init(void)
 {
     ret_code_t err_code;
 
-    switch(config)
+    configuration = read_hardware_config();
+
+    switch(configuration)
     {
         case HARDWARE_CONFIG_PIR_PIR:
             /* If the node type is just 2 PIRs, set up the PIRs using the LED debugging. */
-            lidar_in_use = false;
             pir_st_00081_init(2, true);
             break;
 
         case HARDWARE_CONFIG_PIR_LIDAR:
             /* If the node type is 1 PIR and 1 LIDAR, initialize them and use their own LED debugging. */
-            lidar_in_use = true;
             pir_st_00081_init(1, true);
             lidar_init(true);
             break;
 
         case HARDWARE_CONFIG_PIR_LIDAR_LED:
-            lidar_in_use = true;
             mm_rgb_led_init(false);
             pir_st_00081_init(1, true);
             lidar_init(true);
@@ -124,7 +122,11 @@ void mm_hardware_test_init(hardware_config_t config)
  */
 void mm_hardware_test_update_main(void)
 {
-    if(lidar_in_use)
+    /* LAZY - Just assume we always have a PIR sensor. */
+    pir_update_main();
+
+    if(configuration == HARDWARE_CONFIG_PIR_LIDAR ||
+       configuration == HARDWARE_CONFIG_PIR_LIDAR_LED)
     {
         lidar_update_main();
     }

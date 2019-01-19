@@ -13,6 +13,7 @@ notes:
 
 #include "mm_ant_control.h"
 #include "mm_blaze_control.h"
+#include "mm_blaze_static_config.h"
 #include "mm_switch_config.h"
 #include "mm_ant_page_manager.h"
 
@@ -21,6 +22,7 @@ notes:
 #include "boards.h"
 
 #include "app_timer.h"
+
 
 /**********************************************************
                         CONSTANTS
@@ -170,9 +172,17 @@ static void encode_node_status_page(mm_ant_payload_t * payload)
 	memset(&payload->data[0], 0x00, 8);
 
 	payload->data[0] = NODE_STATUS_PAGE_NUM;
-    payload->data[1] = node_config_status;
-    payload->data[5] = read_hardware_config();
 
+#ifdef MM_BLAZE_GATEWAY
+    uint16_t gateway_id = MM_GATEWAY_ID;
+    memcpy(&(payload->data[1]), &gateway_id, sizeof(gateway_id));
+#else
+    memcpy(&(payload->data[1]), &node_id, sizeof(node_id));
+#endif
+
+    memcpy(&(payload->data[3]), &network_id, sizeof(network_id));
+
+    payload->data[5] = read_hardware_config();
 #ifdef MM_BLAZE_GATEWAY
     payload->data[5] |= (1 << 7);
 #endif

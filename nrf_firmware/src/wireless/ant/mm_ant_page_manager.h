@@ -28,7 +28,7 @@
 
 void mm_ant_page_manager_init( void );
 
-void mm_ant_page_manager_add_page(uint8_t page_number, mm_ant_payload_t const * payload, uint8_t duplicates);
+void mm_ant_page_manager_add_page(uint8_t page_number, mm_ant_payload_t const * payload, uint8_t copies);
 
 void mm_ant_page_manager_remove_all_pages(uint8_t page_number);
 

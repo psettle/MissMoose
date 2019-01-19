@@ -87,7 +87,7 @@ int main(void)
 
     // lidar_init();
     // mm_rgb_led_init(false);
-    // mm_hardware_test_init(PIR_LIDAR_LED);
+    // mm_hardware_test_init();
 
     while(true)
     {
