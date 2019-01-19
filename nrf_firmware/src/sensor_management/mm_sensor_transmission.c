@@ -68,6 +68,8 @@ void mm_sensor_transmission_register_sensor_data( sensor_data_evt_handler_t sens
 void mm_send_pir_data (sensor_rotation_t sensor_rotation, bool detection )
 {
 #ifdef MM_BLAZE_GATEWAY
+	// Gateway nodes don't broadcast their own sensor data events
+	// over blaze: they simply notify listeners...
 	sensor_evt_t sensor_evt;
 	memset( &sensor_evt, 0, sizeof( sensor_evt ) );
 
@@ -76,8 +78,10 @@ void mm_send_pir_data (sensor_rotation_t sensor_rotation, bool detection )
 	sensor_evt.pir_data.sensor_rotation = sensor_rotation;
 	sensor_evt.pir_data.detection = detection;
 
-	//sensor_data_evt_message_dispatch(&sensor_evt);
+	sensor_data_evt_message_dispatch(&sensor_evt);
 #else
+	// Non-gateway nodes encode their sensor data events to
+	// broadcast to the gateway node over blaze...
 	ant_blaze_message_t blaze_message;
 	memset( &blaze_message, 0, sizeof( blaze_message ) );
 
@@ -104,6 +108,8 @@ void mm_send_pir_data (sensor_rotation_t sensor_rotation, bool detection )
 void mm_send_lidar_data ( sensor_rotation_t sensor_rotation, uint16_t distance_measured )
 {
 #ifdef MM_BLAZE_GATEWAY
+	// Gateway nodes don't broadcast their own sensor data events
+	// over blaze: they simply notify listeners...
 	sensor_evt_t sensor_evt;
 	memset( &sensor_evt, 0, sizeof( sensor_evt ) );
 
@@ -112,8 +118,10 @@ void mm_send_lidar_data ( sensor_rotation_t sensor_rotation, uint16_t distance_m
 	sensor_evt.lidar_data.sensor_rotation = sensor_rotation;
 	sensor_evt.lidar_data.distance_measured = distance_measured;
 
-	//sensor_data_evt_message_dispatch(&sensor_evt);
+	sensor_data_evt_message_dispatch(&sensor_evt);
 #else
+	// Non-gateway nodes encode their sensor data events to
+	// broadcast to the gateway node over blaze...
 	ant_blaze_message_t blaze_message;
 	memset( &blaze_message, 0, sizeof( blaze_message ) );
 
@@ -137,6 +145,8 @@ void mm_send_lidar_data ( sensor_rotation_t sensor_rotation, uint16_t distance_m
 #endif
 }
 
+/* The gateway node processes incoming sensor data events from
+ * non-gateway nodes and notifies listeners.*/
 static void blaze_rx_handler( ant_blaze_message_t msg )
 {
 #ifdef MM_BLAZE_GATEWAY
@@ -168,6 +178,8 @@ static void blaze_rx_handler( ant_blaze_message_t msg )
 }
 
 #ifdef MM_BLAZE_GATEWAY
+/* Notifies sensor data event listeners of processed sensor
+ * data events.*/
 static void sensor_data_evt_message_dispatch( sensor_evt_t const * sensor_evt )
 {
 	for ( uint16_t i = 0; i < MAX_NUMBER_LISTENERS; i++)

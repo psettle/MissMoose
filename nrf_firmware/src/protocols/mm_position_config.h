@@ -55,10 +55,17 @@ typedef struct mm_node_position_struct {
 
 	/* Determines if the node positions have changed since the last read.
 	 * Assumes that clear_unread_node_positions is called after reading
-	 * "unread" position changes. */
+	 * "unread" position changes.
+	 *
+	 * Allows users to avoid making redundant
+	 * checks on node position data.*/
 	bool have_node_positions_changed( void );
 
-	/* Used to clear "unread" changes in node positions. */
+	/* Used to clear "unread" changes in node positions.
+	 *
+	 * Allows users to keep track of whether or not node positions
+	 * have changed recently, and therefore, allows them to avoid
+	 * making redundant checks on node position data.*/
 	void clear_unread_node_positions( void );
 
 #endif

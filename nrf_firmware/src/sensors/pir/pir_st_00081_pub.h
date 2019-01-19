@@ -59,6 +59,11 @@ typedef void (*pir_evt_handler_t) (pir_evt_t * pir_evt);
 void pir_st_00081_init(uint8_t num_pir_sensors, bool use_led_debug);
 
 /**
+ * @brief This function needs to be called regularly from main in order to distribute events.
+ */
+void pir_update_main(void);
+
+/**
  * @brief Function for disabling the wide-angle PIR sensor.
  */
 void pir_st_00081_disable(uint8_t pir_sensor_id);

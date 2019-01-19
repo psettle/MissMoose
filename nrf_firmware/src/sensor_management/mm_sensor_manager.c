@@ -55,7 +55,7 @@ void mm_sensor_manager_init( bool led_debug_enabled )
 
         case HARDWARE_CONFIG_PIR_LIDAR:
             pir_st_00081_init(1, led_debug_enabled);
-            lidar_init(true);
+            lidar_init(led_debug_enabled);
 
             /* Set ourselves up as a listener for the pir sensors */
             pir_evt_handler_register(process_pir_evt);
@@ -85,11 +85,13 @@ void mm_sensor_manager_main( void )
     switch(hardware_config)
     {
         case HARDWARE_CONFIG_PIR_PIR:
+        	pir_update_main();
             break;
 
         case HARDWARE_CONFIG_PIR_LIDAR:
         case HARDWARE_CONFIG_PIR_LIDAR_LED:
         	lidar_update_main();
+        	pir_update_main();
             break;
 
         default:
@@ -124,7 +126,6 @@ static void process_pir_evt(pir_evt_t * evt)
 
 	switch (evt->event)
     {
-        // For simplicity, let's only care about the fact that some PIR has suddenly detected something.
         case PIR_EVENT_CODE_DETECTION:
         	mm_send_pir_data( sensor_rotation, true );
             break;
@@ -140,7 +141,6 @@ static void process_lidar_evt(lidar_evt_t * evt)
 {
     switch (evt->event)
     {
-        // For simplicity, let's only care about the case where the distance has JUST changed.
         case LIDAR_EVENT_CODE_MEASUREMENT_SETTLE:
         	mm_send_lidar_data( SENSOR_ROTATION_0, evt->distance );
             break;
