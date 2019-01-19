@@ -96,7 +96,7 @@ int main(void)
     {
         // mm_hardware_test_update_main();
 		mm_node_config_main();
-
+        mm_sensor_manager_main();
         #ifdef MM_BLAZE_GATEWAY
                 mm_monitoring_dispatch_main();
         #endif
