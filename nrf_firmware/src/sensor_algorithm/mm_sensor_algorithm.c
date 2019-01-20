@@ -35,8 +35,15 @@ notes:
                     ALGORITHM TUNING
 **********************************************************/
 
-#define ACTIVITY_VARIABLE_MIN   ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX   #error not implemented
+#define ACTIVITY_VARIABLE_MIN             ( 1.0f )
+#define ACTIVITY_VARIABLE_MAX             #error not implemented
+
+/* Road-side (RS), non-road-side (NRS) */
+#define POSSIBLE_DETECTION_THRESHOLD_RS   ( 3.0f )
+#define POSSIBLE_DETECTION_THRESHOLD_NRS  ( 4.0f )
+
+#define DETECTION_THRESHOLD_RS            ( 6.0f )
+#define DETECTION_THRESHOLD_NRS           ( 7.0f )
 
 /**********************************************************
                           TYPES
@@ -57,6 +64,12 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt);
     Send sensor events to the monitoring dispatch manager.
 */
 static void send_monitoring_dispatch(sensor_evt_t const * evt);
+
+/**
+    Updates the signalling state of the LEDs based on the
+    current value of the activity variables.
+*/
+static void update_led_signalling_states(void);
 
 /**********************************************************
                        VARIABLES
@@ -132,4 +145,14 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt)
             APP_ERROR_CHECK(true);
             break;
     }
+}
+
+/**
+    Updates the signalling state of the LEDs based on the
+    current value of the activity variables.
+*/
+static void update_led_signalling_states(void)
+{
+	// TODO: this is a stub for now, gonna merge in
+	// this timer thing from av-drain branch
 }
