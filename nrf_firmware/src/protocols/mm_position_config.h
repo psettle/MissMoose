@@ -50,6 +50,15 @@ typedef struct mm_node_position_struct {
 	 */
 	mm_node_position_t const * get_position_for_node( uint16_t node_id );
 
+	/* Gets a specific node position by it's x and y grid position. Returns
+	 * NULL is the node doesn't exist in the list yet.
+	 */
+	mm_node_position_t const * get_node_at_position
+		(
+		int8_t grid_position_x,
+		int8_t grid_position_y
+		);
+
 	/* Gets the current number of nodes whose positions have been configured. */
 	uint16_t get_number_of_nodes( void );
 

@@ -16,6 +16,7 @@ notes:
 #include "mm_monitoring_dispatch.h"
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
+#include "mm_position_config.h"
 
 
 /**********************************************************
@@ -59,6 +60,14 @@ notes:
 **********************************************************/
 
 typedef float activity_variable_t;
+
+/* LED signalling states */
+typedef enum
+{
+    IDLE,
+	CONCERN,
+	ALARM
+} led_signalling_state_t;
 
 /**********************************************************
                        DEFINITIONS
@@ -132,9 +141,6 @@ void mm_sensor_algorithm_init(void)
 
     err_code = app_timer_start(m_timer_id, TIMER_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
-
-    // TODO: putting this here to silence compile errors
-    update_led_signalling_states();
 }
 
 /**
@@ -202,11 +208,18 @@ static void apply_activity_variable_drain_factor(void)
 /**
     Updates the signalling state of the LEDs based on the
     current value of the activity variables.
+
+    Hardcoded for only 3x3 grids right now.
 */
 static void update_led_signalling_states(void)
 {
-	// TODO: this is a stub for now, gonna merge in
-	// this timer thing from av-drain branch
+	/* Assumes that there are MAX_GRID_SIZE_X nodes
+	 * with LEDs. */
+	led_signalling_state_t states [MAX_GRID_SIZE_X];
+	memset( &states[0], 0, sizeof(states) );
+
+	/* TODO: loop though AVs and set signalling states,
+	 * then send blaze message for LED updates. */
 }
 
 /**
@@ -215,6 +228,7 @@ static void update_led_signalling_states(void)
 static void timer_event_handler(void * p_context)
 {
 	apply_activity_variable_drain_factor();
+	update_led_signalling_states();
 
 	/* Space left to add other once-per-second updates if
 	 * necessary in the future. */
