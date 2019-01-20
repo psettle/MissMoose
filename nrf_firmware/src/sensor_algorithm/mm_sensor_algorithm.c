@@ -34,8 +34,7 @@ notes:
 #define AV_BOTTOM_RIGHT         ( AV(1,1) )
 
 /* Timer macros */
-#define ONE_MINUTE_S            ( 60 )
-#define ACTIVITY_DECAY_PERIOD   ( ONE_MINUTE_S * 1000 )
+#define ONE_SECOND              ( 1 )
 #define TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD)
 
 /**********************************************************
@@ -46,6 +45,7 @@ notes:
 #define ACTIVITY_VARIABLE_MAX            #error not implemented
 
 #define ACTIVITY_VARIABLE_DECAY_FACTOR   ( 0.97f )
+#define ACTIVITY_DECAY_PERIOD            ( ONE_SECOND * 1000 )
 
 /**********************************************************
                           TYPES
@@ -112,7 +112,7 @@ void mm_sensor_algorithm_init(void)
     /* Register for sensor data with sensor_transmission.h */
     mm_sensor_transmission_register_sensor_data(sensor_data_evt_handler);
 
-    /* Intialize 1 second timer. */
+    /* Initialize 1 second timer. */
     uint32_t err_code;
     err_code = app_timer_create(&m_timer_id, APP_TIMER_MODE_REPEATED, timer_event_handler);
     APP_ERROR_CHECK(err_code);
@@ -173,6 +173,13 @@ static void apply_activity_variable_drain_factor(void)
 		if ( activity_variables[i] >  ACTIVITY_VARIABLE_MIN )
 		{
 			activity_variables[i] *= ACTIVITY_VARIABLE_DECAY_FACTOR;
+
+			/* Enforce ACTIVITY_VARIABLE_MIN */
+			if ( activity_variables[i] < ACTIVITY_VARIABLE_MIN )
+			{
+				activity_variables[i] = ACTIVITY_VARIABLE_MIN;
+			}
+
 		}
 	}
 }
