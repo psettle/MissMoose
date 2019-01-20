@@ -33,6 +33,7 @@ notes:
 #include "mm_ant_page_manager.h"
 #include "mm_monitoring_dispatch.h"
 #include "mm_hardware_test_pub.h"
+#include "mm_position_config.h"
 
 /**********************************************************
                         CONSTANTS
@@ -43,6 +44,10 @@ notes:
 **********************************************************/
 
 static void utils_setup(void);
+
+/**********************************************************
+                       VARIABLES
+**********************************************************/
 
 /**********************************************************
                        DEFINITIONS
@@ -69,9 +74,12 @@ int main(void)
     mm_blaze_init(0, 0);
     #endif
 
-#ifdef MM_BLAZE_GATEWAY
+	#ifdef MM_BLAZE_GATEWAY
+
     mm_monitoring_dispatch_init();
-#endif
+	mm_position_config_init();
+
+	#endif
 
     //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
     //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
