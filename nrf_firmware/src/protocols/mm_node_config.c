@@ -38,8 +38,8 @@ notes:
 	#define TIMEOUT_PERIOD_S		( 60 )
 #endif
 
-#define TIMEOUT_PERIOD_MS		( TIMEOUT_PERIOD_S * 1000 )
-#define TIMER_TICKS APP_TIMER_TICKS(TIMEOUT_PERIOD_MS)
+#define ACTIVITY_DECAY_PERIOD		( TIMEOUT_PERIOD_S * 1000 )
+#define TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD)
 
 /**********************************************************
                         ENUMS

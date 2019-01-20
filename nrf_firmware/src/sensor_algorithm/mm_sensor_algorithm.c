@@ -11,6 +11,7 @@ notes:
 #include <string.h>
 
 #include "app_error.h"
+#include "app_timer.h"
 
 #include "mm_monitoring_dispatch.h"
 #include "mm_sensor_transmission.h"
@@ -23,6 +24,7 @@ notes:
 
 #define MAX_GRID_SIZE_X         ( 3 )
 #define MAX_GRID_SIZE_Y         ( 3 )
+#define ACTIVITY_VARIABLES_NUM  ( (MAX_GRID_SIZE_X - 1) * (MAX_GRID_SIZE_Y - 1) )
 
 /* Ease of access macros, optional usage. */
 #define AV(x, y)                ( activity_variables[(x) * (MAX_GRID_SIZE_X - 1) + (y)] )
@@ -31,12 +33,19 @@ notes:
 #define AV_BOTTOM_LEFT          ( AV(0,1) )
 #define AV_BOTTOM_RIGHT         ( AV(1,1) )
 
+/* Timer macros */
+#define ONE_MINUTE_S            ( 60 )
+#define ACTIVITY_DECAY_PERIOD   ( ONE_MINUTE_S * 1000 )
+#define TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD)
+
 /**********************************************************
                     ALGORITHM TUNING
 **********************************************************/
 
-#define ACTIVITY_VARIABLE_MIN   ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX   #error not implemented
+#define ACTIVITY_VARIABLE_MIN            ( 1.0f )
+#define ACTIVITY_VARIABLE_MAX            #error not implemented
+
+#define ACTIVITY_VARIABLE_DECAY_FACTOR   ( 0.97f )
 
 /**********************************************************
                           TYPES
@@ -58,6 +67,16 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt);
 */
 static void send_monitoring_dispatch(sensor_evt_t const * evt);
 
+/**
+    Applies the activity variable drain factor to all activity variables.
+*/
+static void apply_activity_variable_drain_factor(void);
+
+/**
+    Timer handler to process once-per-second updates.
+*/
+static void timer_event_handler(void * p_context);
+
 /**********************************************************
                        VARIABLES
 **********************************************************/
@@ -70,7 +89,9 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt);
 
      Variable (x, y) is located at activity_variables[x * (MAX_GRID_SIZE_X - 1) + y]
 */
-static activity_variable_t activity_variables[(MAX_GRID_SIZE_X - 1) * (MAX_GRID_SIZE_Y - 1)];
+static activity_variable_t activity_variables[ ACTIVITY_VARIABLES_NUM ];
+
+APP_TIMER_DEF(m_timer_id);
 
 /**********************************************************
                        DECLARATIONS
@@ -90,6 +111,14 @@ void mm_sensor_algorithm_init(void)
 
     /* Register for sensor data with sensor_transmission.h */
     mm_sensor_transmission_register_sensor_data(sensor_data_evt_handler);
+
+    /* Intialize 1 second timer. */
+    uint32_t err_code;
+    err_code = app_timer_create(&m_timer_id, APP_TIMER_MODE_REPEATED, timer_event_handler);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_start(m_timer_id, TIMER_TICKS, NULL);
+    APP_ERROR_CHECK(err_code);
 }
 
 /**
@@ -132,4 +161,29 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt)
             APP_ERROR_CHECK(true);
             break;
     }
+}
+
+/**
+    Applies the activity variable drain factor to all activity variables.
+*/
+static void apply_activity_variable_drain_factor(void)
+{
+	for ( uint16_t i = 0; i < ACTIVITY_VARIABLES_NUM; i++ )
+	{
+		if ( activity_variables[i] >  ACTIVITY_VARIABLE_MIN )
+		{
+			activity_variables[i] *= ACTIVITY_VARIABLE_DECAY_FACTOR;
+		}
+	}
+}
+
+/**
+    Timer handler to process once-per-second updates.
+*/
+static void timer_event_handler(void * p_context)
+{
+	apply_activity_variable_drain_factor();
+
+	/* Space left to add other once-per-second updates if
+	 * necessary in the future. */
 }
