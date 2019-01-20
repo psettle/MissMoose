@@ -20,25 +20,37 @@ notes:
                         PROJECT INCLUDES
 **********************************************************/
 
-#include "pir_28027_pub.h"
 #include "pir_st_00081_pub.h"
 #include "ir_led_transmit_pub.h"
 #include "ky_022_receive_pub.h"
 #include "mm_ant_control.h"
-#include "sensors/lidar/lidar_pub.h"
+#include "lidar_pub.h"
 #include "mm_blaze_static_config.h"
 #include "mm_blaze_control.h"
 #include "mm_node_config.h"
+#include "mm_switch_config.h"
+#include "mm_rgb_led_pub.h"
+#include "mm_ant_page_manager.h"
+#include "mm_monitoring_dispatch.h"
+#include "mm_hardware_test_pub.h"
+#include "mm_position_config.h"
+#include "mm_sensor_manager.h"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
+
+#define SENSOR_MANAGER_LED_DEBUG_ENABLED    ( false )
 
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
 
 static void utils_setup(void);
+
+/**********************************************************
+                       VARIABLES
+**********************************************************/
 
 /**********************************************************
                        DEFINITIONS
@@ -54,27 +66,40 @@ int main(void)
     utils_setup();
     mm_softdevice_init();
     mm_ant_init();
+    mm_ant_page_manager_init();
+    mm_sensor_manager_init(SENSOR_MANAGER_LED_DEBUG_ENABLED);
 
     #ifdef NODE_ID_FROM_CONFIG_APP
     // If getting node ID from the configuration app,
     // start the node config procedure
     mm_node_config_init();
     #else
-    // Otherwise, just start up BLAZE directly
-    mm_blaze_init(0, 0);
+    APP_ERROR_CHECK(true); /* Used to initialize blaze here, that is no longer a supported mode. */
     #endif
+
+	#ifdef MM_BLAZE_GATEWAY
+
+    mm_monitoring_dispatch_init();
+	mm_position_config_init();
+
+	#endif
 
     //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
     //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
-    //pir_28027_init();
-    //pir_st_00081_init();
+    // pir_st_00081_init(2);
 
     // lidar_init();
+    // mm_rgb_led_init(false);
+    // mm_hardware_test_init();
 
     while(true)
     {
-    	// lidar_update_main();
+        // mm_hardware_test_update_main();
 		mm_node_config_main();
+        mm_sensor_manager_main();
+        #ifdef MM_BLAZE_GATEWAY
+                mm_monitoring_dispatch_main();
+        #endif
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }
@@ -94,4 +119,6 @@ int main(void)
      APP_ERROR_CHECK(err_code);
 
      bsp_board_leds_init();
+
+     mm_switch_config_init();
  }

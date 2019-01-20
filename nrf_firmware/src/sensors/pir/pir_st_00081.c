@@ -1,7 +1,7 @@
 /**@file
- * @defgroup pir_28027 PIR motion detection examples
+ * @defgroup pir_st_00081 PIR motion detection examples
  * @{
- * @ingroup pir_28027
+ * @ingroup pir_st_00081
  *
  * @brief Example of setting up pins and interrupts for the Parallax Wide Angle PIR sensor.
  * http://simplytronics.com/docs/index.php?title=ST-00081
@@ -19,66 +19,154 @@
  * The sensor has a range of up to 30 feet in optimal conditions, in a 180 degree Field of View.
  */
 
+/**********************************************************
+                        INCLUDES
+**********************************************************/
+
 #include <stdio.h>
 #include "nrf_drv_gpiote.h"
 #include "boards.h"
 #include "pir_st_00081_pub.h"
+#include "nrf_error.h"
 
-#define USE_ENABLE_PIN      false /* Whether or not the Enable pin of the sensor is to be used. */
-#define USE_LED_INDICATOR   true /* Whether or not a detected change should be indicated on an LED. */
+/**********************************************************
+                        CONSTANTS
+**********************************************************/
 
-#if USE_ENABLE_PIN
-    #define PIR_WIDE_EN_PIN_OU
+#define MAXIMUM_NUM_PIRS            3
+#define TOO_MANY_PIR_ERROR          NRF_ERROR_NOT_SUPPORTED
+#define PIR_NOT_INITIALIZZED_ERROR  NRF_ERROR_NOT_SUPPORTED
+
+#define USE_ENABLE_PIN              false /* Whether or not the Enable pin of the sensor is to be used. */
+#if USE_ENABLE_PIN //No point in BUTTON_ENABLE_TEST if USE_ENABLE_PIN is false
+    #define BUTTON_ENABLE_TEST      false //Set to true if you want to run this test
+#else
+    #define BUTTON_ENABLE_TEST      false //Always false in this case
 #endif
 
-#ifdef BSP_BUTTON_1
-    #define PIR_PIN_IN BSP_BUTTON_1
-#endif
-#ifndef PIR_PIN_IN
-    #error "Please indicate input pin. For sanity checking, you can set this to BSP_BUTTON_1 and change the pin configuration to pullup, which will allow you to pretend you're getting input from the button instead of the sensor."
+
+/*Define pins for PIR enable and detectoion pins. Tried to select general I/O pins that were beside
+each other based on the J102 track numbers. Placed into arrays to make code cleaner.
+PIR_EN_OUT - The enable pin. PIR_PIN_IN - The signalling pin.
+https://www.thisisant.com/assets/resources/Datasheets/D00001687_D52_Module_Datasheet.v.2.0.pdf - Page 15+16 for pin info
+
+Available P0##'s that don't have Molex connections:
+002 (j102.01), 018 (j102.02), 003 (j102.03), 004 (j102.05), 005 (j102.07)
+028 (j102.09), 025 (j102.14), 026 (j102.16), 013 (j102.17), 027 (j102.18)
+NOTE: 029 and 030 currently reserved for LIDAR (Dec 29, 2018)
+*/
+#define PIR1_PIN_IN         (2) //Pin J102.01
+#define PIR2_PIN_IN         (3) //Pin J102.03
+#define PIR3_PIN_IN         (4) //Pin J102.05
+
+#define PIR1_PIN_EN_OUT     (18) //Pin J102.02
+#define PIR2_PIN_EN_OUT     (5)  //Pin J102.07
+#define PIR3_PIN_EN_OUT     (28) //Pin J102.09
+
+#define MAX_EVT_HANDLERS    (4)
+#define MISSED_EVENT_CHECK  true // Make sure we're not missing events being sent out due to main updates being called less frequently than updates.
+
+/* Whether or not to utilize on-board LEDs for debugging. */
+static bool led_debug;
+
+static const uint8_t pir_input_pins[] = {PIR1_PIN_IN, PIR2_PIN_IN, PIR3_PIN_IN};
+static const uint8_t pir_enable_pins[] = {PIR1_PIN_EN_OUT, PIR2_PIN_EN_OUT, PIR3_PIN_EN_OUT};
+
+#if BUTTON_ENABLE_TEST
+    //Button 0, 1, and 2: Referred to as BSP_BUTTON_0, BSP_BUTTON_1, BSP_BUTTON_2
+    static const uint8_t pir_enable_ctrl_buttons[] = {BSP_BUTTON_0, BSP_BUTTON_1, BSP_BUTTON_2};
 #endif
 
-#if USE_ENABLE_PIN
-    #ifdef BSP_BUTTON_2
-        #define PIR_EN_PIN_OUT BSP_BUTTON_2
-    #endif
-    #ifndef PIR_EN_PIN_OUT
-        #error "Please indicate output pin. This pin should be connected to the EN pin of the sensor."
-    #endif
-#endif
+/**********************************************************
+                       DECLARATIONS
+**********************************************************/
 
-/* Choose the pin to use for some output indicator of a sensing change */
-#if USE_LED_INDICATOR
-    #ifdef BSP_LED_2
-        #define PIR_INDICATOR_PIN_OUT BSP_LED_2
-    #endif
-    #ifndef PIR_INDICATOR_PIN_OUT
-        #error "Please indicate output pin. This pin could be an indicator LED to show that something is detected."
-    #endif
-#endif
-
-static void pir_gpiote_init(void);
+static void pir_gpiote_init(uint8_t num_pir_sensors);
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+static void pir_event_dispatch(bool detecting, uint8_t pir_index);
+
+#if BUTTON_ENABLE_TEST
+    //Initializes enable
+    static void pir_enable_button_init(uint8_t num_pir_sensors);
+    //Handles a button being pressed.
+    static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+#endif
+
+/**********************************************************
+                       VARIABLES
+**********************************************************/
+//The number of PIR sensors that were initialized.
+static uint8_t pir_sensor_count;
+//The enable/disable status of the PIR sensors
+static bool pirs_enabled[3] = {false, false, false};
+//The state of the PIR sensors - High or low (Detecting something or not detecting)
+static bool pirs_detecting[3] = {false, false, false};
+// The state of the PIR events that need to be distributed.
+// Set to true when a detection event happens, sent to false once distributed.
+static bool pirs_event_pending[3] = {false, false, false};
+
+/**********************************************************
+                       DEFINITIONS
+**********************************************************/
+/* Array of structs to hold the pinouts for individual PIR sensors */
+pir_pinout_t pir_sensors[MAXIMUM_NUM_PIRS];
+
+static pir_evt_handler_t pir_evt_handlers[MAX_EVT_HANDLERS];
 
 /**
  * @brief Function for initializing the wide-angle PIR sensor.
+ *
+ * @param[in] num_pir_sensors The number of PIR sensors on the node (Maximum 3!).
+ * @param[in] use_led_debug   Whether or not to use the on-board LEDs for debugging.
  */
-void pir_st_00081_init(void)
+void pir_st_00081_init(uint8_t num_pir_sensors, bool use_led_debug)
 {
-    pir_gpiote_init();
+    //Error handling if num_pir_sensors > 3. Alternative: If greater than max, set to max?
+    if(num_pir_sensors > MAXIMUM_NUM_PIRS){
+        //Too many PIRs selected, throw an error.
+        APP_ERROR_CHECK(TOO_MANY_PIR_ERROR);
+    }
+
+    led_debug = use_led_debug;
+    pir_sensor_count = num_pir_sensors;
+
+    pir_gpiote_init(pir_sensor_count);
 }
 
+/**
+ * @brief This function needs to be called regularly from main in order to distribute events.
+ */
+void pir_update_main(void)
+{
+    for(uint8_t i = 0; i < pir_sensor_count; i++)
+    {
+        if(pirs_event_pending[i])
+        {
+            /* Set to false first so that an ISR can occur with a new event while dispatching this one. */
+            pirs_event_pending[i] = false;
+            /* Send out the current state of the sensor. */
+            pir_event_dispatch(pirs_detecting[i], i);
+        }
+    }
+}
 
 /**
  * @brief Function for disabling the wide-angle PIR sensor.
  *
  * @details Note that after disabling and re-enabling the sensor,
  * it will have to go through it's 60-second initialization phase.
+ *
+ * @param[in] pir_sensor_id The ID of the pir sensor to disable
  */
-void pir_st_00081_disable(void)
+void pir_st_00081_disable(uint8_t pir_sensor_id)
 {
+    //Sensor IDs start from 0. So if the pir_sensor_count is 2, 0 and 1 are valid inputs. So >= 2 is not.
+    if(pir_sensor_id >= pir_sensor_count){
+        APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
+    }
     #if USE_ENABLE_PIN
-        nrf_drv_gpiote_out_clear(PIR_EN_PIN_OUT);
+        pirs_enabled[pir_sensor_id] = true; //This PIR is now enabled
+        nrf_drv_gpiote_out_clear(pir_sensors[pir_sensor_id].pir_en_pin_out);
     #endif
 }
 
@@ -87,48 +175,98 @@ void pir_st_00081_disable(void)
  *
  * @details Note that after disabling and re-enabling the sensor,
  * it will have to go through it's 60-second initialization phase.
+ *
+ * @param[in] pir_sensor_id The ID of the pir sensor to disable
  */
-void pir_st_00081_enable(void)
+void pir_st_00081_enable(uint8_t pir_sensor_id)
 {
+    //Sensor IDs start from 0. So if the pir_sensor_count is 2, 0 and 1 are valid inputs. So >= 2 is not.
+    if(pir_sensor_id >= pir_sensor_count){
+        APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
+    }
     #if USE_ENABLE_PIN
-        nrf_drv_gpiote_out_set(PIR_EN_PIN_OUT);
+        pirs_enabled[pir_sensor_id] = false; //This PIR is now disabled
+        nrf_drv_gpiote_out_set(pir_sensors[pir_sensor_id].pir_en_pin_out);
     #endif
 }
 
 /**
- * @brief Function for configuring the GPIO pins and interrupts used by the PIR sensor.
+ * @brief Function for checking if the wide-angle PIR sensor is enabled or disabled.
  *
- * @details We want to configure PIR_PIN_IN as input, and PIR_INDICATOR_PIN_OUT for output. Also configure
- * GPIOTE to give an interrupt on PIR_PIN_IN change.
- * If the sensor's enable pin is to be used, configure an output pin for that as well.
+ * @param[in] pir_sensor_id The ID of the pir sensor to check the enable status of
  */
-static void pir_gpiote_init(void)
+bool check_pir_st_00081_enabled(uint8_t pir_sensor_id){
+    //Sensor IDs start from 0. So if the pir_sensor_count is 2, 0 and 1 are valid inputs. So >= 2 is not.
+    if(pir_sensor_id >= pir_sensor_count){
+        APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
+    }
+    return pirs_enabled[pir_sensor_id];
+}
+
+/**
+ * @brief Function for checking if the wide-angle PIR sensor is detecting anything or not.
+ *
+ * @param[in] pir_sensor_id The ID of the pir sensor to check the detection status of
+ */
+bool check_pir_st_00081_detecting(uint8_t pir_sensor_id){
+    //Sensor IDs start from 0. So if the pir_sensor_count is 2, 0 and 1 are valid inputs. So >= 2 is not.
+    if(pir_sensor_id >= pir_sensor_count){
+        APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
+    }
+    return pirs_detecting[pir_sensor_id];
+}
+
+
+/**
+ * @brief Function for configuring the GPIO pins and interrupts used by each PIR sensor.
+ *
+ * @details We want to configure a pir_pin_in pin as input for each sensor.
+ * Also configure GPIOTE to give an interrupt on pir_pin_in change.
+ * If the sensor's enable pin is to be used, configure an output pin for that as well.
+ *
+ * @param[in] num_pir_sensors The number of PIR sensors on the node (Maximum 3!).
+ */
+static void pir_gpiote_init(uint8_t num_pir_sensors)
 {
+
     ret_code_t err_code;
 
-    #if USE_LED_INDICATOR
-        nrf_drv_gpiote_out_config_t out_led_config = GPIOTE_CONFIG_OUT_SIMPLE(false);
+    for (int i = 0; i < num_pir_sensors; i++){
+        //Set pir_en_pin_out and pir_pin_in
+        pir_sensors[i].pir_en_pin_out = pir_enable_pins[i];
+        pir_sensors[i].pir_pin_in = pir_input_pins[i];
 
-        err_code = nrf_drv_gpiote_out_init(PIR_INDICATOR_PIN_OUT, &out_led_config);
-        APP_ERROR_CHECK(err_code);
-    #endif
-
-    #if USE_ENABLE_PIN
+        /* If use_enable_pin true, set up enable pin */
+#if USE_ENABLE_PIN
         nrf_drv_gpiote_out_config_t out_en_config = GPIOTE_CONFIG_OUT_SIMPLE(false);
 
-        err_code = nrf_drv_gpiote_out_init(PIR_EN_PIN_OUT, &out_en_config);
+        err_code = nrf_drv_gpiote_out_init(pir_sensors[i].pir_en_pin_out, &out_en_config);
         APP_ERROR_CHECK(err_code);
-        pir_st_00081_enable();
-    #endif
+        pir_st_00081_enable(i); //The ID of the PIR sensor to enable
+#else
+        //The enable pins are not used. The PIR should always be listed as enabled.
+        pirs_enabled[i] = true; //This PIR is now enabled
+#endif
 
-    /* Sense changes in either direction. Pull down the pin. */
-    nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
-    in_config.pull = NRF_GPIO_PIN_PULLDOWN;
+        /* Sense changes in either direction. Pull down the pin. */
+        nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
+        in_config.pull = NRF_GPIO_PIN_PULLDOWN;
 
-    err_code = nrf_drv_gpiote_in_init(PIR_PIN_IN, &in_config, pir_in_pin_handler);
-    APP_ERROR_CHECK(err_code);
+        err_code = nrf_drv_gpiote_in_init(pir_sensors[i].pir_pin_in, &in_config, pir_in_pin_handler);
+        APP_ERROR_CHECK(err_code);
 
-    nrf_drv_gpiote_in_event_enable(PIR_PIN_IN, true);
+        nrf_drv_gpiote_in_event_enable(pir_sensors[i].pir_pin_in, true);
+
+        //Default setting: PIRs are not detecting anything
+        pirs_detecting[i] = false;
+
+    }
+
+#if BUTTON_ENABLE_TEST
+    //Initializes buttons to enable or disable the PIR sensors.
+    pir_enable_button_init(num_pir_sensors);
+#endif
+
 }
 
 /**
@@ -142,17 +280,123 @@ static void pir_gpiote_init(void)
  */
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    #if USE_LED_INDICATOR
-        if(nrf_drv_gpiote_in_is_set(PIR_PIN_IN))
-        {
-            nrf_drv_gpiote_out_set(PIR_INDICATOR_PIN_OUT);
+    /*Replace this with event handling for a detection!
+    For the moment, a detection lights up the corresponding LED*/
+
+    /*LEDs are indexed from 0 to 3. LED commands:
+     * bsp_board_led_off, bsp_board_led_on, bsp_board_led_invert
+     *
+     * Match the pin with the PIR sensor - If pin in matches pin, that's the PIR that detected something.*/
+    for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
+        if (pir_sensors[i].pir_pin_in == pin){
+            //If the input pin for that PIR sensor is set:
+            if (nrf_drv_gpiote_in_is_set(pir_sensors[i].pir_pin_in)){
+                if(led_debug){
+                    bsp_board_led_on(i);
+                }
+                pirs_detecting[i] = true;
+            }
+            else{
+                if(led_debug){
+                    bsp_board_led_off(i);
+                }
+                pirs_detecting[i] = false;
+            }
+
+            /* Check to make sure there isn't such a huge delay in sending out events that
+               we're missing them. Note that if we start to see nodes freezing and crashing,
+               we may just want to remove this check completely or replace it with some other
+               warning event instead.
+               If main updates are running regularly, this should never be true by this point.*/
+            #if MISSED_EVENT_CHECK
+                APP_ERROR_CHECK(pirs_event_pending[i]);
+            #endif
+            pirs_event_pending[i] = true;
         }
-        else
-        {
-            nrf_drv_gpiote_out_clear(PIR_INDICATOR_PIN_OUT);
-        }
-    #endif
+    }
 }
+
+/**
+ * @brief Add a new pir event listener
+ *
+ * @param[in] pir_evt_handler The event handler to add as a listener.
+ */
+void pir_evt_handler_register(pir_evt_handler_t pir_evt_handler)
+{
+	uint32_t i;
+
+	for (i = 0; i < MAX_EVT_HANDLERS; i++)
+	{
+		if (pir_evt_handlers[i] == NULL)
+		{
+			pir_evt_handlers[i] = pir_evt_handler;
+			break;
+		}
+	}
+
+	APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
+}
+
+/**
+ * @brief Tell the listeners that there's recently been a change in detection,
+ *        and an index of the PIR that changed.
+ * @param[in] detecting Whether the sensor is detecting movement or not
+ * @param[in] pir_index The index of the PIR sensor that changed it's detection state.
+ */
+static void pir_event_dispatch(bool detecting, uint8_t pir_index)
+{
+    pir_evt_t pir_event;
+    pir_event.sensor_index = pir_index;
+    pir_event.event = detecting ? PIR_EVENT_CODE_DETECTION : PIR_EVENT_CODE_NO_DETECTION;
+    // Forward PIR event to listeners
+	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
+	{
+		if (pir_evt_handlers[i] != NULL)
+		{
+			pir_evt_handlers[i](&pir_event);
+		}
+		else
+		{
+			break;
+		}
+	}
+}
+
+#if BUTTON_ENABLE_TEST
+    //Initializes buttons to enable or disable the PIR sensors.
+    static void pir_enable_button_init(uint8_t num_pir_sensors){
+
+    /* Sense changes in either direction on the control pin. Pull up the pin,
+       since we expect to use an IO board button for this. (Based on ir_led_transmit.c)*/
+    //Perform for each PIR
+    ret_code_t err_code;
+    for(int i = 0; i < num_pir_sensors; i++){
+            nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
+            in_config.pull = NRF_GPIO_PIN_PULLUP;
+
+            err_code = nrf_drv_gpiote_in_init(pir_enable_ctrl_buttons[i], &in_config, pir_button_press_handler);
+            APP_ERROR_CHECK(err_code);
+
+            nrf_drv_gpiote_in_event_enable(pir_enable_ctrl_buttons[i], true);
+    }
+
+    }
+    //Handles a button being pressed.
+    static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action){
+        //Check that the pin was set - Otherwise the handler will run both when the button is pressed and depressed.
+        //If it was set, then toggle the enable line for that PIR sensor
+        if(nrf_drv_gpiote_in_is_set(pin)){
+            for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
+                if(pir_enable_ctrl_buttons[i] == pin){
+                    nrf_drv_gpiote_out_toggle(pir_sensors[i].pir_en_pin_out);
+                }
+            }
+        }
+
+    }
+#endif
+
+
 
 /**
  *@}

@@ -67,11 +67,6 @@ namespace MissMooseConfigurationApplication.UIPages
             SetActiveViewbox(viewbox);
         }
 
-        public List<SensorNode> GetCurrentNodes()
-        {
-            return nodes;
-        }
-
         #endregion
 
         #region Private Methods

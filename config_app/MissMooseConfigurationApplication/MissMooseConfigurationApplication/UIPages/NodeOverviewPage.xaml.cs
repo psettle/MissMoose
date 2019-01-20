@@ -30,54 +30,29 @@ namespace MissMooseConfigurationApplication.UIPages
             InitializeComponent();
 
             nodes = otherNodes;
-            node = node.Clone();
-
-            AssignNode(MainSensorViewbox, node);
-            node.Button.Click += CentreNodeClick;
-
-            //setup peripheral nodes
-            if(node.xpos - 1 >= 0 && otherNodes[node.xpos - 1][node.ypos].Child != null)
-            {
-                var localNode = otherNodes[node.xpos - 1][node.ypos].Child as SensorNode;
-                localNode = localNode.Clone();
-                AssignNode(LeftSensorViewbox, localNode);
-                localNode.Button.Click += AdjacentNodeClick;
-            }
-
-            if (node.xpos + 1 < otherNodes.Count && otherNodes[node.xpos + 1][node.ypos].Child != null)
-            {
-                var localNode = otherNodes[node.xpos + 1][node.ypos].Child as SensorNode;
-                localNode = localNode.Clone();
-                AssignNode(RightSensorViewbox, localNode);
-                localNode.Button.Click += AdjacentNodeClick;
-            }
-
-            if (node.ypos - 1 >= 0 && otherNodes[node.xpos][node.ypos - 1].Child != null)
-            {
-                var localNode = otherNodes[node.xpos][node.ypos - 1].Child as SensorNode;
-                localNode = localNode.Clone();
-                AssignNode(TopSensorViewbox, localNode);
-                localNode.Button.Click += AdjacentNodeClick;
-            }
-
-            if (node.ypos + 1 < otherNodes[node.xpos].Count && otherNodes[node.xpos][node.ypos + 1].Child != null)
-            {
-                var localNode = otherNodes[node.xpos][node.ypos + 1].Child as SensorNode;
-                localNode = localNode.Clone();
-                AssignNode(BottomSensorViewbox, localNode);
-                localNode.Button.Click += AdjacentNodeClick;
-            }
+            AssignNode(MainSensorViewbox, node.xpos, node.ypos, CentreNodeClick);
+            AssignNode(LeftSensorViewbox, node.xpos - 1, node.ypos, AdjacentNodeClick);
+            AssignNode(RightSensorViewbox, node.xpos + 1, node.ypos, AdjacentNodeClick);
+            AssignNode(TopSensorViewbox, node.xpos, node.ypos - 1, AdjacentNodeClick);
+            AssignNode(BottomSensorViewbox, node.xpos, node.ypos + 1, AdjacentNodeClick);
         }
         #endregion
 
         #region Private Methods
-        private void AssignNode(Viewbox target, SensorNode clonedNode)
+        private void AssignNode(Viewbox target, int xpos, int ypos, RoutedEventHandler OnClick)
         {
-            //assign to viewbox, set angle
-            target.Child = clonedNode;
+            try
+            {
+                var localNode = nodes[xpos][ypos].Child as SensorNode;
+                localNode = localNode.Clone();
 
-            var rotation = target.RenderTransform as RotateTransform;
-            rotation.Angle = clonedNode.Rotation.Val;
+                target.Child = localNode;
+                var rotation = target.RenderTransform as RotateTransform;
+                rotation.Angle = localNode.Rotation.Val;
+                localNode.Button.Click += OnClick;
+            }
+            catch (ArgumentOutOfRangeException) { }
+            catch (NullReferenceException) { }
         }
 
         private void CentreNodeClick(object sender, RoutedEventArgs e)
@@ -91,38 +66,7 @@ namespace MissMooseConfigurationApplication.UIPages
 
         private void AdjacentNodeClick(object sender, RoutedEventArgs e)
         {
-            //identify clicked viewbox and create a new page to show the clicked node.
-            SensorNode localNode;
- 
-            do
-            {
-                localNode = TopSensorViewbox.Child as SensorNode;          
-                if(localNode != null && localNode.Button == sender)
-                {
-                    break;
-                }
-
-                localNode = RightSensorViewbox.Child as SensorNode;
-                if (localNode != null && localNode.Button == sender)
-                {
-                    break;
-                }
-
-                localNode = BottomSensorViewbox.Child as SensorNode;
-                if (localNode != null && localNode.Button == sender)
-                {
-                    break;
-                }
-
-                localNode = LeftSensorViewbox.Child as SensorNode;
-                if (localNode != null && localNode.Button == sender)
-                {
-                    break;
-                }
-
-                throw new InvalidOperationException("Unknown adjacent node clicked?");
-            } while (false);
-
+            SensorNode localNode = ((Grid)((Button)sender).Parent).Parent as SensorNode;
             MainWindow parentWindow = Window.GetWindow(this) as MainWindow;
             parentWindow.PageFrame.Navigate(new NodeOverviewPage(localNode, nodes));
         }

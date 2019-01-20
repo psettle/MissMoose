@@ -609,6 +609,13 @@
 #define HARDFAULT_HANDLER_ENABLED 1
 #endif
 
+// <q> LOW_POWER_PWM_ENABLED  - low_power_pwm - low_power_pwm module
+
+
+#ifndef LOW_POWER_PWM_ENABLED
+#define LOW_POWER_PWM_ENABLED 1
+#endif
+
 // </h>
 //==========================================================
 
