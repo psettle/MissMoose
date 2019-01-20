@@ -34,7 +34,7 @@ notes:
 #define AV_BOTTOM_RIGHT         ( AV(1,1) )
 
 /* Timer macros */
-#define ONE_SECOND              ( 1 )
+#define ONE_SECOND_MS           ( 1000 )
 #define TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD_MS)
 
 /**********************************************************
@@ -45,7 +45,7 @@ notes:
 #define ACTIVITY_VARIABLE_MAX               #error not implemented
 
 #define ACTIVITY_VARIABLE_DECAY_FACTOR      ( 0.97f )
-#define ACTIVITY_DECAY_PERIOD_MS            ( ONE_SECOND * 1000 )
+#define ACTIVITY_DECAY_PERIOD_MS            ( ONE_SECOND_MS )
 
 /**********************************************************
                           TYPES
