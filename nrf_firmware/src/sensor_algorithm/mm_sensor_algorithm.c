@@ -35,17 +35,17 @@ notes:
 
 /* Timer macros */
 #define ONE_SECOND              ( 1 )
-#define TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD)
+#define TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD_MS)
 
 /**********************************************************
                     ALGORITHM TUNING
 **********************************************************/
 
-#define ACTIVITY_VARIABLE_MIN            ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX            #error not implemented
+#define ACTIVITY_VARIABLE_MIN               ( 1.0f )
+#define ACTIVITY_VARIABLE_MAX               #error not implemented
 
-#define ACTIVITY_VARIABLE_DECAY_FACTOR   ( 0.97f )
-#define ACTIVITY_DECAY_PERIOD            ( ONE_SECOND * 1000 )
+#define ACTIVITY_VARIABLE_DECAY_FACTOR      ( 0.97f )
+#define ACTIVITY_DECAY_PERIOD_MS            ( ONE_SECOND * 1000 )
 
 /**********************************************************
                           TYPES
@@ -179,7 +179,6 @@ static void apply_activity_variable_drain_factor(void)
 			{
 				activity_variables[i] = ACTIVITY_VARIABLE_MIN;
 			}
-
 		}
 	}
 }
