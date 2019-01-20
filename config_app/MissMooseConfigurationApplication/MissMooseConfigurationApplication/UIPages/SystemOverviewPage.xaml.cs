@@ -131,7 +131,7 @@ namespace MissMooseConfigurationApplication
             if (lineSegmentAssociations[xpos][ypos].ContainsKey(direction))
             {
                 lineSegmentAssociations[xpos][ypos][direction].Stroke = colour;
-                lineSegmentAssociations[xpos][ypos][direction].Visibility = Visibility.Visible;
+                lineSegmentAssociations[xpos][ypos][direction].Visibility = Visibility.Visible;                
             }
             else
             {
@@ -142,6 +142,19 @@ namespace MissMooseConfigurationApplication
         public void MarkSensorDetection(SensorNode node, LineDirection direction, Brush colour)
         {
             MarkSensorDetection(node.xpos, node.ypos, direction, colour);
+
+            // If the colour is being set to red or yellow
+            // or if the colour is being set to blue and there are no other lines set to red or yellow,
+            // set the node status colour to the given colour
+            if (!colour.Equals(StatusColour.Blue)
+                || lineSegmentAssociations[node.xpos][node.ypos].Where(x => x.Key != direction && x.Value.Stroke.Equals(colour)).Count() == 0)
+            {
+                SensorNode nodeToSet = nodes.Where(x => x.NodeID == node.NodeID).FirstOrDefault();
+                if (nodeToSet != null)
+                {
+                    nodeToSet.SetStatusColour(colour);
+                }
+            }
         }
         #endregion
 
@@ -263,7 +276,7 @@ namespace MissMooseConfigurationApplication
             viewbox.Margin = margin;
         }
 
-        private void SetNodeRotation(Viewbox viewbox, NodeRotation rotation)
+        private void SetNodeRotation(Viewbox viewbox, Rotation rotation)
         {
             var r = viewbox.RenderTransform as RotateTransform;
             r.Angle = rotation.Val;

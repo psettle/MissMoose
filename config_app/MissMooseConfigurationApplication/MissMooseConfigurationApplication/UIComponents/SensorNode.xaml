@@ -17,6 +17,17 @@
         </Ellipse>
 
         <Ellipse
+          Name="PIR_90_Deg"
+          Width="200" Height="200"
+          Canvas.Left="20" Canvas.Top="0" Stretch="Fill" 
+          Stroke="White" Fill="White" Margin="250,125,0,125"
+          Visibility="Hidden">
+            <Ellipse.Clip>
+                <RectangleGeometry Rect="100,0,100,200"/>
+            </Ellipse.Clip>
+        </Ellipse>
+
+        <Ellipse
           Name="PIR_270_Deg"
           Width="200" Height="200"
           Canvas.Left="20" Canvas.Top="0" Stretch="Fill" 
@@ -27,7 +38,14 @@
             </Ellipse.Clip>
         </Ellipse>
 
-        <Polygon Name="Lidar_270_Deg" Fill="Black" Points="0,30 100,0 100,200 0,170 0,130 50,100 0,70" Margin="0,125,0,0"/>
+        <Polygon Name="Lidar_0_Deg" Fill="Black" Points="0,30 100,0 100,200 0,170 0,130 50,100 0,70" Margin="0,0,350,250" Visibility="Hidden">
+            <Polygon.RenderTransform>
+                <TransformGroup>
+                    <RotateTransform Angle="90"/>
+                    <TranslateTransform X="325"/>
+                </TransformGroup>
+            </Polygon.RenderTransform>
+        </Polygon>
 
         <Ellipse Name="OuterRing" Fill="Blue" Height="300" Width="300" />
         <Ellipse Name="Border" Fill="DarkGray" Height="260" Width="260" />
@@ -36,8 +54,6 @@
 
         <Label Name="NodeIDLabel" Content="X" Foreground="White" FontSize="120" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Button Name="Button" Opacity="0"></Button>
-
-
         
     </Grid>
 

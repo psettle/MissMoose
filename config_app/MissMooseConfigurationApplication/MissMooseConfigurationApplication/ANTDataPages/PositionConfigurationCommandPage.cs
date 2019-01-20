@@ -13,7 +13,7 @@ namespace MissMooseConfigurationApplication
         private static readonly byte dataPageNumber = 0x11;
         private UInt16 nodeId;
         private HardwareConfiguration nodeType;
-        private NodeRotation nodeRotation;
+        private Rotation nodeRotation;
 
         #endregion
 
@@ -36,7 +36,7 @@ namespace MissMooseConfigurationApplication
             set { nodeType = value; OnPropertyChanged("NodeType"); }
         }
 
-        public NodeRotation NodeRotation
+        public Rotation NodeRotation
         {
             get { return nodeRotation; }
             set { nodeRotation = value; OnPropertyChanged("NodeRotation"); }

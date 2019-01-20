@@ -37,11 +37,11 @@ namespace MissMooseConfigurationApplication
         public static readonly Brush Blue = Brushes.Blue;
     }
 
-    public class NodeRotation
+    public class Rotation
     {
         public double Val { get; private set; }
 
-        public NodeRotation(double val)
+        public Rotation(double val)
         {
             Val = val;
         }
@@ -60,7 +60,7 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public void Add(NodeRotation val)
+        public void Add(Rotation val)
         {
             Add(val.Val);
         }
@@ -153,10 +153,11 @@ namespace MissMooseConfigurationApplication
     {
         #region Public Members
         public const int MaxOffset = 5;
+        public const int OffsetScale = 10;
 
         public int NodeID { get; }
 
-        public NodeRotation Rotation { get; set; } = new NodeRotation(NodeRotation.R0);
+        public Rotation Rotation { get; set; } = new Rotation(Rotation.R0);
 
         public int xpos { get; set; } = -1;
         public int ypos { get; set; } = -1;
@@ -187,14 +188,16 @@ namespace MissMooseConfigurationApplication
             {
                 case HardwareConfiguration.Pir2:
                     PIR_0_Deg.Visibility = Visibility.Visible;
+                    PIR_90_Deg.Visibility = Visibility.Hidden;
                     PIR_270_Deg.Visibility = Visibility.Visible;
-                    Lidar_270_Deg.Visibility = Visibility.Hidden;
+                    Lidar_0_Deg.Visibility = Visibility.Hidden;
                     break;
                 case HardwareConfiguration.PirLidar:
                 case HardwareConfiguration.PirLidarLed:
-                    PIR_0_Deg.Visibility = Visibility.Visible;
+                    PIR_0_Deg.Visibility = Visibility.Hidden;
+                    PIR_90_Deg.Visibility = Visibility.Visible;
                     PIR_270_Deg.Visibility = Visibility.Hidden;
-                    Lidar_270_Deg.Visibility = Visibility.Visible;
+                    Lidar_0_Deg.Visibility = Visibility.Visible;
                     break;
             }
 
@@ -237,7 +240,7 @@ namespace MissMooseConfigurationApplication
                 yoffset = yoffset,
                 xpos = xpos,
                 ypos = ypos,
-                Rotation = new NodeRotation(Rotation.Val)
+                Rotation = new Rotation(Rotation.Val)
             };
             node.SetLedColour(ledColour);
             node.SetStatusColour(statusColour);

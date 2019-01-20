@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Windows;
+using System.Windows.Media;
 
 namespace MissMooseConfigurationApplication
 {
@@ -80,6 +81,9 @@ namespace MissMooseConfigurationApplication
         // Default wait time in milliseconds for ANT function calls
         private static readonly ushort waitTime = 500;
 
+        // Default distance between nodes in meters
+        private static readonly byte nodeSeparation = 7;
+
         #endregion
 
         #region Public Methods
@@ -89,6 +93,8 @@ namespace MissMooseConfigurationApplication
             // Set up the page parser to decode valid data pages
             pageParser = new PageParser();
             pageParser.AddDataPage(new NodeStatusPage());
+            pageParser.AddDataPage(new LidarMonitoringPage());
+            pageParser.AddDataPage(new PirMonitoringPage());
 
             // Create node data lists
             nodeIds = new Dictionary<ushort, ushort>();
@@ -109,59 +115,31 @@ namespace MissMooseConfigurationApplication
             //node.SetOffset(-3, 3);
 
             //ConfigUI.AddExistingNode(node);
-
-            ////demo add new node
-            //ConfigUI.AddNewNode(new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_2_PIR, 3));
-
-
-            ////demo read input state
-            //var nodes = ConfigUI.GetCurrentNodes();
         }
 		
         public void AddMonitoringUI(SystemOverviewPage MonitoringUI)
         {
             this.MonitoringUI = MonitoringUI;
 
-            //demo: add existing node
-            var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2);
-            node.xpos = 1;
-            node.ypos = 1;
-            node.Rotation = new NodeRotation(NodeRotation.R90);
-            node.xoffset = -3;
-            node.yoffset = 3;
+            ////demo: add existing node
+            //var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2);
+            //node.xpos = 1;
+            //node.ypos = 1;
+            //node.Rotation = new NodeRotation(NodeRotation.R90);
+            //node.xoffset = -3;
+            //node.yoffset = 3;
 
-            MonitoringUI.AddNode(node);
+            //MonitoringUI.AddNode(node);
 
-            //demo: remove, modify, add node
-            MonitoringUI.RemoveNode(node);
-            node.xoffset = 1;
-            node.yoffset = 1;
-            node.Rotation = new NodeRotation(NodeRotation.R180);
-            MonitoringUI.AddNode(node);
+            ////demo: remove, modify, add node
+            //MonitoringUI.RemoveNode(node);
+            //node.xoffset = 1;
+            //node.yoffset = 1;
+            //node.Rotation = new NodeRotation(NodeRotation.R180);
+            //MonitoringUI.AddNode(node);
 
-            //demo: Display sensor data
-            MonitoringUI.MarkSensorDetection(node, LineDirection.Down, StatusColour.Red);
-
-            //demo: add existing node
-            node = new SensorNode(HardwareConfiguration.Pir2, 3);
-            node.xpos = 1;
-            node.ypos = 2;
-            node.Rotation = new NodeRotation(NodeRotation.R90);
-            node.xoffset = -3;
-            node.yoffset = 3;
-
-            MonitoringUI.AddNode(node);
-
-            //demo: remove, modify, add node
-            MonitoringUI.RemoveNode(node);
-            node.xoffset = 0;
-            node.yoffset = 0;
-            node.Rotation = new NodeRotation(NodeRotation.R0);
-            MonitoringUI.AddNode(node);
-
-            //demo: Display sensor data
-            MonitoringUI.MarkSensorDetection(node, LineDirection.Up, StatusColour.Red);
-            MonitoringUI.MarkSensorDetection(node, LineDirection.Left, StatusColour.Yellow);
+            ////demo: Display sensor data
+            //MonitoringUI.MarkSensorDetection(node, LineDirection.Down, StatusColour.Red);
         }
 
         #endregion
@@ -484,7 +462,7 @@ namespace MissMooseConfigurationApplication
             {
                 if (!nodeIds.Keys.Contains(masterDeviceNumber) && (!dataPage.IsGatewayNode || gatewayDeviceNumber == masterDeviceNumber))
                 {
-                    // Add a new node to the UI for the useru
+                    // Add a new node to the UI for the user
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
 
                         ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId));
@@ -507,6 +485,64 @@ namespace MissMooseConfigurationApplication
                 }
             }
         }
+
+        private void handlePage(LidarMonitoringPage dataPage)
+        {
+            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+            if (node != null)
+            {
+                Rotation totalRotation = new Rotation(node.Rotation.Val);
+                totalRotation.Add(dataPage.SensorRotation);
+
+                LineDirection direction;
+
+                if (getLineDirection(totalRotation, out direction))
+                {
+                    Brush colour = dataPage.Distance < (2 * nodeSeparation * 100) ? StatusColour.Red : StatusColour.Blue;
+
+                    Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
+                        MonitoringUI.MarkSensorDetection(node, direction, colour);                        
+                    });
+
+                    
+                }
+
+                // Send an acknowledgement page so the gateway knows this sensor data was received
+                MonitoringDataAckPage ackPage = new MonitoringDataAckPage();
+                ackPage.MessageId = dataPage.MessageId;
+
+                gatewayPageSender.SendBroadcast(ackPage);
+            }            
+        }
+
+        private void handlePage(PirMonitoringPage dataPage)
+        {
+            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+            if (node != null)
+            {
+                Rotation totalRotation = new Rotation(node.Rotation.Val);
+                totalRotation.Add(dataPage.SensorRotation);
+
+                LineDirection direction;
+
+                if (getLineDirection(totalRotation, out direction))
+                {
+                    Brush colour = dataPage.Detection ? StatusColour.Red : StatusColour.Blue;
+
+                    Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
+                        MonitoringUI.MarkSensorDetection(node, direction, colour);
+                    });
+                }
+
+                // Send an acknowledgement page so the gateway knows this sensor data was received
+                MonitoringDataAckPage ackPage = new MonitoringDataAckPage();
+                ackPage.MessageId = dataPage.MessageId;
+
+                gatewayPageSender.SendBroadcast(ackPage);
+            }            
+        }        
         
         private void openGatewayChannel(ushort deviceNumber)
         {
@@ -544,7 +580,7 @@ namespace MissMooseConfigurationApplication
         {
             // TODO: add a save button to the UI that triggers updating the node configuration data list.
             // For now, poll the configuration page's sensor node list for updates every time we send data to the gateway
-            updateNodeConfigList();
+            updateNodes();
 
             KeyValuePair<ushort, NodeConfigurationData> dataToSend = nodeConfigList.Where(x => !x.Value.isSent).FirstOrDefault();
             if (!dataToSend.Equals(default(KeyValuePair<ushort, NodeConfigurationData>)))
@@ -575,34 +611,34 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        private void updateNodeConfigList()
-        {      
-            // Update the list to be sent
+        private void updateNodes()
+        {
+            // Go through the list of nodes and check if any have changed
             foreach (SensorNode node in ConfigUI.nodes)
             {
-                addToNodeConfigList((ushort)node.NodeID, new NodeConfigurationData(
+                NodeConfigurationData newData = new NodeConfigurationData(
                     node.configuration,
-                    new NodeRotation(node.Rotation.Val),
-                    node.xpos, node.ypos, node.xoffset, node.yoffset));
-            }
-        }
+                    new Rotation(node.Rotation.Val),
+                    node.xpos, node.ypos, node.xoffset, node.yoffset);
 
-        /*
-         * Adds node config data to the node config list at the given node ID only if
-         * a) there is no data yet for the given node ID or b) the provided data is different from the current data
-         */
-        private void addToNodeConfigList(ushort nodeId, NodeConfigurationData newData)
-        {
-            NodeConfigurationData dataToReplace;
-            nodeConfigList.TryGetValue(nodeId, out dataToReplace);
+                NodeConfigurationData dataToReplace;
+                nodeConfigList.TryGetValue((ushort)node.NodeID, out dataToReplace);
 
-            // Save the data if data for this node ID is not yet in the list,
-            // OR data for this node ID exists in the list and differs from the new data
-            if (dataToReplace == null || !dataToReplace.Equals(newData))
-            {
-                nodeConfigList[nodeId] = newData;
+                // Save the data if data for this node ID is not yet in the list,
+                // OR data for this node ID exists in the list and differs from the new data
+                if (dataToReplace == null || !dataToReplace.Equals(newData))
+                {
+                    // Update the list to be sent
+                    nodeConfigList[(ushort)node.NodeID] = newData;
 
-                // TODO: Could trigger a visual indication that there is data waiting to be sent to the gateway node
+                    // TODO: Could trigger a visual indication that there is data waiting to be sent to the gateway node
+
+                    // A node has changed, so update the monitoring UI
+                    Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
+
+                        MonitoringUI.AddNode(node);
+                    });
+                }
             }
         }
 
@@ -618,6 +654,29 @@ namespace MissMooseConfigurationApplication
             return nextNodeId;
         }
 
+        private bool getLineDirection(Rotation rotation, out LineDirection direction)
+        {
+            switch (rotation.ToEnum())
+            {
+                case 0:
+                    direction = LineDirection.Up;
+                    return true;
+                case 2:
+                    direction = LineDirection.Right;
+                    return true;
+                case 4:
+                    direction = LineDirection.Down;
+                    return true;
+                case 6:
+                    direction = LineDirection.Left;
+                    return true;
+                default:
+                    direction = LineDirection.Up;
+                    // Return false for in-between angles like 45 degrees (we don't have coloured lines for those angles)
+                    return false;
+            }
+        }
+
         #endregion
 
         #region Private Classes
@@ -626,14 +685,14 @@ namespace MissMooseConfigurationApplication
         private class NodeConfigurationData
         {
             public HardwareConfiguration nodeType;
-            public NodeRotation nodeRotation;
+            public Rotation nodeRotation;
             public int xpos;
             public int ypos;
             public int xoffset;
             public int yoffset;
             public bool isSent = false;
 
-            public NodeConfigurationData(HardwareConfiguration nodeType, NodeRotation nodeRotation, int xpos, int ypos, int xoffset, int yoffset)
+            public NodeConfigurationData(HardwareConfiguration nodeType, Rotation nodeRotation, int xpos, int ypos, int xoffset, int yoffset)
             {
                 this.nodeType = nodeType;
                 this.nodeRotation = nodeRotation;
