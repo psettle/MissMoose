@@ -74,7 +74,6 @@ namespace MissMooseConfigurationApplication
         private bool deviceRunning = false;
         private bool sendingNodeId = false;
         private bool openedGatewayChannel = false;
-        private bool waitingForChannelClose = false;
 
         // Default wait time in milliseconds for ANT function calls
         private static readonly ushort waitTime = 500;
@@ -315,11 +314,6 @@ namespace MissMooseConfigurationApplication
                     {
                         case ANT_ReferenceLibrary.ANTMessageID.CLOSE_CHANNEL_0x4C:
 
-                            if (waitingForChannelClose)
-                            {
-                                waitingForChannelClose = false;
-                            }
-
                             // Clear exclusion list
                             nodeSearchChannel.includeExcludeList_Configure(0, true);
 
@@ -456,7 +450,6 @@ namespace MissMooseConfigurationApplication
                     // Close the channel
                     if (nodeSearchChannel.closeChannel(waitTime))
                     {
-                        waitingForChannelClose = true;
                         Console.WriteLine("Closed channel");
                     }
                     else
@@ -514,8 +507,17 @@ namespace MissMooseConfigurationApplication
                 positionPage.NodeId = dataToSend.Key;
                 positionPage.NodeType = dataToSend.Value.nodeType;
                 positionPage.NodeRotation = dataToSend.Value.nodeRotation;
+                positionPage.xpos = dataToSend.Value.xpos;
+                positionPage.ypos = dataToSend.Value.xpos;
+                positionPage.xoffset = dataToSend.Value.xpos;
+                positionPage.yoffset = dataToSend.Value.xpos;
 
-                dataToSend.Value.isSent = true;
+                if(positionPage.xpos == -1 || positionPage.ypos == -1)
+                {
+                    return;
+                }
+				
+				dataToSend.Value.isSent = true;
 
                 // Send the node data as an acknowledged message, retrying up to 5 times
                 if (!gatewayPageSender.SendAcknowledged(positionPage, true, 5))
@@ -532,7 +534,10 @@ namespace MissMooseConfigurationApplication
             // Update the list to be sent
             foreach (SensorNode node in ConfigUI.nodes)
             {
-                addToNodeConfigList((ushort)node.NodeID, new NodeConfigurationData(node.configuration, new NodeRotation(node.Rotation.Val)));
+                addToNodeConfigList((ushort)node.NodeID, new NodeConfigurationData(
+                    node.configuration,
+                    new NodeRotation(node.Rotation.Val),
+                    node.xpos, node.ypos, node.xoffset, node.yoffset));
             }
         }
 
@@ -576,12 +581,20 @@ namespace MissMooseConfigurationApplication
         {
             public HardwareConfiguration nodeType;
             public NodeRotation nodeRotation;
+            public int xpos;
+            public int ypos;
+            public int xoffset;
+            public int yoffset;
             public bool isSent = false;
 
-            public NodeConfigurationData(HardwareConfiguration nodeType, NodeRotation nodeRotation)
+            public NodeConfigurationData(HardwareConfiguration nodeType, NodeRotation nodeRotation, int xpos, int ypos, int xoffset, int yoffset)
             {
                 this.nodeType = nodeType;
                 this.nodeRotation = nodeRotation;
+                this.xpos = xpos;
+                this.ypos = ypos;
+                this.xoffset = xoffset;
+                this.yoffset = yoffset;
             }
 
             public override bool Equals(object obj)
@@ -589,6 +602,14 @@ namespace MissMooseConfigurationApplication
                 var nodeConfigData = obj as NodeConfigurationData;
 
                 if (nodeConfigData == null)
+                {
+                    return false;
+                }
+
+                if( (nodeConfigData.xpos != xpos) ||
+                    (nodeConfigData.ypos !=ypos) ||
+                    (nodeConfigData.xoffset != xoffset) ||
+                    (nodeConfigData.yoffset != yoffset) )
                 {
                     return false;
                 }

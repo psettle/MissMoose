@@ -42,6 +42,11 @@ namespace MissMooseConfigurationApplication
             set { nodeRotation = value; OnPropertyChanged("NodeRotation"); }
         }
 
+        public int xpos { get; set; }
+        public int ypos { get; set; }
+        public int xoffset { get; set; }
+        public int yoffset { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -58,9 +63,13 @@ namespace MissMooseConfigurationApplication
 
             txBuffer[4] = (byte)NodeRotation.ToEnum();
 
-            txBuffer[5] = BitManipulation.ReservedOnes;
-            txBuffer[6] = BitManipulation.ReservedOnes;
-            txBuffer[7] = BitManipulation.ReservedOnes;
+            byte xpos_encoded = (byte)((xpos - 1) & 0x0F);
+            byte ypos_encoded = (byte)((ypos - 1) & 0x0F);
+            ypos_encoded <<= 4;
+
+            txBuffer[5] = (byte)(xpos_encoded | ypos_encoded);
+            txBuffer[6] = (byte)xoffset;
+            txBuffer[7] = (byte)yoffset;
         }
 
         /* Decodes the given rxBuffer into this page's data fields */
