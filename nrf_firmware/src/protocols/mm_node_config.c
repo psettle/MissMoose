@@ -16,6 +16,8 @@ notes:
 #include "mm_blaze_static_config.h"
 #include "mm_switch_config.h"
 #include "mm_ant_page_manager.h"
+#include "mm_sensor_transmission.h"
+#include "mm_sensor_algorithm.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -45,7 +47,7 @@ notes:
 typedef enum
 {
     IDLE,
-    BLAZE_INIT_PENDING,
+    INIT_PENDING,
 } state_t;
 
 /**********************************************************
@@ -62,6 +64,9 @@ static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t 
 
 /* Timer handler */
 static void timer_event(void * p_context);
+
+/* Run external initialization of blaze and things that depend on blaze. */
+static void external_init(void);
 
 /**********************************************************
                        VARIABLES
@@ -115,9 +120,9 @@ void mm_node_config_main(void)
         case IDLE:
             // Do nothing
             break;
-        case BLAZE_INIT_PENDING:
+        case INIT_PENDING:
             // Start BLAZE initialization
-            mm_blaze_init(node_id, network_id);
+            external_init();
             state = IDLE;
             break;
         default:
@@ -148,8 +153,8 @@ static void process_ant_evt(ant_evt_t * evt)
                         memcpy(&node_id, &p_message->ANT_MESSAGE_aucPayload[1], sizeof(node_id));
                         memcpy(&network_id, &p_message->ANT_MESSAGE_aucPayload[3], sizeof(network_id));
 
-                        // Start BLAZE init now that node ID and network ID are known
-                        state = BLAZE_INIT_PENDING;
+                        // Start init now that node ID and network ID are known
+                        state = INIT_PENDING;
 
                         // Node has been configured, so update the status broadcast
                         node_config_status = CONFIG_STATUS_CONFIGURED;
@@ -225,4 +230,14 @@ static void timer_event(void * p_context)
     {
         mm_ant_pause_broadcast();
     }
+}
+
+static void external_init(void)
+{
+    /* Init blaze. */ 
+    mm_blaze_init(node_id, network_id);
+    /* Init sensor transmission over blaze. */
+    mm_sensor_transmission_init();
+    /* Init sensor data processing now that data can be transmitted. */
+    mm_sensor_algorithm_init();
 }

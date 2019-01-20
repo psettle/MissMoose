@@ -80,7 +80,7 @@ typedef void (*sensor_data_evt_handler_t) ( sensor_evt_t const * evt);
 void mm_sensor_transmission_init( void );
 
 /* Registers a listener to sensor data events. */
-void mm_register_sensor_data( sensor_data_evt_handler_t sensor_data_evt_handler );
+void mm_sensor_transmission_register_sensor_data( sensor_data_evt_handler_t sensor_data_evt_handler );
 
 /* Sends a PIR data event over blaze to the gateway node for processing. */
 void mm_send_pir_data
