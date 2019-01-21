@@ -26,14 +26,14 @@ notes:
 /**********************************************************
                         CONSTANTS
 **********************************************************/
-#define LED_ON_TICK_MS                          500 //How long LEDs remain on while blinking
-#define LED_OFF_TICK_MS                         500 //How long LEDs remain off while blinking
+#define LED_ON_TICK_MS                          (500) //How long LEDs remain on while blinking
+#define LED_OFF_TICK_MS                         (500) //How long LEDs remain off while blinking
 
-#define PAGE_NUM_INDEX                          0
-#define LED_FUNCTION_INDEX                      1
-#define LED_COLOUR_INDEX                        2
+#define PAGE_NUM_INDEX                          (0)
+#define LED_FUNCTION_INDEX                      (1)
+#define LED_COLOUR_INDEX                        (2)
 
-#define BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM  0x03
+#define BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM  (0x03)
 
 /**********************************************************
                           ENUMS
@@ -137,10 +137,10 @@ static void update_led_settings(led_function_t led_function, led_colours_t led_c
     uint32_t colour_hex_code = 0x00;
     switch (led_colour)
     {
-        case LED_COLOUR_YELLOW:
+        case LED_COLOURS_YELLOW:
             colour_hex_code = MM_RGB_COLOUR_YELLOW;
             break;
-        case LED_COLOUR_RED:
+        case LED_COLOURS_RED:
             colour_hex_code = MM_RGB_COLOUR_RED;
             break;
         default:
@@ -150,14 +150,14 @@ static void update_led_settings(led_function_t led_function, led_colours_t led_c
 
     switch (led_function)
     {
-        case LEDS_OFF:
+        case LED_FUNCTION_LEDS_OFF:
             mm_rgb_set_on_off_cycle(0, LED_OFF_TICK_MS); //Set on_ticks to 0 - LED is never on
             break;
-        case LEDS_BLINKING:
+        case LED_FUNCTION_LEDS_BLINKING:
             mm_rgb_led_set_colour(colour_hex_code);
             mm_rgb_set_on_off_cycle(LED_ON_TICK_MS, LED_OFF_TICK_MS);
             break;
-        case LEDS_ON_CONTINUOUSLY:
+        case LED_FUNCTION_LEDS_ON_CONTINUOUSLY:
             mm_rgb_led_set_colour(colour_hex_code);
             mm_rgb_set_on_off_cycle(LED_ON_TICK_MS, 0); //Set off_ticks to 0 - LED is never on
             break;

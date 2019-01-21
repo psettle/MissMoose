@@ -22,16 +22,16 @@ notes:
 //Possible LED colours
 typedef enum
 {
-    LED_COLOUR_YELLOW,
-    LED_COLOUR_RED
+    LED_COLOURS_YELLOW,
+    LED_COLOURS_RED
 } led_colours_t;
 
 //How the LEDs should behave
 typedef enum
 {
-    LEDS_OFF,
-    LEDS_BLINKING, //LEDs will blink on and off
-    LEDS_ON_CONTINUOUSLY //LEDs will remain on
+    LED_FUNCTION_LEDS_OFF,
+    LED_FUNCTION_LEDS_BLINKING, //LEDs will blink on and off
+    LED_FUNCTION_LEDS_ON_CONTINUOUSLY //LEDs will remain on
 
 } led_function_t;
 
