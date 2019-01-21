@@ -240,4 +240,6 @@ static void external_init(void)
     mm_sensor_transmission_init();
     /* Init sensor data processing now that data can be transmitted. */
     mm_sensor_algorithm_init();
+    /* Init LED control transmission over blaze */
+    mm_led_control_init();
 }
