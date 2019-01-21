@@ -6,13 +6,12 @@
 #include <string.h>
 
 #include "mm_ant_control.h"
+#include "mm_sensor_transmission.h"
 #include "app_error.h"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
-
-#define MAX_NUMBER_NODES					( 9 )
 
 #define PAGE_NUMBER_INDEX					( 0 )
 
@@ -258,5 +257,24 @@ bool have_node_positions_changed( void )
 void clear_unread_node_positions( void )
 {
 	have_positions_changed = false;
+}
+
+/**
+    Returns the sensor rotation constants for a given node type
+*/
+void get_sensor_rotations( sensor_rotation_t* sensor_1_rotation, sensor_rotation_t* sensor_2_rotation, uint8_t node_type )
+{
+	switch(node_type)
+	{
+		case(1): // 2 PIR
+			*sensor_1_rotation = 0;
+			*sensor_2_rotation = 2;
+			break;
+		case(2): // 1 LIDAR 1 PIR
+		case(3): // 1 LIDAR 1 PIR
+			*sensor_1_rotation = 0;
+			*sensor_2_rotation = 6;
+			break;
+	}
 }
 #endif

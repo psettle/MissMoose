@@ -14,6 +14,9 @@
 #define POSITION_CONFIG_PAGE_NUM        ( 0x11 )
 #define CM_PER_GRID_OFFSET				( 5 )
 
+#define MAX_NUMBER_NODES				( 9 )
+#define MAX_SENSORS_PER_NODE			( 2 )
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
@@ -67,6 +70,11 @@ typedef struct mm_node_position_struct {
 	 * have changed recently, and therefore, allows them to avoid
 	 * making redundant checks on node position data.*/
 	void clear_unread_node_positions( void );
+
+	/**
+		Returns the sensor rotation constants for a given node type
+	*/
+	void get_sensor_rotations( sensor_rotation_t* sensor_1_rotation, sensor_rotation_t* sensor_2_rotation, uint8_t node_type );
 
 #endif
 
