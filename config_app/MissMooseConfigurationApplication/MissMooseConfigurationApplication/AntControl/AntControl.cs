@@ -74,6 +74,8 @@ namespace MissMooseConfigurationApplication
         private bool deviceRunning = false;
         private bool sendingNodeId = false;
         private bool openedGatewayChannel = false;
+        private bool reopenNodeSearchChannel = false;
+        private bool reopenGatewayChannel = false;
 
         // Default wait time in milliseconds for ANT function calls
         private static readonly ushort waitTime = 500;
@@ -344,10 +346,34 @@ namespace MissMooseConfigurationApplication
         {
             if (response.responseID == (byte)ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40)
             {
-                // If a search timeout occurs, reopen the channel
-                if (response.getChannelEventCode() == ANT_ReferenceLibrary.ANTEventID.EVENT_RX_SEARCH_TIMEOUT_0x01)
+                switch (response.getChannelEventCode())
                 {
-                    nodeSearchChannel.openChannel();
+                    case ANT_ReferenceLibrary.ANTEventID.EVENT_RX_SEARCH_TIMEOUT_0x01:
+                        reopenNodeSearchChannel = true;
+                        break;
+                    case ANT_ReferenceLibrary.ANTEventID.EVENT_CHANNEL_CLOSED_0x07:
+                        if (reopenNodeSearchChannel)
+                        {
+                            reopenNodeSearchChannel = false;
+
+                            // Clear exclusion list
+                            nodeSearchChannel.includeExcludeList_Configure(0, true);
+
+                            // Unassign the channel
+                            if (nodeSearchChannel.unassignChannel(waitTime))
+                            {
+                                Console.WriteLine("Unassigned channel");
+                            }
+                            else
+                            {
+                                throw new Exception("Channel unassign operation failed.");
+                            }
+
+                            // Reassign and open the channel, excluding the current master device number from the search
+                            // so we don't just pair to it again
+                            setupAndOpenChannel(nodeSearchChannel, nodeSearchDeviceNumber, true);
+                        }
+                        break;
                 }
             }
             //This is a receive event, so handle the received ANT message
@@ -379,10 +405,30 @@ namespace MissMooseConfigurationApplication
         {
             if (response.responseID == (byte)ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40)
             {
-                // If a search timeout occurs, reopen the channel
-                if (response.getChannelEventCode() == ANT_ReferenceLibrary.ANTEventID.EVENT_RX_SEARCH_TIMEOUT_0x01)
+                switch (response.getChannelEventCode())
                 {
-                    gatewayChannel.openChannel();
+                    case ANT_ReferenceLibrary.ANTEventID.EVENT_RX_SEARCH_TIMEOUT_0x01:
+                        reopenGatewayChannel = true;
+                        break;
+                    case ANT_ReferenceLibrary.ANTEventID.EVENT_CHANNEL_CLOSED_0x07:
+                        if (reopenGatewayChannel)
+                        {
+                            reopenGatewayChannel = false;
+
+                            // Unassign the channel
+                            if (gatewayChannel.unassignChannel(waitTime))
+                            {
+                                Console.WriteLine("Unassigned channel");
+                            }
+                            else
+                            {
+                                throw new Exception("Channel unassign operation failed.");
+                            }
+
+                            // Reassign and open the channel
+                            setupAndOpenChannel(gatewayChannel, gatewayDeviceNumber, false);
+                        }
+                        break;
                 }
             }
             //This is a receive event, so handle the received ANT message
