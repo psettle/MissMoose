@@ -15,14 +15,19 @@ notes:
 #include "mm_blaze_control.h"
 //LED control functions
 #include "mm_rgb_led_pub.h"
-//For memset?
+//For memset
 #include <string.h>
+//APP_ERROR_CHECK
+#include "app_error.h"
+//For MM_GATEWAY_ID
+#include "mm_blaze_static_config.h"
+
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
-static const uint16_t led_on_tick_ms = 500; //How long LEDs remain on while blinking
-static const uint16_t led_off_tick_ms = 500; //How long LEDs remain off while blinking
+#define LED_ON_TICK_MS                          500 //How long LEDs remain on while blinking
+#define LED_OFF_TICK_MS                         500 //How long LEDs remain off while blinking
 
 #define PAGE_NUM_INDEX                          0
 #define LED_FUNCTION_INDEX                      1
@@ -38,7 +43,9 @@ static const uint16_t led_off_tick_ms = 500; //How long LEDs remain off while bl
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
+#ifndef MM_BLAZE_GATEWAY
 static void blaze_rx_handler( ant_blaze_message_t msg );
+#endif
 static void update_led_settings(led_function_t led_function, led_colours_t led_colour);
 
 /**********************************************************
@@ -89,7 +96,7 @@ void mm_led_control_update_node_leds
     uint8_t payload [5];
 	memset( &payload[0], 0, sizeof( payload ) );
 
-	payload[PAGE_NUM_INDEX] = BLAZE_LIDAR_DATA_PAGE_NUMBER;
+	payload[PAGE_NUM_INDEX] = BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM;
 	payload[LED_FUNCTION_INDEX] = led_function;
     payload[LED_COLOUR_INDEX] = led_colour;
 
@@ -104,28 +111,25 @@ void mm_led_control_update_node_leds
 #endif
 
 
-
+#ifndef MM_BLAZE_GATEWAY
 //Respond to LED status transmission messages, do nothing otherwise. 
 static void blaze_rx_handler( ant_blaze_message_t msg )
 {
     uint8_t const * payload = msg.p_data;
 
-    if(payload[0] == BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM){
+    if(payload[PAGE_NUM_INDEX] == BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM){
         led_function_t led_function = payload[LED_FUNCTION_INDEX];
         led_colours_t led_colour = payload[LED_COLOUR_INDEX];
         update_led_settings(led_function, led_colour);
     }
 
 }
+#endif
 
 static void update_led_settings(led_function_t led_function, led_colours_t led_colour)
 {
-    //If this node does not have LEDs, throw an error
-    if(configuration != HARDWARE_CONFIG_PIR_LIDAR_LED)
-    {
-        APP_ERROR_CHECK(true);
-    }
-
+    //It's an error if this node does not have LEDs
+    APP_ERROR_CHECK(configuration != HARDWARE_CONFIG_PIR_LIDAR_LED);
 
     // leds_blinking, //LEDs will blink on and off
     // leds_on_continuously //LEDs will remain on
@@ -133,10 +137,10 @@ static void update_led_settings(led_function_t led_function, led_colours_t led_c
     uint32_t colour_hex_code = 0x00;
     switch (led_colour)
     {
-        case led_colour_yellow:
+        case LED_COLOUR_YELLOW:
             colour_hex_code = MM_RGB_COLOUR_YELLOW;
             break;
-        case led_colour_red:
+        case LED_COLOUR_RED:
             colour_hex_code = MM_RGB_COLOUR_RED;
             break;
         default:
@@ -146,16 +150,16 @@ static void update_led_settings(led_function_t led_function, led_colours_t led_c
 
     switch (led_function)
     {
-        case leds_off:
-            mm_rgb_set_on_off_cycle(0, led_off_tick_ms); //Set on_ticks to 0 - LED is never on
+        case LEDS_OFF:
+            mm_rgb_set_on_off_cycle(0, LED_OFF_TICK_MS); //Set on_ticks to 0 - LED is never on
             break;
-        case leds_blinking:
+        case LEDS_BLINKING:
             mm_rgb_led_set_colour(colour_hex_code);
-            mm_rgb_set_on_off_cycle(led_on_tick_ms, led_off_tick_ms);
+            mm_rgb_set_on_off_cycle(LED_ON_TICK_MS, LED_OFF_TICK_MS);
             break;
-        case leds_on_continuously:
+        case LEDS_ON_CONTINUOUSLY:
             mm_rgb_led_set_colour(colour_hex_code);
-            mm_rgb_set_on_off_cycle(led_on_tick_ms, 0); //Set off_ticks to 0 - LED is never on
+            mm_rgb_set_on_off_cycle(LED_ON_TICK_MS, 0); //Set off_ticks to 0 - LED is never on
             break;
         default:
             APP_ERROR_CHECK(true);

@@ -18,6 +18,7 @@ notes:
 #include "mm_ant_page_manager.h"
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
+#include "mm_led_control.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -238,8 +239,9 @@ static void external_init(void)
     mm_blaze_init(node_id, network_id);
     /* Init sensor transmission over blaze. */
     mm_sensor_transmission_init();
+    /* Init LED control transmission over blaze. Placed before algorithm init so it can use LED control. */
+    mm_led_control_init();
     /* Init sensor data processing now that data can be transmitted. */
     mm_sensor_algorithm_init();
-    /* Init LED control transmission over blaze */
-    mm_led_control_init();
+
 }
