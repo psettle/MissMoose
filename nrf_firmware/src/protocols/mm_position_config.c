@@ -7,6 +7,7 @@
 
 #include "mm_ant_control.h"
 #include "mm_sensor_transmission.h"
+#include "mm_switch_config.h"
 #include "app_error.h"
 
 /**********************************************************
@@ -262,18 +263,18 @@ void clear_unread_node_positions( void )
 /**
     Returns the sensor rotation constants for a given node type
 */
-void get_sensor_rotations( sensor_rotation_t* sensor_1_rotation, sensor_rotation_t* sensor_2_rotation, uint8_t node_type )
+void get_sensor_rotations( uint8_t node_type, sensor_rotation_t* sensor_1_rotation, sensor_rotation_t* sensor_2_rotation )
 {
 	switch(node_type)
 	{
-		case(1): // 2 PIR
-			*sensor_1_rotation = 0;
-			*sensor_2_rotation = 2;
+		case(HARDWARE_CONFIG_PIR_PIR):
+			*sensor_1_rotation = SENSOR_ROTATION_0;
+			*sensor_2_rotation = SENSOR_ROTATION_270;
 			break;
-		case(2): // 1 LIDAR 1 PIR
-		case(3): // 1 LIDAR 1 PIR
-			*sensor_1_rotation = 0;
-			*sensor_2_rotation = 6;
+		case(HARDWARE_CONFIG_PIR_LIDAR):
+		case(HARDWARE_CONFIG_PIR_LIDAR_LED):
+			*sensor_1_rotation = SENSOR_ROTATION_0;
+			*sensor_2_rotation = SENSOR_ROTATION_90;
 			break;
 	}
 }
