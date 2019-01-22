@@ -282,7 +282,7 @@ static void record_sensor_activity(sensor_evt_t const * evt)
     }
     memcpy(&mm_active_nodes_past_day[mm_active_nodes_past_day_count], &activity_record, sizeof( activity_record ));
     mm_active_nodes_past_day_count++;
-    APP_ERROR_CHECK_BOOL(mm_active_nodes_past_day_count > sizeof( mm_active_nodes_past_day ));
+    APP_ERROR_CHECK_BOOL(mm_active_nodes_past_day_count > MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE);
 }
 
 /**
