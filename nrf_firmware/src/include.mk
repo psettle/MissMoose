@@ -102,8 +102,10 @@ INC_FOLDERS += \
   $(PROJ_DIR)/src/sensor_management/ \
   $(PROJ_DIR)/src/sensor_algorithm/ \
   ../config \
+  $(SDK_ROOT)/components/libraries/atomic \
   $(SDK_ROOT)/components/libraries/hardfault \
   $(SDK_ROOT)/components/libraries/util \
+  $(SDK_ROOT)/components/libraries/mutex \
   $(SDK_ROOT)/components/drivers_nrf/common \
   $(SDK_ROOT)/components \
   $(SDK_ROOT)/components/softdevice/common/softdevice_handler \

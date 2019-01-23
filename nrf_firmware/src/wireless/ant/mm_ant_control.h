@@ -38,6 +38,9 @@ void mm_softdevice_init(void);
 /* Initialize required ANT channels */
 void mm_ant_init(void);
 
+/* Main callback, dispatches ant events. */
+void mm_ant_main(void);
+
 /* Add ANT event listeners */
 void mm_ant_evt_handler_set(mm_ant_evt_handler_t mm_ant_evt_handler);
 
