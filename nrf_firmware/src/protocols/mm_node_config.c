@@ -16,6 +16,7 @@ notes:
 #include "mm_blaze_static_config.h"
 #include "mm_switch_config.h"
 #include "mm_ant_page_manager.h"
+#include "mm_sensor_manager.h"
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
 #include "mm_led_control.h"
@@ -31,6 +32,8 @@ notes:
 /**********************************************************
                         CONSTANTS
 **********************************************************/
+
+#define SENSOR_MANAGER_LED_DEBUG_ENABLED    ( false )
 
 #define CONTROL_PIN (BSP_BUTTON_1)
 
@@ -202,6 +205,8 @@ static void external_init(void)
     mm_blaze_init(node_id, network_id);
     /* Init sensor transmission over blaze. */
     mm_sensor_transmission_init();
+    /* Init local sensor data dispatch */
+    mm_sensor_manager_init(SENSOR_MANAGER_LED_DEBUG_ENABLED);
     /* Init LED control transmission over blaze. Placed before algorithm init so it can use LED control. */
     mm_led_control_init();
     /* Init sensor data processing now that data can be transmitted. */
@@ -263,4 +268,3 @@ static void timer_handler(void * p_context)
     err_code = app_sched_event_put(NULL, 0, on_timer_event);
     APP_ERROR_CHECK(err_code);
 }
-
