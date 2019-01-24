@@ -21,7 +21,9 @@ notes:
 #include "app_error.h"
 //For MM_GATEWAY_ID
 #include "mm_blaze_static_config.h"
-
+//For testing sending LED messages (Needed for button control)
+#include "bsp.h"
+#include "nrf_drv_gpiote.h"
 
 /**********************************************************
                         CONSTANTS
@@ -35,6 +37,13 @@ notes:
 
 #define BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM  (0x03)
 
+//Used to test sending LED control messages from the gateway to the node by pressing buttons
+#ifdef MM_BLAZE_GATEWAY
+#define TEST_LED_MESSAGES                       (True)
+#define TEST_LED_MESSAGES_COLOUR_CONTROL_PIN    (BSP_BUTTON_0)
+#define TEST_LED_MESSAGES_LEDS_ON_PIN           (BSP_BUTTON_2)
+#define TEST_LED_MESSAGES_LEDS_OFF_PIN          (BSP_BUTTON_3)
+#endif
 /**********************************************************
                           ENUMS
 **********************************************************/
@@ -45,13 +54,20 @@ notes:
 **********************************************************/
 #ifndef MM_BLAZE_GATEWAY
 static void blaze_rx_handler( ant_blaze_message_t msg );
-#endif
+#endif //MM_BLAZE_GATEWAY
 static void update_led_settings(led_function_t led_function, led_colours_t led_colour);
+#ifdef TEST_LED_MESSAGES
+static void test_led_messages_init_buttons(void);
+static void led_test_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+#endif //TEST_LED_MESSAGES
 
 /**********************************************************
                        VARIABLES
 **********************************************************/
 static hardware_config_t configuration;
+#ifdef TEST_LED_MESSAGES
+static led_colours_t current_test_led_colour = LED_COLOURS_YELLOW;
+#endif
 
 /**********************************************************
                        DEFINITIONS
@@ -68,7 +84,15 @@ void mm_led_control_init(void)
     {
         mm_blaze_register_message_listener(blaze_rx_handler);
     }
-#endif
+
+#endif // #ifndef MM_BLAZE_GATEWAY
+
+
+#ifdef TEST_LED_MESSAGES
+    test_led_messages_init_buttons();
+#endif // #ifdef #ifdef TEST_LED_MESSAGES
+
+
 }
 
 #ifdef MM_BLAZE_GATEWAY
@@ -167,4 +191,92 @@ static void update_led_settings(led_function_t led_function, led_colours_t led_c
     }
     
 }
+
+
+#ifdef TEST_LED_MESSAGES
+
+static void test_led_messages_init_buttons(void)
+{
+    //Configure control buttons
+    uint32_t err_code;
+
+    nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
+    in_config.pull = NRF_GPIO_PIN_PULLUP;
+
+    //Could make this into a loop by putting the pin values into an array?
+
+    //Configure TEST_LED_MESSAGES_COLOUR_CONTROL_PIN button
+    err_code = nrf_drv_gpiote_in_init
+        (
+            TEST_LED_MESSAGES_COLOUR_CONTROL_PIN, 
+            &in_config, 
+            led_test_button_press_handler
+        );
+    APP_ERROR_CHECK(err_code);
+
+    nrf_drv_gpiote_in_event_enable(TEST_LED_MESSAGES_COLOUR_CONTROL_PIN, true);
+
+    //Configure TEST_LED_MESSAGES_LEDS_ON_PIN button
+    err_code = nrf_drv_gpiote_in_init
+        (
+            TEST_LED_MESSAGES_LEDS_ON_PIN, 
+            &in_config, 
+            led_test_button_press_handler
+        );
+    APP_ERROR_CHECK(err_code);
+
+    nrf_drv_gpiote_in_event_enable(TEST_LED_MESSAGES_LEDS_ON_PIN, true);
+
+    //Configure TEST_LED_MESSAGES_LEDS_OFF_PIN button
+    err_code = nrf_drv_gpiote_in_init
+        (
+            TEST_LED_MESSAGES_LEDS_OFF_PIN, 
+            &in_config, 
+            led_test_button_press_handler
+        );
+    APP_ERROR_CHECK(err_code);
+
+    nrf_drv_gpiote_in_event_enable(TEST_LED_MESSAGES_LEDS_OFF_PIN, true);
+
+}
+
+static void led_test_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    /* Check that the input button is actually set. */
+    if(!nrf_drv_gpiote_in_is_set(pin))
+    {
+    	return;
+    }
+
+    /* Differentiate between the three buttons
+    *  TEST_LED_MESSAGES_COLOUR_CONTROL_PIN - Cycle between colours
+    *  TEST_LED_MESSAGES_LEDS_ON_PIN - Send a message to turn LEDs on
+    *  TEST_LED_MESSAGES_LEDS_OFF_PIN - Send a message to turn LEDs off
+    */
+   switch(pin){
+    case TEST_LED_MESSAGES_COLOUR_CONTROL_PIN:
+        if(current_test_led_colour == LED_COLOURS_RED)
+        {
+            current_test_led_colour = LED_COLOURS_YELLOW;
+        }
+        else
+        {
+            current_test_led_colour = LED_COLOURS_RED;
+        }
+        break;
+    case TEST_LED_MESSAGES_LEDS_ON_PIN:
+        //Note that the target node will currently (Jan 24, 2019) be hardcoded to be node 1
+        mm_led_control_update_node_leds(1, LED_FUNCTION_LEDS_BLINKING, current_test_led_colour);
+        break;
+    case TEST_LED_MESSAGES_LEDS_OFF_PIN:
+        mm_led_control_update_node_leds(1, LED_FUNCTION_LEDS_OFF, current_test_led_colour);
+        break;
+    default:
+        APP_ERROR_CHECK(true);
+   }
+}
+
+#endif // #ifdef TEST_LED_MESSAGES
+
+
 
