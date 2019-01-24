@@ -22,7 +22,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/hardfault/hardfault_implementation.c \
   $(SDK_ROOT)/components/libraries/util/nrf_assert.c \
   $(SDK_ROOT)/components/libraries/strerror/nrf_strerror.c \
-  $(SDK_ROOT)/components/libraries/sensorsim/sensorsim.c \
+  $(SDK_ROOT)/components/libraries/scheduler/app_scheduler.c \
   $(SDK_ROOT)/components/libraries/pwm/app_pwm.c \
   $(SDK_ROOT)/components/libraries/low_power_pwm/low_power_pwm.c \
   $(SDK_ROOT)/components/drivers_nrf/clock/nrf_drv_clock.c \
