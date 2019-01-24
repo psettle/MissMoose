@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include "mm_ant_control.h"
-#include "mm_sensor_transmission.h"
 #include "mm_switch_config.h"
 #include "app_error.h"
 
