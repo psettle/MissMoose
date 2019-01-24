@@ -245,6 +245,31 @@ mm_node_position_t const * get_position_for_node( uint16_t node_id )
 	return NULL;
 }
 
+mm_node_position_t const * get_node_for_position(int8_t x, int8_t y)
+{
+	for ( uint16_t i = 0; i < MAX_NUMBER_NODES; ++i )
+	{
+		if( !node_positions[i].is_valid )
+		{
+			continue;
+		}
+
+		if(node_position[i].grid_position_x != x)
+		{
+			continue;
+		}
+
+		if(node_position[i].grid_position_y != y)
+		{
+			continue;
+		}
+
+		return &node_positions[i];
+	}
+
+	return NULL;
+}
+
 uint16_t get_number_of_nodes( void )
 {
 	return current_number_of_nodes;
