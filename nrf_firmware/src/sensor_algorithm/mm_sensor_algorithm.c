@@ -71,6 +71,13 @@ notes:
 #define ROAD_PROXIMITY_FACTOR_1             ( 1.2f )
 #define ROAD_PROXIMITY_FACTOR_2             ( 1.0f )
 
+#define COMMON_SENSOR_TRICKLE_FACTOR        ( 1.0f )
+#define BASE_SENSOR_TRICKLE_FACTOR_PIR      ( 1.003f )
+#define BASE_SENSOR_TRICKLE_FACTOR_LIDAR    ( 1.0035f )
+#define ROAD_TRICKLE_PROXIMITY_FACTOR_0     ( 1.004f )
+#define ROAD_TRICKLE_PROXIMITY_FACTOR_1     ( 1.002f )
+#define ROAD_TRICKLE_PROXIMITY_FACTOR_2     ( 1.0f )
+
 /**********************************************************
                           TYPES
 **********************************************************/
@@ -92,16 +99,16 @@ typedef struct
 
 typedef enum
 {
-    LIDAR_DISTANCE_REGION_0,    /* The lidar is currently detecting something in the region in front of it */
-    LIDAR_DISTANCE_REGION_1,    /* The lidar is currently detecting something in the region 1 past it */
+    LIDAR_REGION_REGION_0,    /* The lidar is currently detecting something in the region in front of it */
+    LIDAR_REGION_REGION_1,    /* The lidar is currently detecting something in the region 1 past it */
     
-    LIDAR_DISTANCE_REGION_NONE, /* The lidar is currently 'detecting' something past the edge of the network */
-    LIDAR_DISTANCE_COUNT
-} lidar_distance_t;
+    LIDAR_REGION_REGION_NONE, /* The lidar is currently 'detecting' something past the edge of the network */
+    LIDAR_REGION_COUNT
+} lidar_region_t;
 
 typedef struct
 {
-    lidar_distance_t   region;              /* Which region the measured distance falls in. */
+    lidar_region_t   region;              /* Which region the measured distance falls in. */
     mm_node_position_t effective_position;  /* Where the measurement effectively came from, may not be a real node. */
 } lidar_get_region_out_data_t;
 
@@ -113,7 +120,7 @@ typedef struct
     union
     {
         bool             pir_detected;
-        lidar_distance_t lidar_distance;
+        lidar_region_t lidar_region;
     };
     bool is_valid;
 } sensor_detection_record_t;
@@ -204,9 +211,19 @@ static void apply_activity_variable_addition_pir(sensor_evt_t const * evt);
 static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt);
 
 /**
+ * Apply persistent growth factors to detecting sensors
+ */
+static void apply_activity_variable_trickle_factor(void);
+
+/**
+ * Apply trickle factors to activity variables for records.
+ */ 
+static void apply_activity_variable_trickle_to_record(sensor_detection_record_t const * record);
+
+/**
  * Apply growth given avs and constants.
  */ 
-static void grow_activity_variables_on_sensor_event(activity_variable_set_t* av_set, activity_variable_sensor_constants_t const * constants);
+static void grow_activity_variables(activity_variable_set_t* av_set, activity_variable_sensor_constants_t const * constants);
 
 /**
  * Fetch a detection record for a sensor, create one if needed.
@@ -225,6 +242,11 @@ static void init_sensor_detection_record(sensor_evt_t const * evt, sensor_detect
  *                     sensors position
  */
 static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_data_t* out_data);
+
+/**
+ * Fetch a virtual location for a lidar detection using the detection region and the original sensor position.
+ */
+static void get_effective_location_for_lidar_detection(mm_node_position_t const * position, sensor_detection_record_t const * record, mm_node_position_t* effective_position);
 
 /**
  * Calculate which activity variable regions are adjacent to a made detection.
@@ -619,6 +641,7 @@ static void fetch_node_positions(void)
 static void timer_event_handler(void * p_context)
 {
 	apply_activity_variable_drain_factor();
+    apply_activity_variable_trickle_factor();
 
 	/* Space left to add other once-per-second updates if
 	 * necessary in the future. */
@@ -675,6 +698,20 @@ static void apply_activity_variable_addition(sensor_evt_t const * evt)
     }
 }
 
+/**
+ * Apply persistent growth factors to detecting sensors
+ */
+static void apply_activity_variable_trickle_factor(void)
+{
+    for(uint16_t i = 0; i < MAX_SENSOR_COUNT; ++i)
+    {
+        apply_activity_variable_trickle_to_record(&(sensor_detection_records[i]));
+    }
+}
+
+/**
+ * Apply growth factors to activity variables on pir detection.
+ */ 
 static void apply_activity_variable_addition_pir(sensor_evt_t const * evt)
 {
     pir_evt_data_t const * pir_evt = &evt->pir_data;
@@ -726,14 +763,16 @@ static void apply_activity_variable_addition_pir(sensor_evt_t const * evt)
                 break;
         }
 
-        grow_activity_variables_on_sensor_event(&av_set, &constants);
+        grow_activity_variables(&av_set, &constants);
     }
 
     /* Update sensor record so we can correctly interpret the next signal. */
-    record->pir_detected = pir_evt->detection;
-    
+    record->pir_detected = pir_evt->detection;  
 }
 
+/**
+ * Apply growth factors to activity variables on lidar detection.
+ */ 
 static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
 {
     lidar_evt_data_t const * lidar_evt = &evt->lidar_data;
@@ -754,12 +793,12 @@ static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
     /* What region does the measured distance fall into? */
     lidar_get_region_out_data_t out_data;
     lidar_get_region(lidar_evt, &out_data);
-    lidar_distance_t region = out_data.region;
+    lidar_region_t region = out_data.region;
     position = &out_data.effective_position;
 
     /* Does this event represent a new detection?
        Is it in a detectable region and different than last measurement? */
-    bool is_new_detection = ((region == LIDAR_DISTANCE_REGION_0) || (region == LIDAR_DISTANCE_REGION_1)) && (region != record->lidar_distance);
+    bool is_new_detection = ((region == LIDAR_REGION_REGION_0) || (region == LIDAR_REGION_REGION_1)) && (region != record->lidar_region);
 
     /* Apply growth */
     if(is_new_detection)
@@ -792,17 +831,95 @@ static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
                 break;
         }
 
-        grow_activity_variables_on_sensor_event(&av_set, &constants);
+        grow_activity_variables(&av_set, &constants);
     }
 
     /* Update sensor record so we can correctly interpret the next signal. */
-    record->lidar_distance = region;
+    record->lidar_region = region;
+}
+
+/**
+ * Apply trickle factors to activity variables for records.
+ */ 
+static void apply_activity_variable_trickle_to_record(sensor_detection_record_t const * record)
+{
+    /* Is the record detecting? */
+    switch(record->sensor_type)
+    {
+        case SENSOR_TYPE_PIR:
+            if(!record->pir_detected)
+            {
+                return;
+            }
+            break;
+        case SENSOR_TYPE_LIDAR:
+            if(record->lidar_region == LIDAR_REGION_REGION_NONE)
+            {
+                return;
+            }
+            break;
+        default:
+            /* Unknown sensor type error. */
+            APP_ERROR_CHECK(true);
+            break;
+    }
+
+
+    /* Do we know the node that generated the event? */
+    fetch_node_positions();
+    mm_node_position_t const * position = get_position_for_node(record->node_id);
+
+    if(NULL == position)
+    {
+        /* We don't know the node, so we can't use its data. */
+        return;
+    }
+
+    /* Apply growth */
+
+    /* Grab the effective position given the detecting region */
+    mm_node_position_t effective_position;
+    if(SENSOR_TYPE_LIDAR == record->sensor_type)
+    {
+        get_effective_location_for_lidar_detection(position, record, &effective_position);
+        position = &effective_position;
+    }
+    
+    /* Which AV's does the detection apply to? */
+    activity_variable_set_t av_set;
+    find_adjacent_activity_variables(position, record->sensor_rotation, &av_set);
+
+    /* Generate a sensor constants structure. */
+    activity_variable_sensor_constants_t constants;
+
+    memset(&constants, 0, sizeof(constants));
+    constants.common_sensor_weight_factor = COMMON_SENSOR_TRICKLE_FACTOR;
+    constants.base_sensor_weight_factor   = BASE_SENSOR_TRICKLE_FACTOR_PIR;
+
+    switch(position->grid_position_y)
+    {
+        case -1:
+            constants.road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_0;
+            break;
+        case 0:
+            constants.road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_1;
+            break;
+        case 1:
+            constants.road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_2;
+            break;
+        default:
+            /* Invalid grid position given grid height */
+            APP_ERROR_CHECK(true);
+            break;
+    }
+
+    grow_activity_variables(&av_set, &constants);
 }
 
 /**
  * Apply growth constants to a set of activity variables.
  */
-static void grow_activity_variables_on_sensor_event(activity_variable_set_t* av_set, activity_variable_sensor_constants_t const * constants)
+static void grow_activity_variables(activity_variable_set_t* av_set, activity_variable_sensor_constants_t const * constants)
 {
     for(uint16_t i = 0; i < av_set->av_count; ++i)
     {
@@ -940,12 +1057,12 @@ static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_
 
     if(distance_measured < distance_to_1_node_cm)
     {
-        out_data->region = LIDAR_DISTANCE_REGION_0;
+        out_data->region = LIDAR_REGION_REGION_0;
         memcpy(&(out_data->effective_position), position, sizeof(out_data->effective_position));
     }
     else if(distance_measured < distance_to_2_node_cm)
     {
-        out_data->region = LIDAR_DISTANCE_REGION_1;
+        out_data->region = LIDAR_REGION_REGION_1;
         memcpy(&(out_data->effective_position), position_1_forward, sizeof(out_data->effective_position));
 
         /* Set the node to have the same rotation so that the normalized sensor direction is the same as from the node the sensor is physically on. */
@@ -953,11 +1070,67 @@ static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_
     }
     else
     {
-        out_data->region = LIDAR_DISTANCE_REGION_NONE;
+        out_data->region = LIDAR_REGION_REGION_NONE;
         memset(&(out_data->effective_position), 0, sizeof(out_data->effective_position));
     }
 }
 
+/**
+ * Fetch a virtual location for a lidar detection using the detection region and the original sensor position.
+ */
+static void get_effective_location_for_lidar_detection(mm_node_position_t const * position, sensor_detection_record_t const * record, mm_node_position_t* effective_position)
+{
+    /* Should not be fetching an effective position if it wasn't a detection. */
+    APP_ERROR_CHECK(record->lidar_region == LIDAR_REGION_REGION_NONE);
+
+    if(record->lidar_region == LIDAR_REGION_REGION_0)
+    {
+        /* If first region, it came from the original position. */
+        memcpy(effective_position, position, sizeof(mm_node_position_t));
+        return;
+    }
+
+    /* Now we need to mock out a position in the direction of the sensor: */
+    int8_t x = position->grid_position_x;
+    int8_t y = position->grid_position_y;
+    node_rotation_t rotation = record->sensor_rotation + position->node_rotation;
+
+    int8_t dx = 0;
+    int8_t dy = 0;
+
+    switch(rotation)
+    {
+        case NODE_ROTATION_0:
+            /* Next node is in +y direction. */
+            dy++;
+            break;
+        case NODE_ROTATION_90:
+            /* Next node is in +x direction. */
+            dx++;   
+            break;
+        case NODE_ROTATION_180:
+            /* Next node is in -y direction. */
+            dy--;
+            break;
+        case NODE_ROTATION_270:
+            /* Next node is in -x direction. */
+            dx--;
+            break;
+        default:
+            /* Current design does not support intermediate angles. */
+            APP_ERROR_CHECK(true);
+            break;
+    }
+
+    memset(effective_position, 0, sizeof(mm_node_position_t));
+    effective_position->grid_position_x = x + dx;
+    effective_position->grid_offset_y = y + dy;
+    effective_position->node_rotation = position->node_rotation; 
+}
+
+/**
+ * Fetch a record for sensor detection, create one if needed.
+ */
 static sensor_detection_record_t* get_sensor_record(sensor_evt_t const * evt)
 {
     sensor_detection_record_t * p_empty = NULL;
@@ -1019,6 +1192,9 @@ static sensor_detection_record_t* get_sensor_record(sensor_evt_t const * evt)
     return p_empty;
 }
 
+/**
+ * Initialize a new sensor detection record.
+ */
 static void init_sensor_detection_record(sensor_evt_t const * evt, sensor_detection_record_t* p_record)
 {
     p_record->sensor_type = evt->sensor_type;
@@ -1034,7 +1210,7 @@ static void init_sensor_detection_record(sensor_evt_t const * evt, sensor_detect
         case SENSOR_TYPE_LIDAR:
             p_record->node_id = evt->lidar_data.node_id;
             p_record->sensor_rotation = evt->lidar_data.sensor_rotation;
-            p_record->lidar_distance = LIDAR_DISTANCE_REGION_NONE; /* Lidar assumed not detecting to start */
+            p_record->lidar_region = LIDAR_REGION_REGION_NONE; /* Lidar assumed not detecting to start */
             break;
         default:
             /* Unknown sensor type error. */
@@ -1043,6 +1219,9 @@ static void init_sensor_detection_record(sensor_evt_t const * evt, sensor_detect
     }
 }
 
+/**
+ * Compute which AV regions are adjacent to a sensor detection.
+ */
 static void find_adjacent_activity_variables(mm_node_position_t const * position, sensor_rotation_t sensor_rotation, activity_variable_set_t* av_set)
 {
     /* Find sensor rotation relative to node rotation 0 */
