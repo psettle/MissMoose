@@ -91,7 +91,7 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt);
 /**
     Returns true if the sensor in the given event is marked as hyperactive
 */
-static bool is_sensor_hyperactive(sensor_evt_t const * evt)
+static bool is_sensor_hyperactive(sensor_evt_t const * evt);
 
 /**
     Send sensor events to the monitoring dispatch manager.
