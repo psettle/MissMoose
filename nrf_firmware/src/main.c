@@ -75,6 +75,11 @@ int main(void)
     scheduler_init();
     utils_init();
 
+    if(read_hardware_config() == HARDWARE_CONFIG_PIR_LIDAR_LED)
+    {
+    	mm_rgb_led_init(false);
+    }
+
     mm_softdevice_init();
     mm_ant_init();
     mm_ant_page_manager_init();
