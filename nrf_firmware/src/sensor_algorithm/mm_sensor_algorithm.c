@@ -53,7 +53,7 @@ notes:
 **********************************************************/
 
 #define ACTIVITY_VARIABLE_MIN                   ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX                   #error not implemented
+#define ACTIVITY_VARIABLE_MAX                   ( 12.0f )
 
 #define ACTIVITY_VARIABLE_DECAY_FACTOR          ( 0.97f )
 #define ACTIVITY_DECAY_PERIOD_MS                ( ONE_SECOND_MS )
@@ -193,6 +193,51 @@ static void daily_timer_event_handler(void * p_context);
  */ 
 static void apply_activity_variable_addition(sensor_evt_t const * evt);
 
+/**
+ * Apply growth factors to activity variables on pir sensor detection.
+ */ 
+static void apply_activity_variable_addition_pir(sensor_evt_t const * evt);
+
+/**
+ * Apply growth factors to activity variables on lidar sensor detection.
+ */ 
+static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt);
+
+/**
+ * Apply growth given avs and constants.
+ */ 
+static void grow_activity_variables_on_sensor_event(activity_variable_set_t* av_set, activity_variable_sensor_constants_t const * constants);
+
+/**
+ * Fetch a detection record for a sensor, create one if needed.
+ */ 
+static sensor_detection_record_t* get_sensor_record(sensor_evt_t const * evt);
+
+/**
+ * Set a new sensor detection record to initial values.
+ */ 
+static void init_sensor_detection_record(sensor_evt_t const * evt, sensor_detection_record_t* p_record);
+
+/**
+ * Calulate which AV region a lidar detection occured in.
+ * 
+ * [out] which region, a position to consider the detection from, given that it may not be adjacent to the
+ *                     sensors position
+ */
+static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_data_t* out_data);
+
+/**
+ * Calculate which activity variable regions are adjacent to a made detection.
+ * 
+ * [out] the set of activity variables that are adjacent.
+ */
+static void find_adjacent_activity_variables(mm_node_position_t const * position, sensor_rotation_t sensor_rotation, activity_variable_set_t* av_set);
+
+/**
+ * Check a set of AV coordinates for validity, then add to av_set if valid.
+ */
+static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set);
+
 /**********************************************************
                        VARIABLES
 **********************************************************/
@@ -216,7 +261,6 @@ static sensor_record_t mm_active_sensors_past_day[MAX_SENSOR_COUNT];
 static uint16_t mm_active_sensors_past_day_count = 0;
 
 static sensor_detection_record_t sensor_detection_records[MAX_SENSOR_COUNT];
-static uint16_t sensor_detection_records_count = 0;
 
 static sensor_activity_record_t mm_sensor_activity_record[MAX_SENSOR_COUNT];
 
@@ -619,10 +663,10 @@ static void apply_activity_variable_addition(sensor_evt_t const * evt)
     switch(evt->sensor_type)
     {
         case SENSOR_TYPE_PIR:
-            apply_activity_variable_addition_pir(&evt->pir_data);
+            apply_activity_variable_addition_pir(evt);
             break;
         case SENSOR_TYPE_LIDAR:
-            apply_activity_variable_addition_lidar(&evt->lidar_data);
+            apply_activity_variable_addition_lidar(evt);
             break;
         default:
             /* Unknown sensor type error. */
@@ -656,7 +700,7 @@ static void apply_activity_variable_addition_pir(sensor_evt_t const * evt)
     {
         /* Which AV's does the detection apply to? */
         activity_variable_set_t av_set;
-        find_adjacent_activity_variables_pir(position, pir_evt->sensor_rotation, &av_set);
+        find_adjacent_activity_variables(position, pir_evt->sensor_rotation, &av_set);
 
         /* Generate a sensor constants structure. */
         activity_variable_sensor_constants_t constants;
@@ -692,7 +736,7 @@ static void apply_activity_variable_addition_pir(sensor_evt_t const * evt)
 
 static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
 {
-    lidar_evt_data_t const * lidar_evt = &evt->pir_data;
+    lidar_evt_data_t const * lidar_evt = &evt->lidar_data;
 
     /* Do we know the node that generated the event? */
     fetch_node_positions();
@@ -771,7 +815,13 @@ static void grow_activity_variables_on_sensor_event(activity_variable_set_t* av_
         //factor *= constants->sensor_proximity_factor; /* Only close avs show up in av_set */
 
         /* Apply the factor */
-        *(av_set->avs[i]) *= factor;    
+        *(av_set->avs[i]) *= factor;
+
+        /* Check if max exceeded */
+        if(*(av_set->avs[i]) > ACTIVITY_VARIABLE_MAX)
+        {
+            *(av_set->avs[i]) = ACTIVITY_VARIABLE_MAX;
+        }
     }
 }
 
@@ -846,9 +896,9 @@ static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_
     }
 
     /* Fetch relevant offsets for distance calculation: */
-    int8_t node_0_forward_offset;
-    int8_t node_1_forward_offset;
-    int8_t node_2_forward_offset;
+    int8_t node_0_forward_offset = 0;
+    int8_t node_1_forward_offset = 0;
+    int8_t node_2_forward_offset = 0;
 
     switch(rotation)
     {
@@ -910,8 +960,7 @@ static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_
 
 static sensor_detection_record_t* get_sensor_record(sensor_evt_t const * evt)
 {
-    sensor_detection_record_t const * p_empty = NULL;
-    sensor_detection_record_t const * p_list_start = &(sensor_detection_records[0]);
+    sensor_detection_record_t * p_empty = NULL;
     sensor_detection_record_t const * p_list_end = &sensor_detection_records[MAX_SENSOR_COUNT];
  
     uint16_t node_id;
@@ -930,12 +979,12 @@ static sensor_detection_record_t* get_sensor_record(sensor_evt_t const * evt)
         default:
             /* Unknown sensor type error. */
             APP_ERROR_CHECK(true);
-            break;
+            return NULL;
     }
 
 
     /* Search for existing record */
-    for(sensor_detection_record_t* p_list = p_list_start; p_list <= p_list_end; ++p_list)
+    for(sensor_detection_record_t* p_list =  &(sensor_detection_records[0]); p_list <= p_list_end; ++p_list)
     {
         if(!p_list->is_valid)
         {
@@ -966,7 +1015,7 @@ static sensor_detection_record_t* get_sensor_record(sensor_evt_t const * evt)
     APP_ERROR_CHECK(!p_empty);
 
     /* Create and return a new record. */
-    init_sensor_detection_record(p_empty, evt);
+    init_sensor_detection_record(evt, p_empty);
     return p_empty;
 }
 
@@ -1005,7 +1054,7 @@ static void find_adjacent_activity_variables(mm_node_position_t const * position
     /* Convert node position (-floor(MAX_GRID_SIZE/2.0) to MAX_GRID_SIZE/2) into
        'av' coordinates (0 to MAX_GRID_SIZE)) */
     uint8_t x_array = (uint8_t)(x + (MAX_GRID_SIZE_X / 2)); /* Offset centre based coordinates to left based coordinates. */
-    uint8_t y_array = (uint8_t)(x + (MAX_GRID_SIZE_Y / 2)); /* Offset centre based coordinates to top based coordinates. */
+    uint8_t y_array = (uint8_t)(y + (MAX_GRID_SIZE_Y / 2)); /* Offset centre based coordinates to top based coordinates. */
     y_array = MAX_GRID_SIZE_Y - y_array -1;                 /* Positon coordinates and AV coordinates use inverted Y direction. */
 
     /* On any case x or y may underflow, if that happens they will be too big and won't be saved. */
@@ -1057,7 +1106,7 @@ static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set)
     }
 
     /* Save to av_set */
-    APP_CHECK_ERROR(av_set->av_count >= MAX_ADJACENT_ACTIVITY_VARIABLES);
+    APP_ERROR_CHECK(av_set->av_count >= MAX_ADJACENT_ACTIVITY_VARIABLES);
     av_set->avs[av_set->av_count] = &(AV(x, y));
     av_set->av_count++;
 }

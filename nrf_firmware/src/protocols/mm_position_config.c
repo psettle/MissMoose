@@ -253,12 +253,12 @@ mm_node_position_t const * get_node_for_position(int8_t x, int8_t y)
 			continue;
 		}
 
-		if(node_position[i].grid_position_x != x)
+		if(node_positions[i].grid_position_x != x)
 		{
 			continue;
 		}
 
-		if(node_position[i].grid_position_y != y)
+		if(node_positions[i].grid_position_y != y)
 		{
 			continue;
 		}
