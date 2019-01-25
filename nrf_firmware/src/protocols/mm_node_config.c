@@ -19,6 +19,7 @@ notes:
 #include "mm_sensor_manager.h"
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
+#include "mm_led_control.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -31,6 +32,8 @@ notes:
 /**********************************************************
                         CONSTANTS
 **********************************************************/
+
+#define SENSOR_MANAGER_LED_DEBUG_ENABLED    ( false )
 
 #define CONTROL_PIN (BSP_BUTTON_1)
 
@@ -267,4 +270,3 @@ static void timer_handler(void * p_context)
     err_code = app_sched_event_put(NULL, 0, on_timer_event);
     APP_ERROR_CHECK(err_code);
 }
-
