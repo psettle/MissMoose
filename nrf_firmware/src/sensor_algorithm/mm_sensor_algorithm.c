@@ -17,6 +17,7 @@ notes:
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
 #include "mm_position_config.h"
+//#include "mm_led_control.h"
 
 
 /**********************************************************
@@ -91,13 +92,29 @@ static void apply_activity_variable_drain_factor(void);
 /**
     Updates the signalling state of the LEDs based on the
     current value of the activity variables.
+
+    Hardcoded for 3x3 grids for now.
 */
 static void update_led_signalling_states(void);
+
+/**
+    Sends blaze messages to each LED node to update the colors based
+    on the current LED signalling states.
+
+    Hardcoded for 3x3 grids for now.
+*/
+static void update_node_led_colors(void);
 
 /**
     Timer handler to process once-per-second updates.
 */
 static void timer_event_handler(void * p_context);
+
+/**
+    Determines if the activity variable located at (x, y)
+    is road side or not.
+*/
+static bool is_road_side_av( uint16_t x, uint16_t y );
 
 /**********************************************************
                        VARIABLES
@@ -112,6 +129,9 @@ static void timer_event_handler(void * p_context);
      Variable (x, y) is located at activity_variables[x * (MAX_GRID_SIZE_X - 1) + y]
 */
 static activity_variable_t activity_variables[ ACTIVITY_VARIABLES_NUM ];
+
+/* Assumes that there are MAX_GRID_SIZE_X nodes with LEDs. */
+static led_signalling_state_t led_signalling_states [MAX_GRID_SIZE_X];
 
 APP_TIMER_DEF(m_timer_id);
 
@@ -130,6 +150,9 @@ void mm_sensor_algorithm_init(void)
     AV_TOP_RIGHT = ACTIVITY_VARIABLE_MIN;
     AV_BOTTOM_LEFT = ACTIVITY_VARIABLE_MIN;
     AV_BOTTOM_RIGHT = ACTIVITY_VARIABLE_MIN;
+
+    /* Initialize LED signalling states */
+    memset( &led_signalling_states[0], 0, sizeof(led_signalling_states) );
 
     /* Register for sensor data with sensor_transmission.h */
     mm_sensor_transmission_register_sensor_data(sensor_data_evt_handler);
@@ -213,13 +236,129 @@ static void apply_activity_variable_drain_factor(void)
 */
 static void update_led_signalling_states(void)
 {
-	/* Assumes that there are MAX_GRID_SIZE_X nodes
-	 * with LEDs. */
-	led_signalling_state_t states [MAX_GRID_SIZE_X];
-	memset( &states[0], 0, sizeof(states) );
+	for ( uint16_t x = 0; x < ( MAX_GRID_SIZE_X - 1 ); x++ )
+	{
+		for ( uint16_t y = 0; y < ( MAX_GRID_SIZE_Y - 1 ); y++ )
+		{
+			/* If the AV value is less than the threshold value, ignore and continue. */
+			if ( ( is_road_side_av(x, y) && ( AV(x, y) < POSSIBLE_DETECTION_THRESHOLD_RS ) ) ||
+					( !is_road_side_av(x, y) && ( AV(x, y) < POSSIBLE_DETECTION_THRESHOLD_RS ) ) )
+			{
+				continue;
+			}
 
-	/* TODO: loop though AVs and set signalling states,
-	 * then send blaze message for LED updates. */
+			if ( is_road_side_av(x, y) )
+			{
+				if ( ( AV(x, y) >= DETECTION_THRESHOLD_RS ) )
+				{
+					/* Adding the enums here guarantees that
+					 * multiple "concern" states will escalate to
+					 * an "alarm" state.*/
+					if (x == 0) // Top left
+					{
+						/* Enforce enum maximum */
+						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
+						led_signalling_states[1] = ( (led_signalling_states[1] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[1] + ALARM );
+						led_signalling_states[2] = ( (led_signalling_states[2] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[2] + CONCERN );
+					}
+					else if ( x == 1) // Top right
+					{
+						/* Enforce enum maximum */
+						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
+						led_signalling_states[1] = ( (led_signalling_states[1] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[1] + ALARM );
+						led_signalling_states[2] = ( (led_signalling_states[2] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[2] + ALARM );
+					}
+				}
+				else
+				{
+					/* Adding the enums here guarantees that
+					 * multiple "concern" states will escalate to
+					 * an "alarm" state.*/
+					if (x == 0 && y == 0) // Top left
+					{
+						/* Enforce enum maximum */
+						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
+						led_signalling_states[1] = ( (led_signalling_states[1] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[1] + CONCERN );
+					}
+					else if ( x == 1 && y == 0 ) // Top right
+					{
+						/* Enforce enum maximum */
+						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
+						led_signalling_states[1] = ( (led_signalling_states[1] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[1] + ALARM );
+						led_signalling_states[2] = ( (led_signalling_states[2] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[2] + CONCERN );
+					}
+				}
+			}
+			else
+			{
+				if ( ( AV(x, y) >= DETECTION_THRESHOLD_NRS ) )
+				{
+					/* Adding the enums here guarantees that
+					 * multiple "concern" states will escalate to
+					 * an "alarm" state.*/
+					if (x == 0) // Bottom left
+					{
+						/* Enforce enum maximum */
+						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
+						led_signalling_states[1] = ( (led_signalling_states[1] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[1] + CONCERN );
+					}
+					else if ( x == 1) // Bottom right
+					{
+						/* Enforce enum maximum */
+						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
+						led_signalling_states[1] = ( (led_signalling_states[1] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[1] + ALARM );
+						led_signalling_states[2] = ( (led_signalling_states[2] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[2] + CONCERN );
+					}
+				}
+				else
+				{
+					/* Adding the enums here guarantees that
+					 * multiple "concern" states will escalate to
+					 * an "alarm" state.*/
+					if (x == 0) // Bottom left
+					{
+						/* Enforce enum maximum */
+						led_signalling_states[0] = ( (led_signalling_states[0] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[0] + CONCERN );
+					}
+					else if ( x == 1) // Bottom right
+					{
+						/* Enforce enum maximum */
+						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
+						led_signalling_states[1] = ( (led_signalling_states[1] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[1] + CONCERN );
+					}
+				}
+			}
+		}
+	}
+}
+
+/**
+    Sends blaze messages to each LED node to update the colors based
+    on the current LED signalling states.
+
+    Hardcoded for 3x3 grids for now.
+*/
+static void update_node_led_colors(void)
+{
+	for ( uint16_t i = 0; i < MAX_GRID_SIZE_X; i++ )
+	{
+		/* Assumes LED nodes are always at the "top" of the grid. */
+		//mm_node_position_t const * node_position = get_node_at_position( i, 0);
+
+		switch ( led_signalling_states[i] )
+		{
+			case CONCERN:
+				//mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW );
+				break;
+			case ALARM:
+				//mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED );
+				break;
+			case IDLE:
+			default:
+				//mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_OFF, LED_COLOURS_RED );
+				break;
+		}
+	}
 }
 
 /**
@@ -229,7 +368,17 @@ static void timer_event_handler(void * p_context)
 {
 	apply_activity_variable_drain_factor();
 	update_led_signalling_states();
+	update_node_led_colors();
 
 	/* Space left to add other once-per-second updates if
 	 * necessary in the future. */
+}
+
+/**
+    Determines if the activity variable located at (x, y)
+    is road side or not.
+*/
+static bool is_road_side_av( uint16_t x, uint16_t y )
+{
+	return y == 0;
 }
