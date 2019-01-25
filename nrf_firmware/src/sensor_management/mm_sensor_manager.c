@@ -34,6 +34,7 @@ static void process_pir_evt(pir_evt_t * evt);
                         VARIABLES
 **********************************************************/
 
+static bool				 sensor_manager_init_complete = false;
 static hardware_config_t hardware_config = HARDWARE_CONFIG_UNKNOWN;
 
 /**********************************************************
@@ -78,10 +79,17 @@ void mm_sensor_manager_init( bool led_debug_enabled )
         default:
         	APP_ERROR_CHECK(true);
     }
+
+    sensor_manager_init_complete = true;
 }
 
 void mm_sensor_manager_main( void )
 {
+	if(!sensor_manager_init_complete)
+	{
+		return;
+	}
+
     switch(hardware_config)
     {
         case HARDWARE_CONFIG_PIR_PIR:

@@ -16,6 +16,7 @@ notes:
 #include "mm_blaze_static_config.h"
 #include "mm_switch_config.h"
 #include "mm_ant_page_manager.h"
+#include "mm_sensor_manager.h"
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
 
@@ -38,6 +39,8 @@ notes:
 #else
 	#define TIMEOUT_PERIOD_S		( 60 )
 #endif
+
+#define SENSOR_MANAGER_LED_DEBUG_ENABLED	( false )
 
 #define TIMEOUT_PERIOD_MS		( TIMEOUT_PERIOD_S * 1000 )
 #define TIMER_TICKS APP_TIMER_TICKS(TIMEOUT_PERIOD_MS)
@@ -200,9 +203,13 @@ static void external_init(void)
     /* Init blaze. */
     mm_blaze_init(node_id, network_id);
     /* Init sensor transmission over blaze. */
+    mm_sensor_manager_init(SENSOR_MANAGER_LED_DEBUG_ENABLED);
+    /* Init sensor transmission over blaze. */
     mm_sensor_transmission_init();
+#ifdef MM_BLAZE_GATEWAY
     /* Init sensor data processing now that data can be transmitted. */
     mm_sensor_algorithm_init();
+#endif
 }
 
 /**********************************************************

@@ -44,8 +44,6 @@ SRC_FILES += \
   $(PROJ_DIR)/src/wireless/blaze/mm_blaze_control.c \
   $(PROJ_DIR)/src/protocols/mm_node_config.c \
   $(PROJ_DIR)/src/protocols/mm_switch_config.c \
-  $(PROJ_DIR)/src/protocols/mm_monitoring_dispatch.c \
-  $(PROJ_DIR)/src/protocols/mm_position_config.c \
   $(PROJ_DIR)/src/sensors/pir/pir_st_00081.c \
   $(PROJ_DIR)/src/sensors/pir/pir_28027.c \
   $(PROJ_DIR)/src/sensors/ir_led/ky_022_receive.c \
@@ -54,9 +52,6 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensors/mm_hardware_test.c \
   $(PROJ_DIR)/src/sensor_management/mm_sensor_manager.c \
   $(PROJ_DIR)/src/sensor_management/mm_sensor_transmission.c \
-  $(PROJ_DIR)/src/sensor_algorithm/mm_sensor_algorithm.c \
-  $(PROJ_DIR)/src/sensor_algorithm/mm_activity_variables.c \
-  $(PROJ_DIR)/src/sensor_algorithm/mm_activity_variable_growth.c \
   $(PROJ_DIR)/src/peripherals/mm_rgb_led.c \
   $(PROJ_DIR)/src/peripherals/mm_power_bank_timer.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
@@ -65,6 +60,16 @@ SRC_FILES += \
   $(SDK_ROOT)/components/toolchain/gcc/gcc_startup_nrf52.S \
   $(SDK_ROOT)/components/toolchain/system_nrf52.c \
   $(SDK_ROOT)/components/softdevice/common/softdevice_handler/softdevice_handler.c \
+
+#gateway only source
+ifeq ($(IS_BLAZE_GATEWAY),1)
+SRC_FILES += \
+  $(PROJ_DIR)/src/sensor_algorithm/mm_sensor_algorithm.c \
+  $(PROJ_DIR)/src/sensor_algorithm/mm_activity_variables.c \
+  $(PROJ_DIR)/src/sensor_algorithm/mm_activity_variable_growth.c \
+  $(PROJ_DIR)/src/protocols/mm_monitoring_dispatch.c \
+  $(PROJ_DIR)/src/protocols/mm_position_config.c
+endif
 
 # Include folders common to all targets
 INC_FOLDERS += \

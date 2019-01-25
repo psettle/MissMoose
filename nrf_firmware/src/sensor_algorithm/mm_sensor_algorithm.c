@@ -21,7 +21,6 @@ notes:
 #include "mm_activity_variable_growth.h"
 #include "mm_position_config.h"
 
-
 /**********************************************************
                         CONSTANTS
 **********************************************************/

@@ -178,6 +178,7 @@ static void blaze_rx_handler( ant_blaze_message_t msg )
 }
 
 #ifdef MM_BLAZE_GATEWAY
+
 /* Notifies sensor data event listeners of processed sensor
  * data events.*/
 static void sensor_data_evt_message_dispatch( sensor_evt_t const * sensor_evt )

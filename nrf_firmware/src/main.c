@@ -41,8 +41,6 @@ notes:
                         CONSTANTS
 **********************************************************/
 
-#define SENSOR_MANAGER_LED_DEBUG_ENABLED    ( false )
-
 #define SCHEDULER_MAX_EVENT_SIZE			MAX( \
 	sizeof(uint8_t),				\
 	sizeof(ant_evt_t)			\
@@ -78,7 +76,6 @@ int main(void)
     mm_softdevice_init();
     mm_ant_init();
     mm_ant_page_manager_init();
-    mm_sensor_manager_init(SENSOR_MANAGER_LED_DEBUG_ENABLED);
 
     #ifdef NODE_ID_FROM_CONFIG_APP
     // If getting node ID from the configuration app,
