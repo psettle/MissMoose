@@ -55,6 +55,7 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensor_management/mm_sensor_manager.c \
   $(PROJ_DIR)/src/sensor_management/mm_sensor_transmission.c \
   $(PROJ_DIR)/src/sensor_algorithm/mm_sensor_algorithm.c \
+  $(PROJ_DIR)/src/sensor_algorithm/mm_activity_variables.c \
   $(PROJ_DIR)/src/peripherals/mm_rgb_led.c \
   $(PROJ_DIR)/src/peripherals/mm_power_bank_timer.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
