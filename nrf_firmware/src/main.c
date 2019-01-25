@@ -15,6 +15,7 @@ notes:
 #include "bsp.h"
 #include "app_error.h"
 #include "app_timer.h"
+#include "app_scheduler.h"
 
 /**********************************************************
                         PROJECT INCLUDES
@@ -42,11 +43,19 @@ notes:
 
 #define SENSOR_MANAGER_LED_DEBUG_ENABLED    ( false )
 
+#define SCHEDULER_MAX_EVENT_SIZE			MAX( \
+	sizeof(uint8_t),				\
+	sizeof(ant_evt_t)			\
+)
+
+#define SCHEDULER_MAX_EVENT_COUNT			( 10 )	/* Main should run after every event, so it should be hard to queue up a lot of events. */
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
 
-static void utils_setup(void);
+static void utils_init(void);
+static void scheduler_init(void);
 
 /**********************************************************
                        VARIABLES
@@ -63,7 +72,9 @@ int main(void)
 {
     uint32_t err_code;
 
-    utils_setup();
+    scheduler_init();
+    utils_init();
+
     mm_softdevice_init();
     mm_ant_init();
     mm_ant_page_manager_init();
@@ -94,8 +105,10 @@ int main(void)
 
     while(true)
     {
-        // mm_hardware_test_update_main();
-		mm_node_config_main();
+    	app_sched_execute();
+
+    	// mm_hardware_test_update_main();
+
         mm_sensor_manager_main();
         #ifdef MM_BLAZE_GATEWAY
                 mm_monitoring_dispatch_main();
@@ -108,7 +121,7 @@ int main(void)
 /**
  * Function for setup all thinks not directly associated witch ANT stack/protocol.
  */
- static void utils_setup(void)
+ static void utils_init(void)
  {
      uint32_t err_code;
 
@@ -121,4 +134,9 @@ int main(void)
      bsp_board_leds_init();
 
      mm_switch_config_init();
+ }
+
+ static void scheduler_init(void)
+ {
+	 APP_SCHED_INIT(SCHEDULER_MAX_EVENT_SIZE, SCHEDULER_MAX_EVENT_COUNT);
  }
