@@ -31,11 +31,4 @@ notes:
 /* Initialize node configuration */
 void mm_node_config_init(void);
 
-/*
- * Called from main superloop
- * Provides a safe thread context to make
- * potentially time-consuming function calls.
- */
-void mm_node_config_main(void);
-
 #endif /* MM_ANT_CONTROL_H */
