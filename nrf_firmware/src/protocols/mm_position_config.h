@@ -18,11 +18,26 @@
                        DECLARATIONS
 **********************************************************/
 
+typedef enum
+{
+    NODE_ROTATION_0,
+    NODE_ROTATION_45,
+    NODE_ROTATION_90,
+    NODE_ROTATION_135,
+    NODE_ROTATION_180,
+    NODE_ROTATION_225,
+    NODE_ROTATION_270,
+    NODE_ROTATION_315,
+
+	NODE_ROTATION_COUNT
+} mm_node_rotation_t;
+
+
 typedef struct mm_node_position_struct {
 	uint16_t node_id;
 
-	uint8_t node_type;
-	uint8_t node_rotation;
+	uint8_t 			node_type;
+	mm_node_rotation_t 	node_rotation;
 
 	int8_t grid_position_x;
 	int8_t grid_position_y;
@@ -49,6 +64,11 @@ typedef struct mm_node_position_struct {
 	 * the node doesn't exist in the list yet.
 	 */
 	mm_node_position_t const * get_position_for_node( uint16_t node_id );
+
+	/* Gets a specific node position by using its coordinates. Returns NULL if
+	 * the node doesn't exist in the list yet.
+	 */
+	mm_node_position_t const * get_node_for_position(int8_t x, int8_t y);
 
 	/* Gets the current number of nodes whose positions have been configured. */
 	uint16_t get_number_of_nodes( void );

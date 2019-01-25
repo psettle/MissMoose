@@ -72,6 +72,11 @@ mm_activity_variable_t mm_av_access(uint8_t x, uint8_t y)
     return AV(x, y);
 }
 
+mm_activity_variable_t* mm_av_fetch(uint8_t x, uint8_t y)
+{
+    return &AV(x, y);
+}
+
 void mm_av_set(uint8_t x, uint8_t y, mm_activity_variable_t val)
 {
     AV(x, y) = val;
