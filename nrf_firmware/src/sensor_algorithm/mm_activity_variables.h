@@ -15,6 +15,14 @@ notes:
 #include <stdint.h>
 
 /**********************************************************
+                        CONSTANTS
+**********************************************************/
+
+#define MAX_AV_SIZE_X           ( MAX_GRID_SIZE_X - 1 )
+#define MAX_AV_SIZE_Y           ( MAX_GRID_SIZE_Y - 1 )
+#define ACTIVITY_VARIABLES_NUM  ( MAX_AV_SIZE_X * MAX_AV_SIZE_Y )
+
+/**********************************************************
                         MACROS
 **********************************************************/
 
