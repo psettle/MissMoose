@@ -211,7 +211,8 @@ static void process_ant_evt(ant_evt_t * evt)
         // If this is a "received message" event, take a closer look
         case EVENT_RX:
 
-            if (p_message->ANT_MESSAGE_ucMesgID == MESG_ACKNOWLEDGED_DATA_ID)
+            if (p_message->ANT_MESSAGE_ucMesgID == MESG_BROADCAST_DATA_ID
+                || p_message->ANT_MESSAGE_ucMesgID == MESG_ACKNOWLEDGED_DATA_ID)
             {
                 if (p_message->ANT_MESSAGE_aucPayload[PAGE_NUM_INDEX] == MONITORING_ACKNOWLEDGEMENT_PAGE_NUM)
                 {

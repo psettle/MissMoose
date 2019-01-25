@@ -7,6 +7,7 @@
 
 #include "mm_ant_control.h"
 #include "app_error.h"
+#include "app_scheduler.h"
 
 /**********************************************************
                         CONSTANTS
@@ -50,7 +51,7 @@
 static void process_ant_evt(ant_evt_t * evt);
 
 /* Decodes an ANT position page message payload */
-static void decode_position_page( uint8_t const * position_page );
+static void decode_position_page(void* p_evt, uint16_t size);
 
 /* Sign extends a number in 2's complement form */
 static int8_t sign_extend( uint8_t uint, uint8_t size_bits );
@@ -93,7 +94,7 @@ static void process_ant_evt(ant_evt_t * evt)
             {
                 if (p_message->ANT_MESSAGE_aucPayload[0] == POSITION_CONFIG_PAGE_NUM)
                 {
-                	decode_position_page(&(p_message->ANT_MESSAGE_aucPayload[0]));
+                	app_sched_event_put(evt, sizeof(ant_evt_t), decode_position_page);
                 }
             }
             break;
@@ -103,8 +104,12 @@ static void process_ant_evt(ant_evt_t * evt)
     }
 }
 
-static void decode_position_page( uint8_t const * position_page )
+static void decode_position_page(void* p_evt, uint16_t size)
 {
+    ant_evt_t * evt = (ant_evt_t*)p_evt;
+    ANT_MESSAGE * p_message = (ANT_MESSAGE *)evt->msg.evt_buffer;
+    uint8_t const * position_page = &(p_message->ANT_MESSAGE_aucPayload[0]);
+
 	have_positions_changed = true;
 	mm_node_position_t * node_position = NULL;
 

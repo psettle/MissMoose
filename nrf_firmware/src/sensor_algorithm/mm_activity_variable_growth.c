@@ -374,6 +374,11 @@ static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
  */ 
 static void apply_activity_variable_trickle_to_record(sensor_record_t const * record)
 {
+    if(!record->is_valid)
+    {
+        return;
+    }
+
     /* Is the record detecting? */
     switch(record->sensor_type)
     {
@@ -757,6 +762,8 @@ static void init_sensor_record(sensor_evt_t const * evt, sensor_record_t* p_reco
  */
 static void find_adjacent_activity_variables(mm_node_position_t const * position, sensor_rotation_t sensor_rotation, activity_variable_set_t* av_set)
 {
+    memset(av_set, 0, sizeof(activity_variable_set_t));
+
     /* Find sensor rotation relative to node rotation 0 */
     mm_node_rotation_t rotation = position->node_rotation + sensor_rotation;
     rotation %= NODE_ROTATION_COUNT;
