@@ -92,14 +92,9 @@ void mm_sensor_manager_main( void )
 
     switch(hardware_config)
     {
-        case HARDWARE_CONFIG_PIR_PIR:
-        	pir_update_main();
-            break;
-
         case HARDWARE_CONFIG_PIR_LIDAR:
         case HARDWARE_CONFIG_PIR_LIDAR_LED:
         	lidar_update_main();
-        	pir_update_main();
             break;
 
         default:

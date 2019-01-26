@@ -22,8 +22,6 @@ notes:
 **********************************************************/
 
 #include "pir_st_00081_pub.h"
-#include "ir_led_transmit_pub.h"
-#include "ky_022_receive_pub.h"
 #include "mm_ant_control.h"
 #include "lidar_pub.h"
 #include "mm_blaze_static_config.h"
@@ -99,12 +97,6 @@ int main(void)
 
 	#endif
 
-    //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
-    //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
-    // pir_st_00081_init(2);
-
-    // lidar_init();
-    // mm_rgb_led_init(false);
     // mm_hardware_test_init();
 
     while(true)
