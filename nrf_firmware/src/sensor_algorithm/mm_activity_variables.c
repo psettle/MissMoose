@@ -27,12 +27,12 @@ notes:
 **********************************************************/
 
 /**
-     Activity variable definition, can be accessed as AV_LOCAL(x, y).
+     Activity variable definition, can be accessed as AV(x, y).
 
      X is indexed left -> right. (In direction of North-American traffic)
      Y is indexed top -> bottom. (Moving away from the road)
 
-     Variable (x, y) is located at activity_variables[x * MAX_AV_LOCAL_SIZE_X + y]
+     Variable (x, y) is located at activity_variables[x * MAX_AV_SIZE_X + y]
 */
 static mm_activity_variable_t activity_variables[ACTIVITY_VARIABLES_NUM];
 
