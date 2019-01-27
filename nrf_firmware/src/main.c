@@ -103,9 +103,6 @@ int main(void)
     {
     	app_sched_execute();
 
-    	// mm_hardware_test_update_main();
-
-        mm_sensor_manager_main();
         #ifdef MM_BLAZE_GATEWAY
                 mm_monitoring_dispatch_main();
         #endif
@@ -115,7 +112,7 @@ int main(void)
 }
 
 /**
- * Function for setup all thinks not directly associated witch ANT stack/protocol.
+ * Function for setup all things not directly associated witch ANT stack/protocol.
  */
  static void utils_init(void)
  {

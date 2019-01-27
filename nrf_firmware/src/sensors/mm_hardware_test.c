@@ -124,19 +124,6 @@ void mm_hardware_test_init(void)
 }
 
 /**
- * @brief Function for updating the hardware test from main.
- */
-void mm_hardware_test_update_main(void)
-{
-
-    if(configuration == HARDWARE_CONFIG_PIR_LIDAR ||
-       configuration == HARDWARE_CONFIG_PIR_LIDAR_LED)
-    {
-        lidar_update_main();
-    }
-}
-
-/**
  * @brief Handles updates from the LIDAR sensor.
  *
  * @param[in] evt The event information from the lidar detection.

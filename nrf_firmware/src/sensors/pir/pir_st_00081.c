@@ -78,13 +78,26 @@ static const uint8_t pir_enable_pins[] = {PIR1_PIN_EN_OUT, PIR2_PIN_EN_OUT, PIR3
     static const uint8_t pir_enable_ctrl_buttons[] = {BSP_BUTTON_0, BSP_BUTTON_1, BSP_BUTTON_2};
 #endif
 
+
+/**
+ * @brief PIR pin change event structure.
+ * Used to help keep the PIR's interrupt handler really short.
+ */
+typedef struct
+{
+    nrf_drv_gpiote_pin_t pin;  ///< Number of the pin that changed.
+    bool pin_state;            ///< State that the pin changed to.
+} pir_pin_change_evt_t;
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
 
 static void pir_gpiote_init(uint8_t num_pir_sensors);
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
-static void pir_event_dispatch(void* evt_data, uint16_t evt_size);
+/* Processes timer timeout */
+static void on_pin_event(void* evt_data, uint16_t evt_size);
+static void pir_event_dispatch(pir_evt_t* evt_data);
 
 #if BUTTON_ENABLE_TEST
     //Initializes enable
@@ -251,7 +264,7 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
 }
 
 /**
- * @brief Function for handling a change in the signal from the wide angle PIR sensor.
+ * @brief Interrupt handlers for a changing signal from the wide angle PIR sensor.
  *
  * @details This function is called from the GPIOTE interrupt handler after the output
  * from the wide angle PIR sensor changes.
@@ -262,22 +275,47 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
     uint32_t err_code;
+    pir_pin_change_evt_t pin_evt;
+    pin_evt.pin = pin;
+    pin_evt.pin_state = nrf_drv_gpiote_in_is_set(pin);
+
+    err_code = app_sched_event_put(&pin_evt, sizeof(pir_pin_change_evt_t), on_pin_event);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**
+ * @brief Function for handling a change in the signal from the wide angle PIR sensor.
+ *
+ * @details Run the bulk of the processing to be done after a PIR input pin change.
+ *
+ * @param[in] evt_data    pir_pin_change_evt_t data about the pin event
+ * @param[in] evt_size    size of the pin event.
+ */
+static void on_pin_event(void* evt_data, uint16_t evt_size)
+{
+	pir_pin_change_evt_t* pin_evt = (pir_pin_change_evt_t*)evt_data;
 
     /*LEDs are indexed from 0 to 3. LED commands:
      * bsp_board_led_off, bsp_board_led_on, bsp_board_led_invert
      *
      * Match the pin with the PIR sensor - If pin in matches pin, that's the PIR that detected something.*/
-    for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
-        if (pir_sensors[i].pir_pin_in == pin){
+    for(int i = 0; i < MAXIMUM_NUM_PIRS; i++)
+    {
+        if (pir_sensors[i].pir_pin_in == pin_evt->pin)
+        {
             //If the input pin for that PIR sensor is set:
-            if (nrf_drv_gpiote_in_is_set(pir_sensors[i].pir_pin_in)){
-                if(led_debug){
+            if(pin_evt->pin_state)
+            {
+                if(led_debug)
+                {
                     bsp_board_led_on(i);
                 }
                 pirs_detecting[i] = PIR_EVENT_CODE_DETECTION;
             }
-            else{
-                if(led_debug){
+            else
+            {
+                if(led_debug)
+                {
                     bsp_board_led_off(i);
                 }
                 pirs_detecting[i] = PIR_EVENT_CODE_NO_DETECTION;
@@ -286,13 +324,12 @@ static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t a
             pir_evt_t pir_evt;
             pir_evt.event = pirs_detecting[i];
             pir_evt.sensor_index = i;
-
-            /* Kick event distribution to main */
-            err_code = app_sched_event_put(&pir_evt, sizeof(pir_evt_t), pir_event_dispatch);
-            APP_ERROR_CHECK(err_code);
+            pir_event_dispatch(&pir_evt);
         }
     }
 }
+
+
 
 /**
  * @brief Add a new pir event listener
@@ -319,17 +356,15 @@ void pir_evt_handler_register(pir_evt_handler_t pir_evt_handler)
  * @brief Tell the listeners that there's recently been a change in detection,
  *        and an index of the PIR that changed.
  * @param[in] evt_data actual data for the sensor event
- * @param[in] evt_size size of the sensor event.
  */
-static void pir_event_dispatch(void* evt_data, uint16_t evt_size)
+static void pir_event_dispatch(pir_evt_t* evt_data)
 {
-	pir_evt_t* evt = (pir_evt_t*)evt_data;
     // Forward PIR event to listeners
 	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
 	{
 		if (pir_evt_handlers[i] != NULL)
 		{
-			pir_evt_handlers[i](evt);
+			pir_evt_handlers[i](evt_data);
 		}
 		else
 		{
