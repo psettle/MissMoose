@@ -27,17 +27,18 @@ notes:
 **********************************************************/
 
 /*
-   Ease of access macro, optional usage:
+   Ease of access macros, optional usage:
    ex.
-   mm_av_multiply(AV_TOP_LEFT, factor);
-   val = mm_av_access(AV_TOP_LEFT);
-   mm_av_set(AV_TOP_LEFT, val);
+   AV(0, 1) = 1.2f;
+   AV_TOP_LEFT = 1.2f;
+   AV_TOP_LEFT = AV_TOP_RIGHT;
    
    */
-#define AV_TOP_LEFT             0, 0
-#define AV_TOP_RIGHT            1, 0
-#define AV_BOTTOM_LEFT          0, 1
-#define AV_BOTTOM_RIGHT         1, 1
+#define AV(x, y)                (*(mm_av_access((x),(y))))
+#define AV_TOP_LEFT             AV(0, 0)
+#define AV_TOP_RIGHT            AV(1, 0)
+#define AV_BOTTOM_LEFT          AV(0, 1)
+#define AV_BOTTOM_RIGHT         AV(1, 1)
 
 /**********************************************************
                         TYPES
@@ -55,23 +56,8 @@ typedef float mm_activity_variable_t;
 void mm_activity_variables_init(void);
 
 /**
- * Modify activity variable value, automatically manages upper and lower limits.
+ * Access AV value.
  */
-void mm_av_multiply(uint8_t x, uint8_t y, float factor);
-
-/**
- * Read-only activity variable access.
- */
-mm_activity_variable_t mm_av_access(uint8_t x, uint8_t y);
-
-/**
- * Read-WRite activity variable access.
- */
-mm_activity_variable_t* mm_av_fetch(uint8_t x, uint8_t y);
-
-/**
- * Set activity variable value, automatically manages upper and lower limits.
- */
-void mm_av_set(uint8_t x, uint8_t y, mm_activity_variable_t val);
+mm_activity_variable_t* mm_av_access(uint8_t x, uint8_t y);
 
 #endif /* MM_ACTIVITY_VARIABLES_H */

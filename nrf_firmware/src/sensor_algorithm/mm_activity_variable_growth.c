@@ -826,6 +826,6 @@ static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set)
 
     /* Save to av_set */
     APP_ERROR_CHECK(av_set->av_count >= MAX_ADJACENT_ACTIVITY_VARIABLES);
-    av_set->avs[av_set->av_count] = mm_av_fetch(x, y);
+    av_set->avs[av_set->av_count] = mm_av_access(x, y);
     av_set->av_count++;
 }
