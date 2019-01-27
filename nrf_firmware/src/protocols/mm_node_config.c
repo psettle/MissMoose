@@ -209,8 +209,10 @@ static void external_init(void)
     mm_sensor_manager_init(SENSOR_MANAGER_LED_DEBUG_ENABLED);
     /* Init LED control transmission over blaze. Placed before algorithm init so it can use LED control. */
     mm_led_control_init();
+#ifdef MM_BLAZE_GATEWAY
     /* Init sensor data processing now that data can be transmitted. */
     mm_sensor_algorithm_init();
+#endif
 }
 
 /**********************************************************

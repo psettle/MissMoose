@@ -1,9 +1,9 @@
-/*
- * sensor_transmission.h
- *
- *  Created on: Jan 16, 2019
- *      Author: nataliewong
- */
+/**
+file: mm_sensor_transmission.h
+brief:
+notes:
+*/
+
 #ifndef MM_SENSOR_TRANSMISSION_H
 #define MM_SENSOR_TRANSMISSION_H
 
@@ -48,6 +48,7 @@ typedef enum
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
+#ifdef MM_BLAZE_GATEWAY /* Only gateways can listen to sensors, nodes transmit over blaze */
 
 typedef struct
 {
@@ -73,23 +74,28 @@ typedef struct
     };
 } sensor_evt_t;
 
+
 /* Sensor data event callback */
 typedef void (*sensor_data_evt_handler_t) ( sensor_evt_t const * evt);
+
+#endif
 
 /* Begins listening to blaze messages containing sensor data events. */
 void mm_sensor_transmission_init( void );
 
+#ifdef MM_BLAZE_GATEWAY /* Only gateways can listen to sensors, nodes transmit over blaze */
 /* Registers a listener to sensor data events. */
 void mm_sensor_transmission_register_sensor_data( sensor_data_evt_handler_t sensor_data_evt_handler );
+#endif
 
-/* Sends a PIR data event over blaze to the gateway node for processing. */
+/* Sends a PIR data event to the gateway node for processing. */
 void mm_send_pir_data
 	(
 	sensor_rotation_t sensor_rotation,
 	bool detection
 	);
 
-/* Sends a LIDAR data event over blaze to the gateway node for processing. */
+/* Sends a LIDAR data event to the gateway node for processing. */
 void mm_send_lidar_data
 	(
 	sensor_rotation_t sensor_rotation,
