@@ -78,17 +78,6 @@ static const uint8_t pir_enable_pins[] = {PIR1_PIN_EN_OUT, PIR2_PIN_EN_OUT, PIR3
     static const uint8_t pir_enable_ctrl_buttons[] = {BSP_BUTTON_0, BSP_BUTTON_1, BSP_BUTTON_2};
 #endif
 
-
-/**
- * @brief PIR pin change event structure.
- * Used to help keep the PIR's interrupt handler really short.
- */
-typedef struct
-{
-    nrf_drv_gpiote_pin_t pin;  ///< Number of the pin that changed.
-    bool pin_state;            ///< State that the pin changed to.
-} pir_pin_change_evt_t;
-
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
@@ -120,7 +109,7 @@ static pir_event_type_t pirs_detecting[3] = {PIR_EVENT_CODE_NO_DETECTION, PIR_EV
                        DEFINITIONS
 **********************************************************/
 /* Array of structs to hold the pinouts for individual PIR sensors */
-pir_pinout_t pir_sensors[MAXIMUM_NUM_PIRS];
+static pir_pinout_t pir_sensors[MAXIMUM_NUM_PIRS];
 
 static pir_evt_handler_t pir_evt_handlers[MAX_EVT_HANDLERS];
 
@@ -201,13 +190,15 @@ bool check_pir_st_00081_enabled(uint8_t pir_sensor_id){
  * @brief Function for checking if the wide-angle PIR sensor is detecting anything or not.
  *
  * @param[in] pir_sensor_id The ID of the pir sensor to check the detection status of
+ * @param[in] sensor_event  The detecting status of the sensor is returned in this value.
  */
-pir_event_type_t check_pir_st_00081_detecting(uint8_t pir_sensor_id){
+void check_pir_st_00081_detecting(uint8_t pir_sensor_id, pir_event_type_t* sensor_event)
+{
     //Sensor IDs start from 0. So if the pir_sensor_count is 2, 0 and 1 are valid inputs. So >= 2 is not.
     if(pir_sensor_id >= pir_sensor_count){
         APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
     }
-    return pirs_detecting[pir_sensor_id];
+    *sensor_event = pirs_detecting[pir_sensor_id];
 }
 
 

@@ -475,7 +475,6 @@ static void timer_event_handler(void * p_context)
  */
 static void on_timer_event(void* evt_data, uint16_t evt_size)
 {
-    uint32_t err_code;
     timer_iteration_count++;
     if(timer_iteration_count >= periods_between_sample_acquisition)
     {
@@ -511,25 +510,22 @@ static void on_timer_event(void* evt_data, uint16_t evt_size)
                 // Stop rolling out the zeros.
                 lidar_sampling_state = SAMPLING;
             }
-            err_code = app_sched_event_put(NULL, 0, lidar_update_process);
-            APP_ERROR_CHECK(err_code);
+            lidar_update_process(NULL, 0);
             break;
 
         case WARMUP_WAITING:
             // Waiting the full 22ms warmup as recommended in the datasheets. No measurements are done, to save power.
             if(timer_iteration_count >= 10) // by now, 22ms. Should be enough time for the lidar to warm up.
             {
+
                 lidar_sampling_state = SAMPLING;
-                err_code = app_sched_event_put(NULL, 0, lidar_update_process);
-                APP_ERROR_CHECK(err_code);
             }
             break;
 
         case SAMPLING:
             xfer_done = true;
             lidar_twi_state = READING_START_FLAG;
-            err_code = app_sched_event_put(NULL, 0, lidar_update_process);
-            APP_ERROR_CHECK(err_code);
+            lidar_update_process(NULL, 0);
             // Just make sure we're starting another reading if we're reaching this update
             // It means that the most recent reading was a 0.
             break;

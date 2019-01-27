@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 #include "stdbool.h"
+#include "nrf_drv_gpiote.h"
 
 /**********************************************************
                        DEFINITIONS
@@ -47,6 +48,16 @@ typedef struct
     uint8_t sensor_index;      ///< Index of the sensor that changed it's state.
 } pir_evt_t;
 
+/**
+ * @brief PIR pin change event structure.
+ * Used to help keep the PIR's interrupt handler really short.
+ */
+typedef struct
+{
+    nrf_drv_gpiote_pin_t pin;  ///< Number of the pin that changed.
+    bool pin_state;            ///< State that the pin changed to.
+} pir_pin_change_evt_t;
+
 /**@brief PIR event handler type. */
 typedef void (*pir_evt_handler_t) (pir_evt_t * pir_evt);
 
@@ -81,7 +92,7 @@ bool check_pir_st_00081_enabled(uint8_t pir_sensor_id);
 /**
  * @brief Function for checking if the wide-angle PIR sensor is detecting anything or not.
  */
-pir_event_type_t check_pir_st_00081_detecting(uint8_t pir_sensor_id);
+void check_pir_st_00081_detecting(uint8_t pir_sensor_id, pir_event_type_t* sensor_event);
 
 #ifdef __cplusplus
 }

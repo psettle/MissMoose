@@ -41,10 +41,15 @@ notes:
 
 #define SENSOR_MANAGER_LED_DEBUG_ENABLED    ( false )
 
-#define SCHEDULER_MAX_EVENT_SIZE			MAX( \
-	sizeof(uint8_t),				\
-	sizeof(ant_evt_t)			\
-)
+typedef union
+{
+    ant_evt_t ant_evt;
+    pir_evt_t pir_evt;
+    pir_pin_change_evt_t pir_pin_evt;
+} scheduler_event_t;
+
+#define SCHEDULER_MAX_EVENT_SIZE sizeof(scheduler_event_t)
+
 
 #define SCHEDULER_MAX_EVENT_COUNT			( 10 )	/* Main should run after every event, so it should be hard to queue up a lot of events. */
 
