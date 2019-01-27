@@ -31,11 +31,6 @@ extern "C" {
  */
 void mm_hardware_test_init(void);
 
-/**
- * @brief Function for updating the hardware test from main.
- */
-void mm_hardware_test_update_main(void);
-
 #ifdef __cplusplus
 }
 #endif

@@ -22,8 +22,6 @@ notes:
 **********************************************************/
 
 #include "pir_st_00081_pub.h"
-#include "ir_led_transmit_pub.h"
-#include "ky_022_receive_pub.h"
 #include "mm_ant_control.h"
 #include "lidar_pub.h"
 #include "mm_blaze_static_config.h"
@@ -41,10 +39,17 @@ notes:
                         CONSTANTS
 **********************************************************/
 
-#define SCHEDULER_MAX_EVENT_SIZE			MAX( \
-	sizeof(uint8_t),				\
-	sizeof(ant_evt_t)			\
-)
+#define SENSOR_MANAGER_LED_DEBUG_ENABLED    ( false )
+
+typedef union
+{
+    ant_evt_t ant_evt;
+    pir_evt_t pir_evt;
+    pir_pin_change_evt_t pir_pin_evt;
+} scheduler_event_t;
+
+#define SCHEDULER_MAX_EVENT_SIZE sizeof(scheduler_event_t)
+
 
 #define SCHEDULER_MAX_EVENT_COUNT			( 10 )	/* Main should run after every event, so it should be hard to queue up a lot of events. */
 
@@ -97,21 +102,12 @@ int main(void)
 
 	#endif
 
-    //ir_led_transmit_init(BSP_BUTTON_1, BSP_LED_0); // Control pin, output pin
-    //ky_022_init(BSP_BUTTON_0, BSP_LED_3); // Input pin, indicator pin
-    // pir_st_00081_init(2);
-
-    // lidar_init();
-    // mm_rgb_led_init(false);
     // mm_hardware_test_init();
 
     while(true)
     {
     	app_sched_execute();
 
-    	// mm_hardware_test_update_main();
-
-        mm_sensor_manager_main();
         #ifdef MM_BLAZE_GATEWAY
                 mm_monitoring_dispatch_main();
         #endif
@@ -121,7 +117,7 @@ int main(void)
 }
 
 /**
- * Function for setup all thinks not directly associated witch ANT stack/protocol.
+ * Function for setup all things not directly associated witch ANT stack/protocol.
  */
  static void utils_init(void)
  {
