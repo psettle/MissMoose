@@ -75,11 +75,6 @@ typedef struct
 typedef void (*lidar_evt_handler_t) (lidar_evt_t * lidar_evt);
 
 /**
- * @brief This function needs to be called regularly from main in order to keep things going.
- */
-void lidar_update_main(void);
-
-/**
  * @brief Add a new lidar event listener!
  */
 void lidar_evt_handler_register(lidar_evt_handler_t lidar_evt_handler);

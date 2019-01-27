@@ -83,30 +83,6 @@ void mm_sensor_manager_init( bool led_debug_enabled )
     sensor_manager_init_complete = true;
 }
 
-void mm_sensor_manager_main( void )
-{
-	if(!sensor_manager_init_complete)
-	{
-		return;
-	}
-
-    switch(hardware_config)
-    {
-        case HARDWARE_CONFIG_PIR_PIR:
-        	pir_update_main();
-            break;
-
-        case HARDWARE_CONFIG_PIR_LIDAR:
-        case HARDWARE_CONFIG_PIR_LIDAR_LED:
-        	lidar_update_main();
-        	pir_update_main();
-            break;
-
-        default:
-        	APP_ERROR_CHECK(true);
-    }
-}
-
 static void process_pir_evt(pir_evt_t * evt)
 {
 	sensor_rotation_t sensor_rotation = SENSOR_ROTATION_0;

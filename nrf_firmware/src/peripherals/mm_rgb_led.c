@@ -14,7 +14,6 @@ notes:
 #include "nrf_drv_gpiote.h"
 #include "nrf_gpio.h"
 #include "boards.h"
-#include "ir_led_transmit_pub.h"
 #include "low_power_pwm.h"
 #include "app_timer.h"
 #include "mm_power_bank_timer_pub.h"
