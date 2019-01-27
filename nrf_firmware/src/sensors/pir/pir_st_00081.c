@@ -24,6 +24,7 @@
 **********************************************************/
 
 #include <stdio.h>
+#include <string.h>
 #include "nrf_drv_gpiote.h"
 #include "boards.h"
 #include "pir_st_00081_pub.h"
@@ -198,7 +199,7 @@ void check_pir_st_00081_detecting(uint8_t pir_sensor_id, pir_event_type_t* senso
     if(pir_sensor_id >= pir_sensor_count){
         APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
     }
-    *sensor_event = pirs_detecting[pir_sensor_id];
+    memcpy(sensor_event, &(pirs_detecting[pir_sensor_id]), sizeof(pir_event_type_t));
 }
 
 
