@@ -115,6 +115,18 @@ void mm_blaze_register_message_listener(mm_blaze_message_handler_t rx_handler)
 	APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
 }
 
+void mm_blaze_pack_message(ant_blaze_message_t const * unpacked, mm_blaze_message_serialized_t* packed)
+{
+	/* Pack message into serializable event. */
+	memset(packed, 0, sizeof(mm_blaze_message_serialized_t));
+	memcpy(&packed->message, unpacked, sizeof(ant_blaze_message_t));
+	memcpy(&packed->data[0], &unpacked->p_data[0], unpacked->length);
+	
+	/* Set p_data to NULL, it will not be valid after this data is copied around
+	   and it would be bad if it was misread. */
+	packed->message.p_data = NULL;
+}
+
 #ifdef MM_BLAZE_NODE
 	static void mm_blaze_node_init(void)
 	{
