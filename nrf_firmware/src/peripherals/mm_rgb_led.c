@@ -267,11 +267,26 @@ static void rgb_led_apply_colour(uint32_t colour_hex)
 static void rgb_led_apply_colour_individual(uint8_t red_duty_cycle, uint8_t green_duty_cycle, uint8_t blue_duty_cycle)
 {
     uint32_t err_code;
+    /* Stop the pwm instances from running before we change them */
+    err_code = low_power_pwm_stop(&low_power_pwm_red);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_stop(&low_power_pwm_green);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_stop(&low_power_pwm_blue);
+    APP_ERROR_CHECK(err_code);
+    /* Set what the duty should be */
     err_code = low_power_pwm_duty_set(&low_power_pwm_red, red_duty_cycle);
     APP_ERROR_CHECK(err_code);
     err_code = low_power_pwm_duty_set(&low_power_pwm_green, green_duty_cycle);
     APP_ERROR_CHECK(err_code);
     err_code = low_power_pwm_duty_set(&low_power_pwm_blue, blue_duty_cycle);
+    APP_ERROR_CHECK(err_code);
+    /* Start the pwm instances again */
+    err_code = low_power_pwm_start((&low_power_pwm_red), low_power_pwm_red.bit_mask);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_start((&low_power_pwm_green), low_power_pwm_green.bit_mask);
+    APP_ERROR_CHECK(err_code);
+    err_code = low_power_pwm_start((&low_power_pwm_blue), low_power_pwm_blue.bit_mask);
     APP_ERROR_CHECK(err_code);
 }
 
