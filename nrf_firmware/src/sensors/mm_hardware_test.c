@@ -85,12 +85,18 @@ void mm_hardware_test_init(void)
         case HARDWARE_CONFIG_PIR_PIR:
             /* If the node type is just 2 PIRs, set up the PIRs using the LED debugging. */
             pir_st_00081_init(2, true);
+            /* Set ourselves up as a listener for the pir sensors */
+            pir_evt_handler_register(process_pir_evt);
             break;
 
         case HARDWARE_CONFIG_PIR_LIDAR:
             /* If the node type is 1 PIR and 1 LIDAR, initialize them and use their own LED debugging. */
             pir_st_00081_init(1, true);
+            /* Set ourselves up as a listener for the pir sensors */
+            pir_evt_handler_register(process_pir_evt);
             lidar_init(true);
+            /* Set ourselves up as a listener for the lidar */
+            lidar_evt_handler_register(process_lidar_evt);
             break;
 
         case HARDWARE_CONFIG_PIR_LIDAR_LED:
@@ -114,21 +120,6 @@ void mm_hardware_test_init(void)
 
         default:
         	APP_ERROR_CHECK(true);
-    }
-}
-
-/**
- * @brief Function for updating the hardware test from main.
- */
-void mm_hardware_test_update_main(void)
-{
-    /* LAZY - Just assume we always have a PIR sensor. */
-    pir_update_main();
-
-    if(configuration == HARDWARE_CONFIG_PIR_LIDAR ||
-       configuration == HARDWARE_CONFIG_PIR_LIDAR_LED)
-    {
-        lidar_update_main();
     }
 }
 

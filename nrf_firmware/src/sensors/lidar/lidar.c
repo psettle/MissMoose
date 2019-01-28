@@ -12,6 +12,7 @@
 #include "app_timer.h"
 #include "mm_ant_control.h"
 #include "nrf_drv_gpiote.h"
+#include "app_scheduler.h"
 
 /**********************************************************
                         CONSTANTS
@@ -80,6 +81,8 @@ static void lidar_process_distance(void);
 static ret_code_t set_register_value(uint8_t reg, uint8_t val);
 static ret_code_t write_register(uint8_t reg);
 void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context);
+/* Processes timer timeout */
+static void on_timer_event(void* evt_data, uint16_t evt_size);
 
 static void timer_event_handler(void * p_context);
 
@@ -126,41 +129,52 @@ APP_TIMER_DEF(m_lidar_timer);
 **********************************************************/
 
 /**
- * @brief Call for updating the data read off the LIDAR.
+ * @brief Responsible for progressing the state of reading information off the lidar.
  */
-void lidar_update_main(void)
+static void lidar_update_process(void* evt_data, uint16_t evt_size)
 {
-
-    if(lidar_sampling_state == NOT_SAMPLING ||
-       lidar_sampling_state == WARMUP_WAITING)
-    {
-        return;
-    }
-
-    ret_code_t err_code;
+    ret_code_t err_code = NRF_SUCCESS;
     if(xfer_done)
     {
         switch(lidar_twi_state)
         {
             case READING_START_FLAG:
                 // Write to the LIDAR the register we want to read data off of.
-                err_code = set_register_value( MEASUREMENT_TYPE_REGISTER, RECEIVER_BIAS_CORRECTION );
-                APP_ERROR_CHECK(err_code);
                 lidar_twi_state = WAITING_FOR_WRITE;
+                err_code = set_register_value( MEASUREMENT_TYPE_REGISTER, RECEIVER_BIAS_CORRECTION );
+                if(err_code == NRF_ERROR_BUSY)
+                {
+                    /* The TWI driver is busy. Try kicking off another update to try again. */
+                    lidar_twi_state = READING_START_FLAG;
+                    err_code = app_sched_event_put(NULL, 0, lidar_update_process);
+                }
+                APP_ERROR_CHECK(err_code);
                 break;
             case WAITING_FOR_WRITE:
-                // Initiate a reading off the LIDAR.
+                // Write to the LIDAR what register we want to do a reading from.
                 xfer_done = false;
-                err_code = write_register(DISTANCE_VALUE_REGISTER);
-                APP_ERROR_CHECK(err_code);
                 lidar_twi_state = INITIATE_DISTANCE_READ;
+                err_code = write_register(DISTANCE_VALUE_REGISTER);
+                if(err_code == NRF_ERROR_BUSY)
+                {
+                    /* The TWI driver is busy. Try kicking off another update to try again. */
+                    lidar_twi_state = WAITING_FOR_WRITE;
+                    err_code = app_sched_event_put(NULL, 0, lidar_update_process);
+                }
+                APP_ERROR_CHECK(err_code);
                 break;
             case INITIATE_DISTANCE_READ:
                 // Initiate a reading off the LIDAR.
                 xfer_done = false;
-                err_code = nrf_drv_twi_rx(&m_twi, LIDAR_ADDR, rx_buffer, sizeof(rx_buffer));
-                APP_ERROR_CHECK(err_code);
                 lidar_twi_state = WAITING_FOR_READ;
+                err_code = nrf_drv_twi_rx(&m_twi, LIDAR_ADDR, rx_buffer, sizeof(rx_buffer));
+                if(err_code == NRF_ERROR_BUSY)
+                {
+                    /* The TWI driver is busy. Try kicking off another update to try again. */
+                    lidar_twi_state = INITIATE_DISTANCE_READ;
+                    err_code = app_sched_event_put(NULL, 0, lidar_update_process);
+                }
+                APP_ERROR_CHECK(err_code);
                 break;
             case WAITING_FOR_READ:
                 // The data is now all safely tucked away in rx_buffer, so let's do something with it.
@@ -430,19 +444,36 @@ void lidar_deinit(void)
  */
 void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
 {
+    uint32_t err_code;
     switch (p_event->type)
     {
         case NRF_DRV_TWI_EVT_DONE:
             xfer_done = true;
+            /* The transfer is done, so schedule an update for processing. */
+            err_code = app_sched_event_put(NULL, 0, lidar_update_process);
+            APP_ERROR_CHECK(err_code);
             break;
         default:
             break;
     }
 }
+
 /**
  * @brief Handler for timer events.
  */
 static void timer_event_handler(void * p_context)
+{
+	uint32_t err_code;
+
+	/* Kick timer event to main, since there's a bunch of little steps to do on timer events. */
+    err_code = app_sched_event_put(NULL, 0, on_timer_event);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**
+ * @brief The bulk of processing that needs to be done on timer events.
+ */
+static void on_timer_event(void* evt_data, uint16_t evt_size)
 {
     timer_iteration_count++;
     if(timer_iteration_count >= periods_between_sample_acquisition)
@@ -479,12 +510,14 @@ static void timer_event_handler(void * p_context)
                 // Stop rolling out the zeros.
                 lidar_sampling_state = SAMPLING;
             }
+            lidar_update_process(NULL, 0);
             break;
 
         case WARMUP_WAITING:
             // Waiting the full 22ms warmup as recommended in the datasheets. No measurements are done, to save power.
             if(timer_iteration_count >= 10) // by now, 22ms. Should be enough time for the lidar to warm up.
             {
+
                 lidar_sampling_state = SAMPLING;
             }
             break;
@@ -492,7 +525,9 @@ static void timer_event_handler(void * p_context)
         case SAMPLING:
             xfer_done = true;
             lidar_twi_state = READING_START_FLAG;
+            lidar_update_process(NULL, 0);
             // Just make sure we're starting another reading if we're reaching this update
             // It means that the most recent reading was a 0.
+            break;
     }
 }
