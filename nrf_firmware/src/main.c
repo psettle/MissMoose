@@ -46,6 +46,7 @@ typedef union
     ant_evt_t ant_evt;
     pir_evt_t pir_evt;
     pir_pin_change_evt_t pir_pin_evt;
+    nrf_drv_gpiote_pin_t led_pin_evt;
     mm_blaze_message_serialized_t blaze_evt;
 } scheduler_event_t;
 

@@ -8,6 +8,17 @@ notes:
                         INCLUDES
 **********************************************************/
 
+//For memset
+#include <string.h>
+
+//APP_ERROR_CHECK
+#include "app_error.h"
+//to task delagation to main
+#include "app_scheduler.h"
+//For testing sending LED messages (Needed for button control)
+#include "bsp.h"
+#include "nrf_drv_gpiote.h"
+
 #include "mm_led_control.h"
 //For hardware configuration, determining if an LED is present on this node
 #include "mm_switch_config.h" 
@@ -15,15 +26,9 @@ notes:
 #include "mm_blaze_control.h"
 //LED control functions
 #include "mm_rgb_led_pub.h"
-//For memset
-#include <string.h>
-//APP_ERROR_CHECK
-#include "app_error.h"
 //For MM_GATEWAY_ID
 #include "mm_blaze_static_config.h"
-//For testing sending LED messages (Needed for button control)
-#include "bsp.h"
-#include "nrf_drv_gpiote.h"
+
 
 /**********************************************************
                         CONSTANTS
@@ -39,11 +44,11 @@ notes:
 
 //Used to test sending LED control messages from the gateway to the node by pressing buttons
 #ifdef MM_BLAZE_GATEWAY
-#define TEST_LED_MESSAGES                       (false)
-#define TEST_LED_MESSAGES_COLOUR_CONTROL_PIN    (BSP_BUTTON_0) //Button A
-#define TEST_LED_MESSAGES_LEDS_ON_OFF_PIN       (BSP_BUTTON_2) //Button C
+    #define TEST_LED_MESSAGES                       (false)
+    #define TEST_LED_MESSAGES_COLOUR_CONTROL_PIN    (BSP_BUTTON_0) //Button A
+    #define TEST_LED_MESSAGES_LEDS_ON_OFF_PIN       (BSP_BUTTON_2) //Button C
 #else
-#define TEST_LED_MESSAGES                       (false) //Always false if not a gateway
+    #define TEST_LED_MESSAGES                       (false) //Always false if not a gateway
 #endif
 /**********************************************************
                           ENUMS
@@ -54,21 +59,51 @@ notes:
                        DECLARATIONS
 **********************************************************/
 #ifndef MM_BLAZE_GATEWAY
-static void blaze_rx_handler( ant_blaze_message_t msg );
-#endif //MM_BLAZE_GATEWAY
-static void update_led_settings(led_function_t led_function, led_colours_t led_colour);
+    /**
+     * Interrupt handler for blaze rx events.
+     *
+     * Filter events and pass to main if relevant.
+     */
+    static void blaze_rx_handler(ant_blaze_message_t msg);
+
+    /**
+     * Main handler for updates to led output.
+     */
+    static void on_led_control_evt(void* p_data, uint16_t size);
+#endif /* MM_BLAZE_GATEWAY */
+
+    /**
+     * Maps blaze API (function, colour) to driver API (colour, t_on, t_off).
+     */
+    static void update_led_settings(led_function_t led_function, led_colours_t led_colour);
+
 #if TEST_LED_MESSAGES
-static void test_led_messages_init_buttons(void);
-static void led_test_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+    /**
+     * Initialize buttons for mocking messages from the gateway.
+     */
+    static void test_led_messages_init_buttons(void);
+
+    /**
+     * Interrupt handler for test button events.
+     */
+    static void led_test_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+
+    /**
+     * Main hander for button events. Only called if button was pressed down.
+     *
+     * p_data -> nrf_drv_gpiote_pin_t*
+     */
+    static void on_button_event(void* p_data, uint16_t size);
 #endif //TEST_LED_MESSAGES
 
 /**********************************************************
                        VARIABLES
 **********************************************************/
 static hardware_config_t configuration;
+
 #if TEST_LED_MESSAGES
-static led_colours_t test_led_msgs_current_colour = LED_COLOURS_YELLOW;
-static bool test_led_msgs_currently_transmitting = false;
+    static led_colours_t test_led_msgs_current_colour = LED_COLOURS_YELLOW;
+    static bool test_led_msgs_currently_transmitting = false;
 #endif
 
 /**********************************************************
@@ -93,21 +128,20 @@ void mm_led_control_init(void)
 #if TEST_LED_MESSAGES
     test_led_messages_init_buttons();
 #endif // #if TEST_LED_MESSAGES
-
-
 }
 
 #ifdef MM_BLAZE_GATEWAY
 
 void mm_led_control_update_node_leds
     (
-        uint16_t target_node_id,
-        led_function_t led_function,
-        led_colours_t led_colour
+    uint16_t target_node_id,
+    led_function_t led_function,
+    led_colours_t led_colour
     )
 {
     //If the node the message is for is actually the gateway (i.e. the current node), just update the LEDs.
-    if(target_node_id == MM_GATEWAY_ID){ 
+    if(target_node_id == MM_GATEWAY_ID)
+    {
         update_led_settings(led_function, led_colour);
         return;
     }
@@ -131,24 +165,42 @@ void mm_led_control_update_node_leds
     blaze_message.p_data = &payload[0];
 
     mm_blaze_send_message( &blaze_message );
-
 }
-
 #endif
 
-
 #ifndef MM_BLAZE_GATEWAY
-//Respond to LED status transmission messages, do nothing otherwise. 
-static void blaze_rx_handler( ant_blaze_message_t msg )
+static void blaze_rx_handler(ant_blaze_message_t msg)
 {
-    uint8_t const * payload = msg.p_data;
+	/* Filter message for types we care about. */
+	switch(msg.p_data[PAGE_NUM_INDEX])
+	{
+		case BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM:
+			break;
+		default:
+			return;
+	}
 
-    if(payload[PAGE_NUM_INDEX] == BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM){
-        led_function_t led_function = payload[LED_FUNCTION_INDEX];
-        led_colours_t led_colour = payload[LED_COLOUR_INDEX];
-        update_led_settings(led_function, led_colour);
-    }
+	/* Pack message to serializable format. */
+	mm_blaze_message_serialized_t evt;
+	mm_blaze_pack_message(&msg, &evt);
 
+	/* Kick event to main */
+	uint32_t err_code;
+	err_code = app_sched_event_put(&evt, sizeof(evt), on_led_control_evt);
+	APP_ERROR_CHECK(err_code);
+}
+
+static void on_led_control_evt(void* p_data, uint16_t size)
+{
+    mm_blaze_message_serialized_t const * msg = (mm_blaze_message_serialized_t const *)p_data;
+    uint8_t const * payload = &msg->data[0];
+
+    /* Message is pre-filtered, so it's always a control message */
+    APP_ERROR_CHECK(payload[PAGE_NUM_INDEX] != BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM);
+
+    led_function_t led_function = payload[LED_FUNCTION_INDEX];
+    led_colours_t  led_colour   = payload[LED_COLOUR_INDEX];
+    update_led_settings(led_function, led_colour);
 }
 #endif
 
@@ -194,7 +246,6 @@ static void update_led_settings(led_function_t led_function, led_colours_t led_c
     
 }
 
-
 #if TEST_LED_MESSAGES
 
 static void test_led_messages_init_buttons(void)
@@ -239,37 +290,50 @@ static void led_test_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_p
     	return;
     }
 
-    /* Differentiate between the three buttons
-    *  TEST_LED_MESSAGES_COLOUR_CONTROL_PIN - Cycle between colours
-    *  TEST_LED_MESSAGES_LEDS_ON_OFF_PIN - Cycle between LEDs on and LEDs off
-    */
-   switch(pin){
-    case TEST_LED_MESSAGES_COLOUR_CONTROL_PIN:
-        if(test_led_msgs_current_colour == LED_COLOURS_RED)
-        {
-            test_led_msgs_current_colour = LED_COLOURS_YELLOW;
-        }
-        else
-        {
-            test_led_msgs_current_colour = LED_COLOURS_RED;
-        }
-        break;
-    case TEST_LED_MESSAGES_LEDS_ON_OFF_PIN:
-        //Note that the target node will currently (Jan 24, 2019) be hardcoded to be node 1
-        if(test_led_msgs_currently_transmitting)
-        {
-            mm_led_control_update_node_leds(1, LED_FUNCTION_LEDS_OFF, test_led_msgs_current_colour);
-            test_led_msgs_currently_transmitting = false;
-        }
-        else
-        {
-            mm_led_control_update_node_leds(1, LED_FUNCTION_LEDS_BLINKING, test_led_msgs_current_colour);
-            test_led_msgs_currently_transmitting = true;
-        }
-        break;
-    default:
-        APP_ERROR_CHECK(true);
-   }
+    /* Kick event to main */
+	uint32_t err_code;
+	err_code = app_sched_event_put(&pin, sizeof(pin), on_button_event);
+	APP_ERROR_CHECK(err_code);
+}
+
+static void on_button_event(void* p_data, uint16_t size)
+{
+    nrf_drv_gpiote_pin_t const * pin = (nrf_drv_gpiote_pin_t const *)p_data;
+
+    /* Differentiate between the the buttons
+     * TEST_LED_MESSAGES_COLOUR_CONTROL_PIN - Cycle between colours
+     * TEST_LED_MESSAGES_LEDS_ON_OFF_PIN - Cycle between LEDs on and LEDs off
+     */
+    switch(*pin)
+    {
+        case TEST_LED_MESSAGES_COLOUR_CONTROL_PIN:
+            if(test_led_msgs_current_colour == LED_COLOURS_RED)
+            {
+                test_led_msgs_current_colour = LED_COLOURS_YELLOW;
+            }
+            else
+            {
+                test_led_msgs_current_colour = LED_COLOURS_RED;
+            }
+            break;
+        case TEST_LED_MESSAGES_LEDS_ON_OFF_PIN:
+            /* Node is hardcoded to 1 because that is the first node id to be configured
+                and having this module use the position system for testing is a complicated test setup. */
+            if(test_led_msgs_currently_transmitting)
+            {
+                mm_led_control_update_node_leds(1, LED_FUNCTION_LEDS_OFF, test_led_msgs_current_colour);
+                test_led_msgs_currently_transmitting = false;
+            }
+            else
+            {
+                mm_led_control_update_node_leds(1, LED_FUNCTION_LEDS_BLINKING, test_led_msgs_current_colour);
+                test_led_msgs_currently_transmitting = true;
+            }
+            break;
+        default:
+            /* Unexpected pin. */
+            APP_ERROR_CHECK(true);
+    }
 }
 
 #endif // #if TEST_LED_MESSAGES
