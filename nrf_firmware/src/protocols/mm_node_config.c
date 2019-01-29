@@ -77,7 +77,7 @@ static void external_init(void);
 /**********************************************************
                        VARIABLES
 **********************************************************/
-static uint8_t node_config_status;
+
 static uint16_t node_id;
 static uint16_t network_id;
 
@@ -89,9 +89,6 @@ APP_TIMER_DEF(m_timer_id);
 
 void mm_node_config_init(void)
 {
-    // Node is unconfigured at initialization
-    node_config_status = CONFIG_STATUS_UNCONFIGURED;
-
     // Register to receive ANT events
     mm_ant_evt_handler_set(&ant_evt_handler);
 
@@ -133,9 +130,6 @@ static void on_config_command_page(void* evt_data, uint16_t evt_size)
 
 		// Start init now that node ID and network ID are known
 		external_init();
-
-		// Node has been configured, so update the status broadcast
-		node_config_status = CONFIG_STATUS_CONFIGURED;
 
 		mm_ant_payload_t payload;
 		encode_node_status_page(&payload);

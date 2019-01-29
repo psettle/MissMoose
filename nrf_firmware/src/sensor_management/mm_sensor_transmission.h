@@ -30,7 +30,9 @@ typedef enum
     SENSOR_ROTATION_180,
     SENSOR_ROTATION_225,
     SENSOR_ROTATION_270,
-    SENSOR_ROTATION_315
+    SENSOR_ROTATION_315,
+
+	SENSOR_ROTATION_COUNT
 } sensor_rotation_t;
 
 typedef enum
