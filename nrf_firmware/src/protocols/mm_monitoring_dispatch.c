@@ -47,39 +47,85 @@ notes:
 #define QUEUE_FULL()    ( payload_queue.count == ANT_PAYLOAD_QUEUE_SIZE )
 
 /**********************************************************
-                       DECLARATIONS
+                       TYPES
 **********************************************************/
 
 typedef struct {
     mm_ant_payload_t queue[ANT_PAYLOAD_QUEUE_SIZE];
-    uint32_t         count;
-    uint32_t         head;
-    uint32_t         tail;
+    uint16_t         count;
+    uint16_t         head;
+    uint16_t         tail;
 } ant_payload_queue_t;
 
-static void ant_payload_queue_pop(void);
+/**********************************************************
+                       DECLARATIONS
+**********************************************************/
 
-static void ant_payload_queue_push(mm_ant_payload_t const * ant_payload);
-
-static mm_ant_payload_t const * ant_payload_queue_peak_tail(void);
-
+/**
+ * Interrupt callback for ant events, kicks to on_monitoring_data_acknowledge
+ */
 static void process_ant_evt(ant_evt_t * evt);
 
+/**
+ * Main callback for ant events, kicked to by process_ant_evt
+ */
 static void on_monitoring_data_acknowledge(void* evt_data, uint16_t evt_size);
 
+/**
+ * Pop the payload queue, then broadcast the tail (if the queue is not empty)
+ */
 static void broadcast_new_page(void);
 
+/**
+ * Pop the payload queue
+ */
+static void ant_payload_queue_pop(void);
+
+/**
+ * Push to the payload queue.
+ * 
+ * If queue was empty, start a new broadcast.
+ * If queue was full, broadcast_new_page() before pushing.
+ */
+static void ant_payload_queue_push(mm_ant_payload_t const * ant_payload);
+
+/**
+ * Look at the tail of the queue.
+ */
+static mm_ant_payload_t const * ant_payload_queue_peek_tail(void);
+
+/**
+ * Returns the array address of the next queue element after index.
+ */
 static uint16_t queue_next(uint16_t index);
 
+/**
+ * Returns the page id of the tail of the queue.
+ */
 static uint8_t current_page_id(void);
 
+/**
+ * Returns the message id of the tail of the queue.
+ */
 static uint8_t current_msg_id(void);
 
 #if TEST_MODE
+    /**
+     * Initialize test feature of this module.
+     * 
+     * The test feature pushs a random sensor update event to the payload queue
+     * every TEST_MODE_PERIOD_MS ms.
+     */
     static void test_mode_init(void);
 
+    /**
+     * Interrupt callback for the test mode timer.
+     */
     static void test_timer_event(void * p_context);
 
+    /**
+     * Main callback for the test mode timer.
+     */
     static void on_test_timer_event(void* evt_data, uint16_t evt_size);
 #endif
 
@@ -164,7 +210,8 @@ static void ant_payload_queue_pop(void)
 {
     if(QUEUE_EMPTY())
     {
-        /* Nothing to pop */
+        /* (Popping an empty queue isn't allowed, it is protected against here
+            by checking !QUEUE_EMPTY() or QUEUE_FULL() as guards before calling.) */
         APP_ERROR_CHECK(true);
     }
 
@@ -194,14 +241,14 @@ static void ant_payload_queue_push(mm_ant_payload_t const * ant_payload)
         mm_ant_page_manager_add_page
             (
             current_page_id(),
-            ant_payload_queue_peak_tail(),
+            ant_payload_queue_peek_tail(),
             CONCURRENT_PAGE_COUNT
             );
     }
     
 }
 
-static mm_ant_payload_t const * ant_payload_queue_peak_tail(void)
+static mm_ant_payload_t const * ant_payload_queue_peek_tail(void)
 {
     if(QUEUE_EMPTY())
     {
@@ -246,8 +293,8 @@ static void on_monitoring_data_acknowledge(void* evt_data, uint16_t evt_size)
 
     if(QUEUE_EMPTY())
     {
-        /* Nothing to acknowledge, perhaps two
-           acks got queued before they were processed. */
+        /* Nothing to acknowledge, likely
+           received an extra ack. */
         return;
     }
 
@@ -272,7 +319,7 @@ static void broadcast_new_page(void)
         mm_ant_page_manager_add_page
             (
             current_page_id(),
-            ant_payload_queue_peak_tail(),
+            ant_payload_queue_peek_tail(),
             CONCURRENT_PAGE_COUNT
             );
     }
@@ -288,13 +335,13 @@ static uint16_t queue_next(uint16_t index)
 
 static uint8_t current_page_id(void)
 {
-    mm_ant_payload_t const * tail = ant_payload_queue_peak_tail();
+    mm_ant_payload_t const * tail = ant_payload_queue_peek_tail();
     return tail->data[PAGE_NUM_INDEX];
 }
 
 static uint8_t current_msg_id(void)
 {
-    mm_ant_payload_t const * tail = ant_payload_queue_peak_tail();
+    mm_ant_payload_t const * tail = ant_payload_queue_peek_tail();
     return tail->data[MESSAGE_ID_INDEX];
 }
 
