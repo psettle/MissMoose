@@ -108,10 +108,6 @@ int main(void)
     while(true)
     {
     	app_sched_execute();
-
-        #ifdef MM_BLAZE_GATEWAY
-                mm_monitoring_dispatch_main();
-        #endif
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }

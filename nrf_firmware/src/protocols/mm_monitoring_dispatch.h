@@ -21,8 +21,6 @@ notes:
                        DECLARATIONS
 **********************************************************/
 
-void mm_monitoring_dispatch_main(void);
-
 void mm_monitoring_dispatch_init(void);
 
 void mm_monitoring_dispatch_send_lidar_data
