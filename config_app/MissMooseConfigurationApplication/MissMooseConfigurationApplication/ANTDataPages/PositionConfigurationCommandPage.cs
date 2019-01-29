@@ -64,7 +64,7 @@ namespace MissMooseConfigurationApplication
             txBuffer[4] = (byte)NodeRotation.ToEnum();
 
             byte xpos_encoded = (byte)((xpos - 1) & 0x0F);
-            byte ypos_encoded = (byte)((ypos - 1) & 0x0F);
+            byte ypos_encoded = (byte)((1 - ypos) & 0x0F);
             ypos_encoded <<= 4;
 
             txBuffer[5] = (byte)(xpos_encoded | ypos_encoded);
