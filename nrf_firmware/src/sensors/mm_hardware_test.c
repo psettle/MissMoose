@@ -16,6 +16,7 @@
 #include "mm_switch_config.h"
 #include "lidar_pub.h"
 #include "app_timer.h"
+#include "app_scheduler.h"
 
 /**********************************************************
                         CONSTANTS
@@ -51,6 +52,8 @@ static void process_lidar_evt(lidar_evt_t * evt);
 static void process_pir_evt(pir_evt_t * evt);
 
 static void state_transition_update(detection_test_states_t new_state);
+
+static void on_timer_event(void* evt_data, uint16_t evt_size);
 
 /**********************************************************
                         VARIABLES
@@ -164,17 +167,31 @@ static void process_pir_evt(pir_evt_t * evt)
 }
 
 /**
- * @brief Handler for timer events.
+ * @brief Handler for timer events. - Passes things to main context.
  *
  * @param[in] p_context Unused information related to the timer event.
  */
 static void timer_event_handler(void * p_context)
 {
+    uint32_t err_code;
+	/* Kick handling of the timer to main context */
+    err_code = app_sched_event_put(NULL, 0, on_timer_event);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**
+ * @brief Handler for timer events.
+ *
+ *
+ * @param[in] evt_data    unused event data
+ * @param[in] evt_size    size of event data.
+ */
+static void on_timer_event(void* evt_data, uint16_t evt_size)
+{
     /* Reduce the lidar event cooldown by however fast this update is happening */
     lidar_event_cooldown = lidar_event_cooldown == 0 ? 0 : lidar_event_cooldown - TIMED_UPDATE_PERIOD;
     /* Reduce the pir event cooldown by however fast this update is happening */
     pir_event_cooldown = pir_event_cooldown == 0 ? 0 : pir_event_cooldown - TIMED_UPDATE_PERIOD;
-
 
     /* Determine what the current state should be */
     if(pir_event_cooldown == 0 && lidar_event_cooldown == 0)

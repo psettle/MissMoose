@@ -1,13 +1,20 @@
+/**
+file: mm_position_config.c
+brief:
+notes:
+*/
+
 /**********************************************************
                         INCLUDES
 **********************************************************/
-#include "mm_position_config.h"
 
 #include <string.h>
 
-#include "mm_ant_control.h"
 #include "app_error.h"
 #include "app_scheduler.h"
+
+#include "mm_ant_control.h"
+#include "mm_position_config.h"
 
 /**********************************************************
                         CONSTANTS
@@ -46,7 +53,7 @@
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
-#ifdef MM_BLAZE_GATEWAY
+
 /* Processes an ANT event */
 static void process_ant_evt(ant_evt_t * evt);
 
@@ -55,23 +62,20 @@ static void decode_position_page(void* p_evt, uint16_t size);
 
 /* Sign extends a number in 2's complement form */
 static int8_t sign_extend( uint8_t uint, uint8_t size_bits );
-#endif
 
 /**********************************************************
                        VARIABLES
 **********************************************************/
-#ifdef MM_BLAZE_GATEWAY
+
 static mm_node_position_t node_positions[MAX_NUMBER_NODES];
 
 static uint16_t current_number_of_nodes = 0;
 static bool have_positions_changed = false;
-#endif
 
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
 
-#ifdef MM_BLAZE_GATEWAY
 void mm_position_config_init( void )
 {
 	memset(&node_positions[0], 0, sizeof( node_positions ) );
@@ -94,7 +98,7 @@ static void process_ant_evt(ant_evt_t * evt)
             {
                 if (p_message->ANT_MESSAGE_aucPayload[0] == POSITION_CONFIG_PAGE_NUM)
                 {
-                	app_sched_event_put(evt, sizeof(ant_evt_t), decode_position_page);
+                    app_sched_event_put(evt, sizeof(ant_evt_t), decode_position_page);
                 }
             }
             break;
@@ -289,4 +293,3 @@ void clear_unread_node_positions( void )
 {
 	have_positions_changed = false;
 }
-#endif

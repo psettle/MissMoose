@@ -46,6 +46,7 @@ typedef union
     ant_evt_t ant_evt;
     pir_evt_t pir_evt;
     pir_pin_change_evt_t pir_pin_evt;
+    mm_blaze_message_serialized_t blaze_evt;
 } scheduler_event_t;
 
 #define SCHEDULER_MAX_EVENT_SIZE sizeof(scheduler_event_t)
@@ -107,10 +108,6 @@ int main(void)
     while(true)
     {
     	app_sched_execute();
-
-        #ifdef MM_BLAZE_GATEWAY
-                mm_monitoring_dispatch_main();
-        #endif
 		err_code = sd_app_evt_wait();
 		APP_ERROR_CHECK(err_code);
     }
