@@ -87,7 +87,7 @@ static void create_sensor_record(sensor_evt_t const * evt, sensor_record_t * rv)
 /**
     Record that a sensor has been active (has had a detection event).
 */
-static void mm_record_sensor_activity(sensor_evt_t const * evt, uint16_t minute_count)
+void mm_record_sensor_activity(sensor_evt_t const * evt, uint16_t minute_count)
 {
     bool first_activity_of_day = true;
     sensor_record_t activity_record;
@@ -144,7 +144,7 @@ static void mm_record_sensor_activity(sensor_evt_t const * evt, uint16_t minute_
 /**
     Checks to ensure all sensors have made at least 1 detection in the last 24 hours
 */
-static void mm_check_for_sensor_inactivity(void)
+void mm_check_for_sensor_inactivity(void)
 {
     mm_fetch_node_positions(&node_positions[0]);
     for ( uint16_t i = 0; i < MAX_NUMBER_NODES; i++)
@@ -185,7 +185,7 @@ static void mm_check_for_sensor_inactivity(void)
 /**
     Checks for any sensors which are hyperactive. Flags hyperactive sensors so their events will be ignored.
 */
-static void mm_check_for_sensor_hyperactivity(void)
+void mm_check_for_sensor_hyperactivity(void)
 {
     if ( have_node_positions_changed() )
     {
@@ -247,7 +247,7 @@ static void mm_check_for_sensor_hyperactivity(void)
 /**
     Returns true if the sensor in the given event is marked as hyperactive
 */
-static bool mm_is_sensor_hyperactive(sensor_evt_t const * evt)
+bool mm_is_sensor_hyperactive(sensor_evt_t const * evt)
 {
     sensor_record_t activity_record;
     create_sensor_record(evt, &activity_record);

@@ -190,7 +190,7 @@ void mm_activity_variable_growth_on_node_positions_update(void)
 /**
     Check for change in node positions, and fetch if needed.
 */
-static void mm_fetch_node_positions(mm_node_position_t * node_positions_pointer)
+void mm_fetch_node_positions(mm_node_position_t * node_positions_pointer)
 {
     if( have_node_positions_changed() )
     {
