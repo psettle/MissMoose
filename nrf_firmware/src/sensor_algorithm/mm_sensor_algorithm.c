@@ -37,7 +37,9 @@ notes:
 
 /* Timer macros */
 #define ONE_SECOND_MS           ( 1000 )
-#define TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD_MS)
+#define THIRTY_SECONDS_MS       ( 30 * ONE_SECOND_MS )
+#define ONE_SECOND_TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD_MS)
+#define THIRTY_SECOND_TIMER_TICKS APP_TIMER_TICKS(THIRTY_SECONDS_MS)
 
 /**********************************************************
                     ALGORITHM TUNING
@@ -108,7 +110,14 @@ static void update_node_led_colors(void);
 /**
     Timer handler to process once-per-second updates.
 */
-static void timer_event_handler(void * p_context);
+static void one_second_timer_event_handler(void * p_context);
+
+/**
+    Single shot timer handler to process once-per-thirty-second updates.
+
+    Exclusively used for de-escalating the concern AV state right now.
+*/
+static void thirty_second_timer_event_handler(void * p_context);
 
 /**
     Determines if the activity variable located at (x, y)
@@ -133,7 +142,10 @@ static activity_variable_t activity_variables[ ACTIVITY_VARIABLES_NUM ];
 /* Assumes that there are MAX_GRID_SIZE_X nodes with LEDs. */
 static led_signalling_state_t led_signalling_states [MAX_GRID_SIZE_X];
 
-APP_TIMER_DEF(m_timer_id);
+static bool start_thirty_second_timer = false;
+
+APP_TIMER_DEF(m_one_second_timer_id);
+APP_TIMER_DEF(m_thirty_second_timer_id);
 
 /**********************************************************
                        DECLARATIONS
@@ -159,11 +171,15 @@ void mm_sensor_algorithm_init(void)
 
     /* Initialize 1 second timer. */
     uint32_t err_code;
-    err_code = app_timer_create(&m_timer_id, APP_TIMER_MODE_REPEATED, timer_event_handler);
+    err_code = app_timer_create(&m_one_second_timer_id, APP_TIMER_MODE_REPEATED, one_second_timer_event_handler);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_start(m_timer_id, TIMER_TICKS, NULL);
+    err_code = app_timer_start(m_one_second_timer_id, ONE_SECOND_TIMER_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
+
+    /* Create thirty second timer, but don't start it yet. */
+	err_code = app_timer_create(&m_thirty_second_timer_id, APP_TIMER_MODE_SINGLE_SHOT, thirty_second_timer_event_handler);
+	APP_ERROR_CHECK(err_code);
 }
 
 /**
@@ -260,6 +276,8 @@ static void update_led_signalling_states(void)
 						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
 						led_signalling_states[1] = ( (led_signalling_states[1] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[1] + ALARM );
 						led_signalling_states[2] = ( (led_signalling_states[2] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[2] + CONCERN );
+
+						start_thirty_second_timer = true;
 					}
 					else if ( x == 1) // Top right
 					{
@@ -279,6 +297,8 @@ static void update_led_signalling_states(void)
 						/* Enforce enum maximum */
 						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
 						led_signalling_states[1] = ( (led_signalling_states[1] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[1] + CONCERN );
+
+						start_thirty_second_timer = true;
 					}
 					else if ( x == 1 && y == 0 ) // Top right
 					{
@@ -286,6 +306,8 @@ static void update_led_signalling_states(void)
 						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
 						led_signalling_states[1] = ( (led_signalling_states[1] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[1] + ALARM );
 						led_signalling_states[2] = ( (led_signalling_states[2] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[2] + CONCERN );
+
+						start_thirty_second_timer = true;
 					}
 				}
 			}
@@ -301,6 +323,8 @@ static void update_led_signalling_states(void)
 						/* Enforce enum maximum */
 						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
 						led_signalling_states[1] = ( (led_signalling_states[1] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[1] + CONCERN );
+
+						start_thirty_second_timer = true;
 					}
 					else if ( x == 1) // Bottom right
 					{
@@ -308,6 +332,8 @@ static void update_led_signalling_states(void)
 						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
 						led_signalling_states[1] = ( (led_signalling_states[1] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[1] + ALARM );
 						led_signalling_states[2] = ( (led_signalling_states[2] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[2] + CONCERN );
+
+						start_thirty_second_timer = true;
 					}
 				}
 				else
@@ -319,12 +345,16 @@ static void update_led_signalling_states(void)
 					{
 						/* Enforce enum maximum */
 						led_signalling_states[0] = ( (led_signalling_states[0] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[0] + CONCERN );
+
+						start_thirty_second_timer = true;
 					}
 					else if ( x == 1) // Bottom right
 					{
 						/* Enforce enum maximum */
 						led_signalling_states[0] = ( (led_signalling_states[0] + ALARM) > ALARM ) ? ALARM : ( led_signalling_states[0] + ALARM );
 						led_signalling_states[1] = ( (led_signalling_states[1] + CONCERN) > ALARM ) ? ALARM : ( led_signalling_states[1] + CONCERN );
+
+						start_thirty_second_timer = true;
 					}
 				}
 			}
@@ -362,14 +392,38 @@ static void update_node_led_colors(void)
 }
 
 /**
+    Single shot timer handler to process once-per-thirty-second updates.
+
+    Exclusively used for de-escalating the concern AV state right now.
+*/
+static void thirty_second_timer_event_handler(void * p_context)
+{
+	for ( uint16_t i = 0; i < MAX_GRID_SIZE_X; i++ )
+	{
+		if ( led_signalling_states[i] == CONCERN )
+		{
+			led_signalling_states[i] = IDLE;
+		}
+	}
+}
+
+/**
     Timer handler to process once-per-second updates.
 */
-static void timer_event_handler(void * p_context)
+static void one_second_timer_event_handler(void * p_context)
 {
 	apply_activity_variable_drain_factor();
 	update_led_signalling_states();
 	update_node_led_colors();
 
+	if (start_thirty_second_timer)
+	{
+		uint32_t err_code;
+		err_code = app_timer_start(m_thirty_second_timer_id, THIRTY_SECOND_TIMER_TICKS, NULL);
+		APP_ERROR_CHECK(err_code);
+
+		start_thirty_second_timer = false;
+	}
 	/* Space left to add other once-per-second updates if
 	 * necessary in the future. */
 }
