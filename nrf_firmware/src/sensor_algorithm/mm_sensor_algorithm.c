@@ -65,6 +65,16 @@ static void one_second_timer_handler(void * p_context);
 static void on_second_elapsed(void* p_unused, uint16_t size_0);
 static void on_minute_elapsed(void);
 
+/**
+    Called every hour from main context.
+*/
+static void on_hour_elapsed(void);
+
+/**
+    Called every day from main context.
+*/
+static void on_day_elapsed(void);
+
 /**********************************************************
                        VARIABLES
 **********************************************************/
