@@ -1,12 +1,20 @@
+/**
+file: mm_position_config.c
+brief:
+notes:
+*/
+
 /**********************************************************
                         INCLUDES
 **********************************************************/
-#include "mm_position_config.h"
 
 #include <string.h>
 
-#include "mm_ant_control.h"
 #include "app_error.h"
+#include "app_scheduler.h"
+
+#include "mm_ant_control.h"
+#include "mm_position_config.h"
 
 /**********************************************************
                         CONSTANTS
@@ -45,32 +53,29 @@
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
-#ifdef MM_BLAZE_GATEWAY
+
 /* Processes an ANT event */
 static void process_ant_evt(ant_evt_t * evt);
 
 /* Decodes an ANT position page message payload */
-static void decode_position_page( uint8_t const * position_page );
+static void decode_position_page(void* p_evt, uint16_t size);
 
 /* Sign extends a number in 2's complement form */
 static int8_t sign_extend( uint8_t uint, uint8_t size_bits );
-#endif
 
 /**********************************************************
                        VARIABLES
 **********************************************************/
-#ifdef MM_BLAZE_GATEWAY
+
 static mm_node_position_t node_positions[MAX_NUMBER_NODES];
 
 static uint16_t current_number_of_nodes = 0;
 static bool have_positions_changed = false;
-#endif
 
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
 
-#ifdef MM_BLAZE_GATEWAY
 /* Initialize position configuration */
 void mm_position_config_init( void )
 {
@@ -95,7 +100,7 @@ static void process_ant_evt(ant_evt_t * evt)
             {
                 if (p_message->ANT_MESSAGE_aucPayload[0] == POSITION_CONFIG_PAGE_NUM)
                 {
-                	decode_position_page(&(p_message->ANT_MESSAGE_aucPayload[0]));
+                    app_sched_event_put(evt, sizeof(ant_evt_t), decode_position_page);
                 }
             }
             break;
@@ -106,8 +111,12 @@ static void process_ant_evt(ant_evt_t * evt)
 }
 
 /* Decodes an ANT position page message payload */
-static void decode_position_page( uint8_t const * position_page )
+static void decode_position_page(void* p_evt, uint16_t size)
 {
+    ant_evt_t * evt = (ant_evt_t*)p_evt;
+    ANT_MESSAGE * p_message = (ANT_MESSAGE *)evt->msg.evt_buffer;
+    uint8_t const * position_page = &(p_message->ANT_MESSAGE_aucPayload[0]);
+
 	have_positions_changed = true;
 	mm_node_position_t * node_position = NULL;
 
@@ -256,20 +265,26 @@ mm_node_position_t const * get_position_for_node( uint16_t node_id )
 /* Gets a specific node position by it's x and y grid position. Returns
  * NULL is the node doesn't exist in the list yet.
  */
-mm_node_position_t const * get_node_at_position
-	(
-	int8_t grid_position_x,
-	int8_t grid_position_y
-	)
+mm_node_position_t const * get_node_for_position(int8_t x, int8_t y)
 {
-	for ( uint16_t i = 0; i < MAX_NUMBER_NODES; i ++ )
+	for ( uint16_t i = 0; i < MAX_NUMBER_NODES; ++i )
 	{
-		if ( ( node_positions[i].grid_position_x == grid_position_x ) &&
-			 ( node_positions[i].grid_position_y == grid_position_y ) &&
-			 ( node_positions[i].is_valid ) )
+		if( !node_positions[i].is_valid )
 		{
-			return &node_positions[i];
+			continue;
 		}
+
+		if(node_positions[i].grid_position_x != x)
+		{
+			continue;
+		}
+
+		if(node_positions[i].grid_position_y != y)
+		{
+			continue;
+		}
+
+		return &node_positions[i];
 	}
 
 	return NULL;
@@ -301,4 +316,3 @@ void clear_unread_node_positions( void )
 {
 	have_positions_changed = false;
 }
-#endif

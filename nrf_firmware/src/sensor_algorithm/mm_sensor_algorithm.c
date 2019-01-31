@@ -18,24 +18,15 @@ notes:
 #include "mm_sensor_algorithm.h"
 #include "mm_position_config.h"
 //#include "mm_led_control.h"
+#include "mm_activity_variables.h"
+#include "mm_activity_variable_drain.h"
+#include "mm_sensor_algorithm_config.h"
 
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
 
-#define MAX_GRID_SIZE_X         ( 3 )
-#define MAX_GRID_SIZE_Y         ( 3 )
-#define ACTIVITY_VARIABLES_NUM  ( (MAX_GRID_SIZE_X - 1) * (MAX_GRID_SIZE_Y - 1) )
-
-/* Ease of access macros, optional usage. */
-#define AV(x, y)                ( activity_variables[(x) * (MAX_GRID_SIZE_X - 1) + (y)] )
-#define AV_TOP_LEFT             ( AV(0,0) )
-#define AV_TOP_RIGHT            ( AV(1,0) )
-#define AV_BOTTOM_LEFT          ( AV(0,1) )
-#define AV_BOTTOM_RIGHT         ( AV(1,1) )
-
-/* Timer macros */
 #define ONE_SECOND_MS           ( 1000 )
 #define THIRTY_SECONDS_MS       ( 30 * ONE_SECOND_MS )
 #define ONE_SECOND_TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD_MS)
@@ -44,12 +35,6 @@ notes:
 /**********************************************************
                     ALGORITHM TUNING
 **********************************************************/
-
-#define ACTIVITY_VARIABLE_MIN               ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX               #error not implemented
-
-#define ACTIVITY_VARIABLE_DECAY_FACTOR      ( 0.97f )
-#define ACTIVITY_DECAY_PERIOD_MS            ( ONE_SECOND_MS )
 
 /* Road-side (RS), non-road-side (NRS) */
 #define POSSIBLE_DETECTION_THRESHOLD_RS     ( 3.0f )
@@ -85,11 +70,6 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt);
     Send sensor events to the monitoring dispatch manager.
 */
 static void send_monitoring_dispatch(sensor_evt_t const * evt);
-
-/**
-    Applies the activity variable drain factor to all activity variables.
-*/
-static void apply_activity_variable_drain_factor(void);
 
 /**
     Updates the signalling state of the LEDs based on the
@@ -129,16 +109,6 @@ static bool is_road_side_av( uint16_t x, uint16_t y );
                        VARIABLES
 **********************************************************/
 
-/**
-     Activity variable definition, can be accessed as AV(x, y).
-
-     X is indexed left -> right. (In direction of North-American traffic)
-     Y is indexed top -> bottom. (Moving away from the road)
-
-     Variable (x, y) is located at activity_variables[x * (MAX_GRID_SIZE_X - 1) + y]
-*/
-static activity_variable_t activity_variables[ ACTIVITY_VARIABLES_NUM ];
-
 /* Assumes that there are MAX_GRID_SIZE_X nodes with LEDs. */
 static led_signalling_state_t led_signalling_states [MAX_GRID_SIZE_X];
 
@@ -157,11 +127,7 @@ APP_TIMER_DEF(m_thirty_second_timer_id);
 void mm_sensor_algorithm_init(void)
 {
     /* Initialize activity variables. */
-    memset(&(activity_variables[0]), 0, sizeof(activity_variables));
-    AV_TOP_LEFT = ACTIVITY_VARIABLE_MIN;
-    AV_TOP_RIGHT = ACTIVITY_VARIABLE_MIN;
-    AV_BOTTOM_LEFT = ACTIVITY_VARIABLE_MIN;
-    AV_BOTTOM_RIGHT = ACTIVITY_VARIABLE_MIN;
+    mm_activity_variables_init();
 
     /* Initialize LED signalling states */
     memset( &led_signalling_states[0], 0, sizeof(led_signalling_states) );
@@ -222,26 +188,6 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt)
             APP_ERROR_CHECK(true);
             break;
     }
-}
-
-/**
-    Applies the activity variable drain factor to all activity variables.
-*/
-static void apply_activity_variable_drain_factor(void)
-{
-	for ( uint16_t i = 0; i < ACTIVITY_VARIABLES_NUM; i++ )
-	{
-		if ( activity_variables[i] >  ACTIVITY_VARIABLE_MIN )
-		{
-			activity_variables[i] *= ACTIVITY_VARIABLE_DECAY_FACTOR;
-
-			/* Enforce ACTIVITY_VARIABLE_MIN */
-			if ( activity_variables[i] < ACTIVITY_VARIABLE_MIN )
-			{
-				activity_variables[i] = ACTIVITY_VARIABLE_MIN;
-			}
-		}
-	}
 }
 
 /**

@@ -24,10 +24,12 @@
 **********************************************************/
 
 #include <stdio.h>
+#include <string.h>
 #include "nrf_drv_gpiote.h"
 #include "boards.h"
 #include "pir_st_00081_pub.h"
 #include "nrf_error.h"
+#include "app_scheduler.h"
 
 /**********************************************************
                         CONSTANTS
@@ -83,7 +85,9 @@ static const uint8_t pir_enable_pins[] = {PIR1_PIN_EN_OUT, PIR2_PIN_EN_OUT, PIR3
 
 static void pir_gpiote_init(uint8_t num_pir_sensors);
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
-static void pir_event_dispatch(bool detecting, uint8_t pir_index);
+/* Processes timer timeout */
+static void on_pin_event(void* evt_data, uint16_t evt_size);
+static void pir_event_dispatch(pir_evt_t* evt_data);
 
 #if BUTTON_ENABLE_TEST
     //Initializes enable
@@ -100,16 +104,13 @@ static uint8_t pir_sensor_count;
 //The enable/disable status of the PIR sensors
 static bool pirs_enabled[3] = {false, false, false};
 //The state of the PIR sensors - High or low (Detecting something or not detecting)
-static bool pirs_detecting[3] = {false, false, false};
-// The state of the PIR events that need to be distributed.
-// Set to true when a detection event happens, sent to false once distributed.
-static bool pirs_event_pending[3] = {false, false, false};
+static pir_event_type_t pirs_detecting[3] = {PIR_EVENT_CODE_NO_DETECTION, PIR_EVENT_CODE_NO_DETECTION, PIR_EVENT_CODE_NO_DETECTION};
 
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
 /* Array of structs to hold the pinouts for individual PIR sensors */
-pir_pinout_t pir_sensors[MAXIMUM_NUM_PIRS];
+static pir_pinout_t pir_sensors[MAXIMUM_NUM_PIRS];
 
 static pir_evt_handler_t pir_evt_handlers[MAX_EVT_HANDLERS];
 
@@ -131,23 +132,6 @@ void pir_st_00081_init(uint8_t num_pir_sensors, bool use_led_debug)
     pir_sensor_count = num_pir_sensors;
 
     pir_gpiote_init(pir_sensor_count);
-}
-
-/**
- * @brief This function needs to be called regularly from main in order to distribute events.
- */
-void pir_update_main(void)
-{
-    for(uint8_t i = 0; i < pir_sensor_count; i++)
-    {
-        if(pirs_event_pending[i])
-        {
-            /* Set to false first so that an ISR can occur with a new event while dispatching this one. */
-            pirs_event_pending[i] = false;
-            /* Send out the current state of the sensor. */
-            pir_event_dispatch(pirs_detecting[i], i);
-        }
-    }
 }
 
 /**
@@ -207,13 +191,15 @@ bool check_pir_st_00081_enabled(uint8_t pir_sensor_id){
  * @brief Function for checking if the wide-angle PIR sensor is detecting anything or not.
  *
  * @param[in] pir_sensor_id The ID of the pir sensor to check the detection status of
+ * @param[in] sensor_event  The detecting status of the sensor is returned in this value.
  */
-bool check_pir_st_00081_detecting(uint8_t pir_sensor_id){
+void check_pir_st_00081_detecting(uint8_t pir_sensor_id, pir_event_type_t* sensor_event)
+{
     //Sensor IDs start from 0. So if the pir_sensor_count is 2, 0 and 1 are valid inputs. So >= 2 is not.
     if(pir_sensor_id >= pir_sensor_count){
         APP_ERROR_CHECK(PIR_NOT_INITIALIZZED_ERROR);
     }
-    return pirs_detecting[pir_sensor_id];
+    memcpy(sensor_event, &(pirs_detecting[pir_sensor_id]), sizeof(pir_event_type_t));
 }
 
 
@@ -258,7 +244,7 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
         nrf_drv_gpiote_in_event_enable(pir_sensors[i].pir_pin_in, true);
 
         //Default setting: PIRs are not detecting anything
-        pirs_detecting[i] = false;
+        pirs_detecting[i] = PIR_EVENT_CODE_NO_DETECTION;
 
     }
 
@@ -270,7 +256,7 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
 }
 
 /**
- * @brief Function for handling a change in the signal from the wide angle PIR sensor.
+ * @brief Interrupt handlers for a changing signal from the wide angle PIR sensor.
  *
  * @details This function is called from the GPIOTE interrupt handler after the output
  * from the wide angle PIR sensor changes.
@@ -280,41 +266,62 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
  */
 static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    /*Replace this with event handling for a detection!
-    For the moment, a detection lights up the corresponding LED*/
+    uint32_t err_code;
+    pir_pin_change_evt_t pin_evt;
+    pin_evt.pin = pin;
+    pin_evt.pin_state = nrf_drv_gpiote_in_is_set(pin);
+
+    err_code = app_sched_event_put(&pin_evt, sizeof(pir_pin_change_evt_t), on_pin_event);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**
+ * @brief Function for handling a change in the signal from the wide angle PIR sensor.
+ *
+ * @details Run the bulk of the processing to be done after a PIR input pin change.
+ *
+ * @param[in] evt_data    pir_pin_change_evt_t data about the pin event
+ * @param[in] evt_size    size of the pin event.
+ */
+static void on_pin_event(void* evt_data, uint16_t evt_size)
+{
+	pir_pin_change_evt_t* pin_evt = (pir_pin_change_evt_t*)evt_data;
 
     /*LEDs are indexed from 0 to 3. LED commands:
      * bsp_board_led_off, bsp_board_led_on, bsp_board_led_invert
      *
      * Match the pin with the PIR sensor - If pin in matches pin, that's the PIR that detected something.*/
-    for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
-        if (pir_sensors[i].pir_pin_in == pin){
+    for(int i = 0; i < MAXIMUM_NUM_PIRS; i++)
+    {
+        if (pir_sensors[i].pir_pin_in == pin_evt->pin)
+        {
             //If the input pin for that PIR sensor is set:
-            if (nrf_drv_gpiote_in_is_set(pir_sensors[i].pir_pin_in)){
-                if(led_debug){
+            if(pin_evt->pin_state)
+            {
+                if(led_debug)
+                {
                     bsp_board_led_on(i);
                 }
-                pirs_detecting[i] = true;
+                pirs_detecting[i] = PIR_EVENT_CODE_DETECTION;
             }
-            else{
-                if(led_debug){
+            else
+            {
+                if(led_debug)
+                {
                     bsp_board_led_off(i);
                 }
-                pirs_detecting[i] = false;
+                pirs_detecting[i] = PIR_EVENT_CODE_NO_DETECTION;
             }
 
-            /* Check to make sure there isn't such a huge delay in sending out events that
-               we're missing them. Note that if we start to see nodes freezing and crashing,
-               we may just want to remove this check completely or replace it with some other
-               warning event instead.
-               If main updates are running regularly, this should never be true by this point.*/
-            #if MISSED_EVENT_CHECK
-                APP_ERROR_CHECK(pirs_event_pending[i]);
-            #endif
-            pirs_event_pending[i] = true;
+            pir_evt_t pir_evt;
+            pir_evt.event = pirs_detecting[i];
+            pir_evt.sensor_index = i;
+            pir_event_dispatch(&pir_evt);
         }
     }
 }
+
+
 
 /**
  * @brief Add a new pir event listener
@@ -340,20 +347,16 @@ void pir_evt_handler_register(pir_evt_handler_t pir_evt_handler)
 /**
  * @brief Tell the listeners that there's recently been a change in detection,
  *        and an index of the PIR that changed.
- * @param[in] detecting Whether the sensor is detecting movement or not
- * @param[in] pir_index The index of the PIR sensor that changed it's detection state.
+ * @param[in] evt_data actual data for the sensor event
  */
-static void pir_event_dispatch(bool detecting, uint8_t pir_index)
+static void pir_event_dispatch(pir_evt_t* evt_data)
 {
-    pir_evt_t pir_event;
-    pir_event.sensor_index = pir_index;
-    pir_event.event = detecting ? PIR_EVENT_CODE_DETECTION : PIR_EVENT_CODE_NO_DETECTION;
     // Forward PIR event to listeners
 	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
 	{
 		if (pir_evt_handlers[i] != NULL)
 		{
-			pir_evt_handlers[i](&pir_event);
+			pir_evt_handlers[i](evt_data);
 		}
 		else
 		{

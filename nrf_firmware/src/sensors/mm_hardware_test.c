@@ -16,6 +16,7 @@
 #include "mm_switch_config.h"
 #include "lidar_pub.h"
 #include "app_timer.h"
+#include "app_scheduler.h"
 
 /**********************************************************
                         CONSTANTS
@@ -52,6 +53,8 @@ static void process_pir_evt(pir_evt_t * evt);
 
 static void state_transition_update(detection_test_states_t new_state);
 
+static void on_timer_event(void* evt_data, uint16_t evt_size);
+
 /**********************************************************
                         VARIABLES
 **********************************************************/
@@ -85,12 +88,18 @@ void mm_hardware_test_init(void)
         case HARDWARE_CONFIG_PIR_PIR:
             /* If the node type is just 2 PIRs, set up the PIRs using the LED debugging. */
             pir_st_00081_init(2, true);
+            /* Set ourselves up as a listener for the pir sensors */
+            pir_evt_handler_register(process_pir_evt);
             break;
 
         case HARDWARE_CONFIG_PIR_LIDAR:
             /* If the node type is 1 PIR and 1 LIDAR, initialize them and use their own LED debugging. */
             pir_st_00081_init(1, true);
+            /* Set ourselves up as a listener for the pir sensors */
+            pir_evt_handler_register(process_pir_evt);
             lidar_init(true);
+            /* Set ourselves up as a listener for the lidar */
+            lidar_evt_handler_register(process_lidar_evt);
             break;
 
         case HARDWARE_CONFIG_PIR_LIDAR_LED:
@@ -114,21 +123,6 @@ void mm_hardware_test_init(void)
 
         default:
         	APP_ERROR_CHECK(true);
-    }
-}
-
-/**
- * @brief Function for updating the hardware test from main.
- */
-void mm_hardware_test_update_main(void)
-{
-    /* LAZY - Just assume we always have a PIR sensor. */
-    pir_update_main();
-
-    if(configuration == HARDWARE_CONFIG_PIR_LIDAR ||
-       configuration == HARDWARE_CONFIG_PIR_LIDAR_LED)
-    {
-        lidar_update_main();
     }
 }
 
@@ -173,17 +167,31 @@ static void process_pir_evt(pir_evt_t * evt)
 }
 
 /**
- * @brief Handler for timer events.
+ * @brief Handler for timer events. - Passes things to main context.
  *
  * @param[in] p_context Unused information related to the timer event.
  */
 static void timer_event_handler(void * p_context)
 {
+    uint32_t err_code;
+	/* Kick handling of the timer to main context */
+    err_code = app_sched_event_put(NULL, 0, on_timer_event);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**
+ * @brief Handler for timer events.
+ *
+ *
+ * @param[in] evt_data    unused event data
+ * @param[in] evt_size    size of event data.
+ */
+static void on_timer_event(void* evt_data, uint16_t evt_size)
+{
     /* Reduce the lidar event cooldown by however fast this update is happening */
     lidar_event_cooldown = lidar_event_cooldown == 0 ? 0 : lidar_event_cooldown - TIMED_UPDATE_PERIOD;
     /* Reduce the pir event cooldown by however fast this update is happening */
     pir_event_cooldown = pir_event_cooldown == 0 ? 0 : pir_event_cooldown - TIMED_UPDATE_PERIOD;
-
 
     /* Determine what the current state should be */
     if(pir_event_cooldown == 0 && lidar_event_cooldown == 0)
