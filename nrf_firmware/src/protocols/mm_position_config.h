@@ -24,11 +24,26 @@ notes:
                        DECLARATIONS
 **********************************************************/
 
+typedef enum
+{
+    NODE_ROTATION_0,
+    NODE_ROTATION_45,
+    NODE_ROTATION_90,
+    NODE_ROTATION_135,
+    NODE_ROTATION_180,
+    NODE_ROTATION_225,
+    NODE_ROTATION_270,
+    NODE_ROTATION_315,
+
+	NODE_ROTATION_COUNT
+} mm_node_rotation_t;
+
+
 typedef struct mm_node_position_struct {
 	uint16_t node_id;
 
-	uint8_t node_type;
-	uint8_t node_rotation;
+	uint8_t 			node_type;
+	mm_node_rotation_t 	node_rotation;
 
 	int8_t grid_position_x;
 	int8_t grid_position_y;
