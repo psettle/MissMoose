@@ -16,42 +16,20 @@ notes:
 #include "mm_monitoring_dispatch.h"
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
+#include "mm_activity_variables.h"
+#include "mm_activity_variable_drain.h"
 
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
 
-#define MAX_GRID_SIZE_X         ( 3 )
-#define MAX_GRID_SIZE_Y         ( 3 )
-#define ACTIVITY_VARIABLES_NUM  ( (MAX_GRID_SIZE_X - 1) * (MAX_GRID_SIZE_Y - 1) )
-
-/* Ease of access macros, optional usage. */
-#define AV(x, y)                ( activity_variables[(x) * (MAX_GRID_SIZE_X - 1) + (y)] )
-#define AV_TOP_LEFT             ( AV(0,0) )
-#define AV_TOP_RIGHT            ( AV(1,0) )
-#define AV_BOTTOM_LEFT          ( AV(0,1) )
-#define AV_BOTTOM_RIGHT         ( AV(1,1) )
-
-/* Timer macros */
 #define ONE_SECOND_MS           ( 1000 )
 #define TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD_MS)
 
 /**********************************************************
-                    ALGORITHM TUNING
-**********************************************************/
-
-#define ACTIVITY_VARIABLE_MIN               ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX               #error not implemented
-
-#define ACTIVITY_VARIABLE_DECAY_FACTOR      ( 0.97f )
-#define ACTIVITY_DECAY_PERIOD_MS            ( ONE_SECOND_MS )
-
-/**********************************************************
                           TYPES
 **********************************************************/
-
-typedef float activity_variable_t;
 
 /**********************************************************
                        DEFINITIONS
@@ -68,11 +46,6 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt);
 static void send_monitoring_dispatch(sensor_evt_t const * evt);
 
 /**
-    Applies the activity variable drain factor to all activity variables.
-*/
-static void apply_activity_variable_drain_factor(void);
-
-/**
     Timer handler to process once-per-second updates.
 */
 static void timer_event_handler(void * p_context);
@@ -80,16 +53,6 @@ static void timer_event_handler(void * p_context);
 /**********************************************************
                        VARIABLES
 **********************************************************/
-
-/**
-     Activity variable definition, can be accessed as AV(x, y).
-
-     X is indexed left -> right. (In direction of North-American traffic)
-     Y is indexed top -> bottom. (Moving away from the road)
-
-     Variable (x, y) is located at activity_variables[x * (MAX_GRID_SIZE_X - 1) + y]
-*/
-static activity_variable_t activity_variables[ ACTIVITY_VARIABLES_NUM ];
 
 APP_TIMER_DEF(m_timer_id);
 
@@ -103,11 +66,7 @@ APP_TIMER_DEF(m_timer_id);
 void mm_sensor_algorithm_init(void)
 {
     /* Initialize activity variables. */
-    memset(&(activity_variables[0]), 0, sizeof(activity_variables));
-    AV_TOP_LEFT = ACTIVITY_VARIABLE_MIN;
-    AV_TOP_RIGHT = ACTIVITY_VARIABLE_MIN;
-    AV_BOTTOM_LEFT = ACTIVITY_VARIABLE_MIN;
-    AV_BOTTOM_RIGHT = ACTIVITY_VARIABLE_MIN;
+    mm_activity_variables_init();
 
     /* Register for sensor data with sensor_transmission.h */
     mm_sensor_transmission_register_sensor_data(sensor_data_evt_handler);
@@ -161,26 +120,6 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt)
             APP_ERROR_CHECK(true);
             break;
     }
-}
-
-/**
-    Applies the activity variable drain factor to all activity variables.
-*/
-static void apply_activity_variable_drain_factor(void)
-{
-	for ( uint16_t i = 0; i < ACTIVITY_VARIABLES_NUM; i++ )
-	{
-		if ( activity_variables[i] >  ACTIVITY_VARIABLE_MIN )
-		{
-			activity_variables[i] *= ACTIVITY_VARIABLE_DECAY_FACTOR;
-
-			/* Enforce ACTIVITY_VARIABLE_MIN */
-			if ( activity_variables[i] < ACTIVITY_VARIABLE_MIN )
-			{
-				activity_variables[i] = ACTIVITY_VARIABLE_MIN;
-			}
-		}
-	}
 }
 
 /**

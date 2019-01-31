@@ -16,8 +16,10 @@ notes:
 #include "mm_blaze_static_config.h"
 #include "mm_switch_config.h"
 #include "mm_ant_page_manager.h"
+#include "mm_sensor_manager.h"
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
+#include "mm_led_control.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -30,6 +32,8 @@ notes:
 /**********************************************************
                         CONSTANTS
 **********************************************************/
+
+#define SENSOR_MANAGER_LED_DEBUG_ENABLED    ( false )
 
 #define CONTROL_PIN (BSP_BUTTON_1)
 
@@ -73,7 +77,7 @@ static void external_init(void);
 /**********************************************************
                        VARIABLES
 **********************************************************/
-static uint8_t node_config_status;
+
 static uint16_t node_id;
 static uint16_t network_id;
 
@@ -85,9 +89,6 @@ APP_TIMER_DEF(m_timer_id);
 
 void mm_node_config_init(void)
 {
-    // Node is unconfigured at initialization
-    node_config_status = CONFIG_STATUS_UNCONFIGURED;
-
     // Register to receive ANT events
     mm_ant_evt_handler_set(&ant_evt_handler);
 
@@ -129,9 +130,6 @@ static void on_config_command_page(void* evt_data, uint16_t evt_size)
 
 		// Start init now that node ID and network ID are known
 		external_init();
-
-		// Node has been configured, so update the status broadcast
-		node_config_status = CONFIG_STATUS_CONFIGURED;
 
 		mm_ant_payload_t payload;
 		encode_node_status_page(&payload);
@@ -201,8 +199,14 @@ static void external_init(void)
     mm_blaze_init(node_id, network_id);
     /* Init sensor transmission over blaze. */
     mm_sensor_transmission_init();
+    /* Init local sensor data dispatch */
+    mm_sensor_manager_init(SENSOR_MANAGER_LED_DEBUG_ENABLED);
+    /* Init LED control transmission over blaze. Placed before algorithm init so it can use LED control. */
+    mm_led_control_init();
+#ifdef MM_BLAZE_GATEWAY
     /* Init sensor data processing now that data can be transmitted. */
     mm_sensor_algorithm_init();
+#endif
 }
 
 /**********************************************************
