@@ -6,6 +6,7 @@
 **********************************************************/
 
 #include "nrf_soc.h"
+#include "mm_sensor_transmission.h"
 
 /**********************************************************
                         CONSTANTS
@@ -74,7 +75,7 @@ typedef struct mm_node_position_struct {
 	/**
 		Returns the sensor rotation constants for a given node type
 	*/
-	void get_sensor_rotations( sensor_rotation_t* sensor_1_rotation, sensor_rotation_t* sensor_2_rotation, uint8_t node_type );
+	void get_sensor_rotations( uint8_t node_type, sensor_rotation_t* sensor_1_rotation, sensor_rotation_t* sensor_2_rotation );
 
 #endif
 

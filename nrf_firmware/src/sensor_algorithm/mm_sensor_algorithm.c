@@ -40,19 +40,23 @@ notes:
 #define ONE_HOUR_MS             ( ONE_MINUTE_MS * 60 )
 #define ONE_DAY_MS              ( ONE_HOUR_MS * 24 )
 #define TIMER_TICKS APP_TIMER_TICKS(ACTIVITY_DECAY_PERIOD_MS)
-#define SENSOR_DETECTION_TIMEOUT_LIMIT_TICKS(SENSOR_DETECTION_TIMEOUT_LIMIT)
+#define SENSOR_DETECTION_TIMEOUT_LIMIT_TICKS APP_TIMER_TICKS(SENSOR_DETECTION_TIMEOUT_LIMIT)
 
 /**********************************************************
                     ALGORITHM TUNING
 **********************************************************/
 
-#define ACTIVITY_VARIABLE_MIN               ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX               #error not implemented
+#define ACTIVITY_VARIABLE_MIN                   ( 1.0f )
+#define ACTIVITY_VARIABLE_MAX                   #error not implemented
 
-#define ACTIVITY_VARIABLE_DECAY_FACTOR      ( 0.97f )
-#define ACTIVITY_DECAY_PERIOD_MS            ( ONE_SECOND_MS )
+#define ACTIVITY_VARIABLE_DECAY_FACTOR          ( 0.97f )
+#define ACTIVITY_DECAY_PERIOD_MS                ( ONE_SECOND_MS )
 
-#define SENSOR_DETECTION_TIMEOUT_LIMIT      ( ONE_HOUR_MS )
+#define SENSOR_DETECTION_TIMEOUT_LIMIT          ( ONE_HOUR_MS )
+
+#define SENSOR_HYPERACTIVITY_DETECTION_PERIOD   ( 60 ) // seconds
+#define SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE  ( 120 )
+#define SENSOR_HYPERACTIVITY_FREQUENCY_THRES    ( 1.0 ) // events / SENSOR_HYPERACTIVITY_DETECTION_PERIOD
 
 /**********************************************************
                           TYPES
@@ -65,8 +69,15 @@ typedef struct
     uint16_t          node_id;
     sensor_type_t     sensor_type;
     sensor_rotation_t sensor_rotation;
-} sensor_activity_record_t;
+} sensor_record_t;
 
+typedef struct
+{
+    sensor_record_t   sensor;
+    uint16_t          activity_timestamps[SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE];
+    uint16_t          activity_records_count;
+    bool              sensor_hyperactive;
+} sensor_activity_record_t;
 
 /**********************************************************
                        DEFINITIONS
@@ -76,6 +87,11 @@ typedef struct
     Callback into sensor_transmission.h to receive sensor data from all nodes.
 */
 static void sensor_data_evt_handler(sensor_evt_t const * evt);
+
+/**
+    Returns true if the sensor in the given event is marked as hyperactive
+*/
+static bool is_sensor_hyperactive(sensor_evt_t const * evt);
 
 /**
     Send sensor events to the monitoring dispatch manager.
@@ -88,6 +104,11 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt);
 static void apply_activity_variable_drain_factor(void);
 
 /**
+    Create a sensor_record_t from the given sensor_evt_t
+*/
+static sensor_record_t create_sensor_record(sensor_evt_t const * evt);
+
+/**
     Record that a sensor has been active (has had a detection event).
 */
 static void record_sensor_activity(sensor_evt_t const * evt);
@@ -96,6 +117,11 @@ static void record_sensor_activity(sensor_evt_t const * evt);
     Checks to ensure all sensors have made at least 1 detection in the last 24 hours
 */
 static void check_for_sensor_inactivity(void);
+
+/**
+    Checks for any sensors which are hyperactive. Flags hyperactive sensors so their events will be ignored.
+*/
+static void check_for_sensor_hyperactivity(void);
 
 /**
     Timer handler to process once-per-second updates.
@@ -125,9 +151,12 @@ APP_TIMER_DEF(m_timer_id);
 APP_TIMER_DEF(m_daily_timer_id);
 
 static mm_node_position_t node_positions_copy[ MAX_NUMBER_NODES ];
-static sensor_activity_record_t mm_active_nodes_past_day[ MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE ];
-static uint16_t mm_active_nodes_past_day_count = 0;
+static sensor_record_t mm_active_sensors_past_day[ MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE ];
+static uint16_t mm_active_sensors_past_day_count = 0;
+static sensor_activity_record_t mm_sensor_activity_record[ MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE ];
 static uint16_t hour_counter = 0;
+static uint16_t minute_counter = 0;
+static uint16_t second_counter = 0;
 
 /**********************************************************
                        DECLARATIONS
@@ -180,6 +209,24 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt)
 }
 
 /**
+    Returns true if the sensor in the given event is marked as hyperactive
+*/
+static bool is_sensor_hyperactive(sensor_evt_t const * evt)
+{
+    sensor_record_t activity_record = create_sensor_record(evt);
+    for ( uint16_t i = 0; i < MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE; i++)
+    {
+        sensor_activity_record_t * existing_record = &mm_sensor_activity_record[i];
+        if ( activity_record.node_id == existing_record->sensor.node_id &&
+             activity_record.sensor_rotation == existing_record->sensor.sensor_rotation)
+        {
+            return existing_record->sensor_hyperactive;
+        }
+    }
+    return false;
+}
+
+/**
     Send sensor events to the monitoring dispatch manager.
 */
 static void send_monitoring_dispatch(sensor_evt_t const * evt)
@@ -188,20 +235,26 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt)
     switch(evt->sensor_type)
     {
         case SENSOR_TYPE_PIR:
-            mm_monitoring_dispatch_send_pir_data
-                (
-                evt->pir_data.node_id,
-                evt->pir_data.sensor_rotation,
-                evt->pir_data.detection
-                );
+            if ( !is_sensor_hyperactive(evt) )
+            {
+                mm_monitoring_dispatch_send_pir_data
+                    (
+                    evt->pir_data.node_id,
+                    evt->pir_data.sensor_rotation,
+                    evt->pir_data.detection
+                    );
+            }
             break;
         case SENSOR_TYPE_LIDAR:
-            mm_monitoring_dispatch_send_lidar_data
-                (
-                evt->lidar_data.node_id,
-                evt->lidar_data.sensor_rotation,
-                evt->lidar_data.distance_measured
-                );
+            if ( !is_sensor_hyperactive(evt) )
+            {
+                mm_monitoring_dispatch_send_lidar_data
+                    (
+                    evt->lidar_data.node_id,
+                    evt->lidar_data.sensor_rotation,
+                    evt->lidar_data.distance_measured
+                    );
+            }
             break;
         default:
             /* App error, unknown sensor data type. */
@@ -231,37 +284,11 @@ static void apply_activity_variable_drain_factor(void)
 }
 
 /**
-    Record that a sensor has been active (has had a detection event).
+    Create a sensor_record_t from the given sensor_evt_t
 */
-static void record_sensor_activity(sensor_evt_t const * evt)
+static sensor_record_t create_sensor_record(sensor_evt_t const * evt)
 {
-    for ( uint16_t i = 0; i < mm_active_nodes_past_day_count; i++ )
-    {
-        switch(mm_active_nodes_past_day[i].sensor_type)
-        {
-            case SENSOR_TYPE_PIR:
-                if( evt->sensor_type == SENSOR_TYPE_PIR && 
-                    evt->pir_data.node_id == mm_active_nodes_past_day[i].node_id && 
-                    evt->pir_data.sensor_rotation == mm_active_nodes_past_day[i].sensor_rotation )
-                {
-                    return;
-                }
-                break;
-            case SENSOR_TYPE_LIDAR:
-                if( evt->sensor_type == SENSOR_TYPE_LIDAR &&
-                    evt->lidar_data.node_id == mm_active_nodes_past_day[i].node_id &&
-                    evt->lidar_data.sensor_rotation == mm_active_nodes_past_day[i].sensor_rotation )
-                {
-                    return;
-                }
-                break;
-            default:
-                /* App error, unknown sensor data type. */
-                APP_ERROR_CHECK(true);
-                break;
-        }
-    }
-    sensor_activity_record_t activity_record;
+    sensor_record_t activity_record;
     switch(evt->sensor_type)
     {
         case SENSOR_TYPE_PIR:
@@ -280,9 +307,63 @@ static void record_sensor_activity(sensor_evt_t const * evt)
             APP_ERROR_CHECK(true);
             break;
     }
-    memcpy(&mm_active_nodes_past_day[mm_active_nodes_past_day_count], &activity_record, sizeof( activity_record ));
-    mm_active_nodes_past_day_count++;
-    APP_ERROR_CHECK_BOOL(mm_active_nodes_past_day_count > MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE);
+    return activity_record;
+}
+
+/**
+    Record that a sensor has been active (has had a detection event).
+*/
+static void record_sensor_activity(sensor_evt_t const * evt)
+{
+    bool first_activity_of_day = true;
+    sensor_record_t activity_record = create_sensor_record(evt);
+    for ( uint16_t i = 0; i < mm_active_sensors_past_day_count; i++ )
+    {
+        if( activity_record.sensor_type == mm_active_sensors_past_day[i].sensor_type && 
+            activity_record.node_id == mm_active_sensors_past_day[i].node_id && 
+            activity_record.sensor_rotation == mm_active_sensors_past_day[i].sensor_rotation )
+        {
+            first_activity_of_day = false;
+            break;
+        }
+    }
+    if ( first_activity_of_day )
+    {
+        memcpy(&mm_active_sensors_past_day[mm_active_sensors_past_day_count], &activity_record, sizeof( activity_record ));
+        mm_active_sensors_past_day_count++;
+        APP_ERROR_CHECK_BOOL(mm_active_sensors_past_day_count > MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE);
+    }
+    // check to see if this sensor has an existing activity record and if it does add to it
+    for ( uint16_t i = 0; i < MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE; i++ )
+    {
+        sensor_activity_record_t * existing_record = &mm_sensor_activity_record[i];
+        if ( activity_record.node_id == existing_record->sensor.node_id &&
+             activity_record.sensor_type == existing_record->sensor.sensor_type &&
+             activity_record.sensor_rotation == existing_record->sensor.sensor_rotation )
+        {
+            if ( existing_record->activity_records_count == SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE )
+            {
+                existing_record->activity_records_count = 0;
+            }
+            existing_record->activity_timestamps[existing_record->activity_records_count] = minute_counter;
+            existing_record->activity_records_count++;
+            return;
+        }
+    }
+    // create a new sensor activity record for the current sensor
+    for ( uint16_t i = 0; i < MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE; i++ )
+    {
+        sensor_activity_record_t * new_record = &mm_sensor_activity_record[i];
+        // nodeid of 0 is an invalid entry and therefore free to overwrite
+        if ( new_record->sensor.node_id == 0 )
+        {
+            new_record->sensor = activity_record;
+            new_record->sensor_hyperactive = false;
+            memset(&new_record->activity_timestamps[0], 0, SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE * sizeof(uint16_t));
+            new_record->activity_timestamps[0] = minute_counter;
+            new_record->activity_records_count = 1;
+        }
+    }     
 }
 
 /**
@@ -304,19 +385,19 @@ static void check_for_sensor_inactivity(void)
         sensor_rotation_t node_sensor_rotations[MAX_SENSORS_PER_NODE];
         get_sensor_rotations(node_positions_copy[i].node_type, &node_sensor_rotations[0], &node_sensor_rotations[1]);
         bool node_sensors_active[MAX_SENSORS_PER_NODE];
-        for ( uint16_t j = 0; j < mm_active_nodes_past_day_count; j++)
+        for ( uint16_t j = 0; j < mm_active_sensors_past_day_count; j++)
         {
-            if ( node_positions_copy[i].node_id == mm_active_nodes_past_day[j].node_id )
-                    {
-                        if ( mm_active_nodes_past_day[j].sensor_rotation == node_sensor_rotations[0] )
-                        {
-                            node_sensors_active[0] = true;
-                        }
-                        if ( mm_active_nodes_past_day[j].sensor_rotation == node_sensor_rotations[1] )
-                        {
-                            node_sensors_active[1] = true;
-                        }
-                    }
+            if ( node_positions_copy[i].node_id == mm_active_sensors_past_day[j].node_id )
+            {
+                if ( mm_active_sensors_past_day[j].sensor_rotation == node_sensor_rotations[0] )
+                {
+                    node_sensors_active[0] = true;
+                }
+                if ( mm_active_sensors_past_day[j].sensor_rotation == node_sensor_rotations[1] )
+                {
+                    node_sensors_active[1] = true;
+                }
+            }
         }
         for ( uint16_t j = 0; j < MAX_SENSORS_PER_NODE; j++)
         {
@@ -326,8 +407,72 @@ static void check_for_sensor_inactivity(void)
             }
         }
     }
-    memset(&mm_active_nodes_past_day[0], 0, sizeof( mm_active_nodes_past_day ) );
-    mm_active_nodes_past_day_count = 0;
+    memset(&mm_active_sensors_past_day[0], 0, sizeof( mm_active_sensors_past_day ) );
+    mm_active_sensors_past_day_count = 0;
+}
+
+/**
+    Checks for any sensors which are hyperactive. Flags hyperactive sensors so their events will be ignored.
+*/
+static void check_for_sensor_hyperactivity(void)
+{
+    if ( have_node_positions_changed() )
+    {
+        memset(&node_positions_copy[0], 0, sizeof( node_positions_copy ) );
+        memcpy(&node_positions_copy[0], get_node_positions(), sizeof( node_positions_copy) );
+
+        for ( uint16_t i = 0; i < MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE; i++ )
+        {
+            sensor_activity_record_t * existing_record = &mm_sensor_activity_record[i];
+            bool sensor_valid = false;
+            for ( uint16_t j = 0; j < MAX_NUMBER_NODES; j++ )
+            {
+                mm_node_position_t * current_node = &node_positions_copy[j];
+                sensor_rotation_t node_sensor_rotations[MAX_SENSORS_PER_NODE];
+                get_sensor_rotations(current_node->node_type, &node_sensor_rotations[0], &node_sensor_rotations[1]);
+                if ( existing_record->sensor.node_id == current_node->node_id &&
+                     (existing_record->sensor.sensor_rotation == node_sensor_rotations[0] || 
+                      existing_record->sensor.sensor_rotation == node_sensor_rotations[1]) )
+                {
+                    sensor_valid = true;
+                    break;
+                }
+            }
+            if ( !sensor_valid )
+            {
+                existing_record->sensor.node_id = 0; // set sensor invalid
+            }
+        } 
+    }
+    for ( uint16_t i = 0; i < MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE; i++ )
+    {
+        sensor_activity_record_t * existing_record = &mm_sensor_activity_record[i];
+        // nodeid of 0 is an invalid entry
+        if ( existing_record->sensor.node_id != 0 )
+        {
+            uint16_t newest_timestamp = 0;
+            uint16_t oldest_timestamp = UINT16_MAX;
+            for ( uint16_t j = 0; j < SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE; j++ )
+            {
+                uint16_t current_timestamp = existing_record->activity_timestamps[j];
+                // timestamp of 0 is not valid
+                if ( current_timestamp == 0 )
+                {
+                    continue;
+                }
+                if ( current_timestamp > newest_timestamp )
+                {
+                    newest_timestamp = current_timestamp;
+                }
+                if ( current_timestamp < oldest_timestamp )
+                {
+                    oldest_timestamp = current_timestamp;
+                }
+            }
+            float detection_frequency = ((float)(newest_timestamp - oldest_timestamp)) / ((float)SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE);
+            existing_record->sensor_hyperactive = detection_frequency > SENSOR_HYPERACTIVITY_FREQUENCY_THRES;
+        }
+    }
 }
 
 /**
@@ -339,6 +484,19 @@ static void timer_event_handler(void * p_context)
 
 	/* Space left to add other once-per-second updates if
 	 * necessary in the future. */
+
+    // once per minute events
+    second_counter++;
+    if ( second_counter == SENSOR_HYPERACTIVITY_DETECTION_PERIOD )
+    {
+        second_counter = 0;
+        minute_counter++;
+
+        check_for_sensor_hyperactivity();
+
+        /* Space left to add other once-per-minute updates if
+        * necessary in the future. */
+    }
 }
 
 /**
