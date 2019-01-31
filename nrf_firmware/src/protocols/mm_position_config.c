@@ -15,6 +15,7 @@ notes:
 
 #include "mm_ant_control.h"
 #include "mm_position_config.h"
+#include "mm_switch_config.h"
 
 /**********************************************************
                         CONSTANTS
@@ -292,4 +293,23 @@ bool have_node_positions_changed( void )
 void clear_unread_node_positions( void )
 {
 	have_positions_changed = false;
+}
+
+/**
+    Returns the sensor rotation constants for a given node type
+*/
+void get_sensor_rotations( uint8_t node_type, sensor_rotation_t* sensor_1_rotation, sensor_rotation_t* sensor_2_rotation )
+{
+	switch(node_type)
+	{
+		case(HARDWARE_CONFIG_PIR_PIR):
+			*sensor_1_rotation = SENSOR_ROTATION_0;
+			*sensor_2_rotation = SENSOR_ROTATION_270;
+			break;
+		case(HARDWARE_CONFIG_PIR_LIDAR):
+		case(HARDWARE_CONFIG_PIR_LIDAR_LED):
+			*sensor_1_rotation = SENSOR_ROTATION_0;
+			*sensor_2_rotation = SENSOR_ROTATION_90;
+			break;
+	}
 }

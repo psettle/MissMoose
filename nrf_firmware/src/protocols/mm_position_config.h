@@ -12,6 +12,7 @@ notes:
 **********************************************************/
 
 #include "nrf_soc.h"
+#include "mm_sensor_transmission.h"
 
 /**********************************************************
                         CONSTANTS
@@ -91,5 +92,10 @@ bool have_node_positions_changed( void );
  * have changed recently, and therefore, allows them to avoid
  * making redundant checks on node position data.*/
 void clear_unread_node_positions( void );
+
+/**
+    Returns the sensor rotation constants for a given node type
+*/
+void get_sensor_rotations( uint8_t node_type, sensor_rotation_t* sensor_1_rotation, sensor_rotation_t* sensor_2_rotation );
 
 #endif /* MM_POSITION_CONFIG_H */

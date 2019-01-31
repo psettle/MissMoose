@@ -20,6 +20,7 @@ notes:
 #include "mm_activity_variables.h"
 #include "mm_activity_variable_growth.h"
 #include "mm_position_config.h"
+#include "mm_sensor_error_check.h"
 
 /**********************************************************
                         CONSTANTS
@@ -29,6 +30,8 @@ notes:
 #define ONE_SECOND_MS       ( 1000 )
 #define ONE_SECOND_TICKS    APP_TIMER_TICKS(ONE_SECOND_MS)
 #define SECONDS_PER_MINUTE  ( 60 )
+#define MINUTES_PER_HOUR    ( 60  )
+#define HOURS_PER_DAY       ( 24  )
 
 
 /**********************************************************
@@ -69,6 +72,8 @@ static void on_minute_elapsed(void);
 APP_TIMER_DEF(m_second_timer_id);
 
 static uint8_t second_counter = 0;
+static uint8_t minute_counter = 0;
+static uint8_t hour_counter = 0;
 
 /**********************************************************
                        DECLARATIONS
@@ -105,6 +110,12 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt)
     send_monitoring_dispatch(evt);
 
     /* Now sensor data can be processed with respect to the algorithm. */
+    mm_record_sensor_activity(evt, minute_counter);
+    // if the sensor that triggered the current event is hyperactive do not process the event further
+    if ( mm_is_sensor_hyperactive(evt) )
+    {
+        return;
+    }
     mm_activity_variable_growth_on_sensor_detection(evt);
 }
 
@@ -180,5 +191,33 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
 */
 static void on_minute_elapsed(void)
 {
+    if(minute_counter % MINUTES_PER_HOUR == 0)
+    {
+        on_hour_elapsed();
+    }
+    minute_counter++;
 
+    mm_check_for_sensor_hyperactivity();
+}
+
+/**
+    Called every hour from main context.
+*/
+static void on_hour_elapsed(void)
+{
+    if(hour_counter == 0)
+    {
+        on_day_elapsed();
+    }
+
+    hour_counter++;
+    hour_counter %= HOURS_PER_DAY;
+}
+
+/**
+    Called every day from main context.
+*/
+static void on_day_elapsed(void)
+{
+    mm_check_for_sensor_inactivity();
 }

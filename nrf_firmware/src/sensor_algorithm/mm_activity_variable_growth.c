@@ -22,10 +22,7 @@ notes:
                         CONSTANTS
 **********************************************************/
 
-#define MAX_NUMBER_NODES			    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
-#define MAX_SENSORS_PER_NODE            ( 2 )
-#define MAX_ADJACENT_ACTIVITY_VARIABLES ( 2 )   /* The max number of regions a sensor can affect per detection. */
-#define MAX_SENSOR_COUNT                ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )     
+#define MAX_ADJACENT_ACTIVITY_VARIABLES ( 2 )   /* The max number of regions a sensor can affect per detection. */   
 #define NODE_SEPERATION_CM              ( 800 )
 #define NODE_OFFSET_SCALE_CM            ( 5 )
 
@@ -88,11 +85,6 @@ static sensor_record_t      sensor_records[MAX_SENSOR_COUNT];
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
-
-/**
- * Check if node positions have changed and update if needed.
- */ 
-static void fetch_node_positions(void);
 
 /**
  * Apply growth factors to activity variables on sensor detection.
@@ -168,7 +160,7 @@ static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set);
  */
 void mm_activity_variable_growth_init(void)
 {
-    fetch_node_positions();
+    mm_fetch_node_positions(&node_positions[0]);
 }
 
 /**
@@ -193,17 +185,17 @@ void mm_activity_variable_growth_on_second_elapsed(void)
 */
 void mm_activity_variable_growth_on_node_positions_update(void)
 {
-    fetch_node_positions();
+    mm_fetch_node_positions(&node_positions[0]);
 }
 
 /**
     Check for change in node positions, and fetch if needed.
 */
-static void fetch_node_positions(void)
+static void mm_fetch_node_positions(mm_node_position_t * node_positions_pointer)
 {
     if( have_node_positions_changed() )
     {
-        memcpy(&node_positions[0], get_node_positions(), sizeof( node_positions) );
+        memcpy(node_positions_pointer, get_node_positions(), sizeof( MAX_NUMBER_NODES ) );
 
         /* Don't clear flag, that could affect other users, the main algorithm file will manage that. */
     }
@@ -248,7 +240,7 @@ static void apply_activity_variable_addition_pir(sensor_evt_t const * evt)
     pir_evt_data_t const * pir_evt = &evt->pir_data;
 
     /* Do we know the node that generated the event? */
-    fetch_node_positions();
+    mm_fetch_node_positions(&node_positions[0]);
     mm_node_position_t const * position = get_position_for_node(pir_evt->node_id);
 
     if(NULL == position)
@@ -309,7 +301,7 @@ static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
     lidar_evt_data_t const * lidar_evt = &evt->lidar_data;
 
     /* Do we know the node that generated the event? */
-    fetch_node_positions();
+    mm_fetch_node_positions(&node_positions[0]);
     mm_node_position_t const * position = get_position_for_node(lidar_evt->node_id);
 
     if(NULL == position)
@@ -402,7 +394,7 @@ static void apply_activity_variable_trickle_to_record(sensor_record_t const * re
 
 
     /* Do we know the node that generated the event? */
-    fetch_node_positions();
+    mm_fetch_node_positions(&node_positions[0]);
     mm_node_position_t const * position = get_position_for_node(record->node_id);
 
     if(NULL == position)
