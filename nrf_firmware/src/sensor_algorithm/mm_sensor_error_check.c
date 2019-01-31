@@ -8,6 +8,8 @@ notes:
                        INCLUDES
 **********************************************************/
 
+#include <string.h>
+#include "app_error.h"
 #include "mm_sensor_algorithm_config.h"
 #include "mm_position_config.h"
 #include "mm_activity_variable_growth.h"
