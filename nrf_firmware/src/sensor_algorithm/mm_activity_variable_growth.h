@@ -9,7 +9,9 @@ notes:
 /**********************************************************
                         INCLUDES
 **********************************************************/
+
 #include "mm_sensor_transmission.h"
+#include "mm_position_config.h"
 
 /**********************************************************
                        DECLARATIONS
@@ -38,6 +40,6 @@ void mm_activity_variable_growth_on_node_positions_update(void);
 /**
  * Check if node positions have changed and update if needed.
  */ 
-static void mm_fetch_node_positions(mm_node_position_t * node_positions_pointer);
+void mm_fetch_node_positions(mm_node_position_t * node_positions_pointer);
 
 #endif /* MM_ACTIVITY_VARIABLE_GROWTH_H */

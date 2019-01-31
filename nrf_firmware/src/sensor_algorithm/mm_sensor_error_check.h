@@ -34,6 +34,6 @@ void mm_check_for_sensor_hyperactivity(void);
 /**
     Returns true if the sensor in the given event is marked as hyperactive
 */
-static bool mm_is_sensor_hyperactive(sensor_evt_t const * evt);
+bool mm_is_sensor_hyperactive(sensor_evt_t const * evt);
 
 #endif /* MM_SENSOR_ERROR_CHECK_H */
