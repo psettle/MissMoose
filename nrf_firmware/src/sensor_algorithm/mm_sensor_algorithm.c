@@ -79,6 +79,8 @@ static uint8_t second_counter = 0;
 */
 void mm_sensor_algorithm_init(void)
 {
+    second_counter = 0;
+
     /* Initialize algorithm components. */
     mm_activity_variables_init();
     mm_activity_variable_growth_init();
@@ -93,8 +95,17 @@ void mm_sensor_algorithm_init(void)
 
     err_code = app_timer_start(m_second_timer_id, ONE_SECOND_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
-
 }
+
+#ifdef MM_ALLOW_SIMULATED_TIME
+/**
+ * Simulate a second passing, only use for simulating time, not in production.
+ */
+void mm_sensor_algorithm_on_second_elapsed(void)
+{
+    on_second_elapsed(NULL, 0);
+}
+#endif
 
 /**
     Callback into sensor_transmission.h to receive sensor data from all nodes.

@@ -168,6 +168,9 @@ static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set);
  */
 void mm_activity_variable_growth_init(void)
 {
+    memset(&node_positions[0], 0, sizeof(node_positions));
+    memset(&sensor_records[0], 0, sizeof(sensor_records));
+
     fetch_node_positions();
 }
 

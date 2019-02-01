@@ -1,14 +1,22 @@
 /**
-file: mm_sensor_algorithm.h
+file: tests.hpp
 brief:
 notes:
 */
-#ifndef MM_SENSOR_ALGORITHM_H
-#define MM_SENSOR_ALGORITHM_H
+#ifndef TESTS_HPP
+#define TESTS_HPP
 
 /**********************************************************
                         INCLUDES
 **********************************************************/
+
+#include "test_runner.hpp"
+
+/**********************************************************
+                          TYPES
+**********************************************************/
+
+typedef void(*test_case_cb)(void);
 
 /**********************************************************
                         CONSTANTS
@@ -18,18 +26,6 @@ notes:
                        DECLARATIONS
 **********************************************************/
 
-/**
- * Initialize and start the sensor data processing algorithm.
- *
- * Note: Requires sensor_transmission.h is initialized.
- */
-void mm_sensor_algorithm_init(void);
+void test_demo_add_tests(std::vector<test_case_cb>& tests);
 
-#ifdef MM_ALLOW_SIMULATED_TIME
-    /**
-     * Simulate a second passing, only use for simulating time, not in production.
-     */
-    void mm_sensor_algorithm_on_second_elapsed(void);
-#endif
-
-#endif /* MM_SENSOR_ALGORITHM_H */
+#endif /* TESTS_HPP */
