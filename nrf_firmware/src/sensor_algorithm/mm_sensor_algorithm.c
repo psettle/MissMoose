@@ -33,7 +33,6 @@ notes:
 #define MINUTES_PER_HOUR    ( 60  )
 #define HOURS_PER_DAY       ( 24  )
 
-
 /**********************************************************
                           TYPES
 **********************************************************/
@@ -56,6 +55,14 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt);
     Timer handler to process second tick.
 */
 static void one_second_timer_handler(void * p_context);
+
+/**
+    Check if node positions have changed, and apply an update to all
+    users if so.
+
+    Then clear the flag.
+ */
+static void update_node_positions(void);
 
 /**
  * Tick events, second, minute, etc.
@@ -121,26 +128,21 @@ void mm_sensor_algorithm_init(void)
 */
 static void sensor_data_evt_handler(sensor_evt_t const * evt)
 {
+    /* Make sure everyone has valid node positions before processing the event. */
+    update_node_positions();
+
     /* Always send sensor events to the monitoring dispatch. */
     send_monitoring_dispatch(evt);
 
-    if(have_node_positions_changed())
-    {
-        /* Tell all users we are about to clear the flag: */
-        mm_activity_variable_growth_on_node_positions_update();
-        mm_sensor_error_check_on_node_positions_update();
-
-        /* Clear the flag: */
-        clear_unread_node_positions();
-    }
-
     /* Now sensor data can be processed with respect to the algorithm. */
     mm_record_sensor_activity(evt, get_minute_timestamp());
-    // if the sensor that triggered the current event is hyperactive do not process the event further
+
+    /* if the sensor that triggered the current event is hyperactive do not process the event further */
     if ( mm_is_sensor_hyperactive(evt) )
     {
         return;
     }
+    
     mm_activity_variable_growth_on_sensor_detection(evt);
 }
 
@@ -175,7 +177,6 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt)
     }
 }
 
-
 /**
     Timer handler to process second tick.
 */
@@ -191,6 +192,9 @@ static void one_second_timer_handler(void * p_context)
 */
 static void on_second_elapsed(void* p_unused, uint16_t size_0)
 {
+    /* Make sure everyone has valid node positions before processing the event. */
+    update_node_positions();
+
     if(second_counter == 0)
     {
         on_minute_elapsed();
@@ -198,15 +202,6 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
 
     second_counter++;
     second_counter %= SECONDS_PER_MINUTE;
-
-    if(have_node_positions_changed())
-    {
-        /* Tell all users we are about to clear the flag: */
-        mm_activity_variable_growth_on_node_positions_update();
-
-        /* Clear the flag: */
-        clear_unread_node_positions();
-    }
 
     mm_activity_variable_growth_on_second_elapsed();
 }
@@ -254,4 +249,22 @@ static void on_day_elapsed(void)
 static uint32_t get_minute_timestamp(void)
 {
     return (hour_counter * MINUTES_PER_HOUR) + minute_counter;
+}
+
+/**
+    Check if node positions have changed, and apply an update to all
+    users if so.
+
+    Then clear the flag.
+ */
+static void update_node_positions(void)
+{
+    if(have_node_positions_changed())
+    {
+        /* Tell all users we are about to clear the flag: */
+        mm_sensor_error_check_on_node_positions_update();
+
+        /* Clear the flag: */
+        clear_unread_node_positions();
+    }
 }

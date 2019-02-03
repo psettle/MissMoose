@@ -19,7 +19,9 @@ notes:
 **********************************************************/
 
 #define POSITION_CONFIG_PAGE_NUM        ( 0x11 )
-#define CM_PER_GRID_OFFSET				( 5 )
+
+#define NODE_SEPERATION_CM              ( 800 )
+#define NODE_OFFSET_SCALE_CM            ( 5 )
 
 /**********************************************************
                        DECLARATIONS
