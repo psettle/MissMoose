@@ -10,7 +10,7 @@ namespace MissMooseConfigurationApplication
     {
         #region Private Members
 
-        private static readonly byte dataPageNumber = 0x22;
+        private static readonly byte dataPageNumber = 0x20;
         private byte messageId;
 
         #endregion
