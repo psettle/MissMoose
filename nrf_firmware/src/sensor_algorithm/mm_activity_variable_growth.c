@@ -32,6 +32,21 @@ notes:
                           TYPES
 **********************************************************/
 
+typedef enum
+{
+    TOTAL_ROTATION_0,
+    TOTAL_ROTATION_45,
+    TOTAL_ROTATION_90,
+    TOTAL_ROTATION_135,
+    TOTAL_ROTATION_180,
+    TOTAL_ROTATION_225,
+    TOTAL_ROTATION_270,
+    TOTAL_ROTATION_315,
+    TOTAL_ROTATION_360,
+
+    TOTAL_ROTATION_COUNT
+} total_rotation_t;
+
 typedef struct
 {
     mm_activity_variable_t* avs[MAX_ADJACENT_ACTIVITY_VARIABLES];
@@ -109,6 +124,11 @@ static void generate_growth_constants(mm_node_position_t const * position, senso
 static void apply_activity_variable_trickle_factor(void);
 
 /**
+ * Fetch the constants that define how an AV will trickle (grow over time).
+ */
+static void generate_trickle_constants(mm_node_position_t const * position, sensor_type_t sensor_type, activity_variable_sensor_constants_t* constants);
+
+/**
  * Apply trickle factors to activity variables for records.
  */ 
 static void apply_activity_variable_trickle_to_record(sensor_record_t const * record);
@@ -159,6 +179,11 @@ static void find_adjacent_activity_variables(mm_node_position_t const * position
  * Check a set of AV coordinates for validity, then add to av_set if valid.
  */
 static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set);
+
+/**
+ * Get the direction along the grid in a [rotation] direction.
+ */
+static void get_grid_direction(total_rotation_t rotation, int8_t* dx, int8_t* dy);
 
 /**********************************************************
                        DEFINITIONS
@@ -321,7 +346,7 @@ static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
     record->lidar_region = region;
 }
 
-static void generate_growth_constants(mm_node_position_t const * position, sensor_type_t sensor_type,activity_variable_sensor_constants_t* constants)
+static void generate_growth_constants(mm_node_position_t const * position, sensor_type_t sensor_type, activity_variable_sensor_constants_t* constants)
 {
     memset(constants, 0, sizeof(activity_variable_sensor_constants_t));
 
@@ -390,7 +415,6 @@ static void apply_activity_variable_trickle_to_record(sensor_record_t const * re
             break;
     }
 
-
     /* Do we know the node that generated the event? */
     mm_node_position_t const * position = get_position_for_node(record->node_id);
 
@@ -399,8 +423,6 @@ static void apply_activity_variable_trickle_to_record(sensor_record_t const * re
         /* We don't know the node, so we can't use its data. */
         return;
     }
-
-    /* Apply growth */
 
     /* Grab the effective position given the detecting region */
     mm_node_position_t effective_position;
@@ -416,29 +438,48 @@ static void apply_activity_variable_trickle_to_record(sensor_record_t const * re
 
     /* Generate a sensor constants structure. */
     activity_variable_sensor_constants_t constants;
+    generate_trickle_constants(position, record->sensor_type, &constants);
 
-    memset(&constants, 0, sizeof(constants));
-    constants.common_sensor_weight_factor = COMMON_SENSOR_TRICKLE_FACTOR;
-    constants.base_sensor_weight_factor   = BASE_SENSOR_TRICKLE_FACTOR_PIR;
+    /* Apply trickle */
+    grow_activity_variables(&av_set, &constants);
+}
+
+static void generate_trickle_constants(mm_node_position_t const * position, sensor_type_t sensor_type, activity_variable_sensor_constants_t* constants)
+{
+    memset(constants, 0, sizeof(activity_variable_sensor_constants_t));
+
+    constants->common_sensor_weight_factor = COMMON_SENSOR_TRICKLE_FACTOR;
+
+    switch(sensor_type)
+    {
+        case SENSOR_TYPE_PIR:
+            constants->base_sensor_weight_factor   = BASE_SENSOR_TRICKLE_FACTOR_PIR;
+            break;
+        case SENSOR_TYPE_LIDAR:
+            constants->base_sensor_weight_factor   = BASE_SENSOR_TRICKLE_FACTOR_LIDAR;
+            break;
+        default:
+            /* Invalid sensor type. */
+            APP_ERROR_CHECK(true);
+            break;
+    }
 
     switch(position->grid_position_y)
     {
         case -1:
-            constants.road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_0;
+            constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_0;
             break;
         case 0:
-            constants.road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_1;
+            constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_1;
             break;
         case 1:
-            constants.road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_2;
+            constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_2;
             break;
         default:
             /* Invalid grid position given grid height */
             APP_ERROR_CHECK(true);
             break;
     }
-
-    grow_activity_variables(&av_set, &constants);
 }
 
 /**
@@ -454,7 +495,6 @@ static void grow_activity_variables(activity_variable_set_t* av_set, activity_va
         factor *= constants->common_sensor_weight_factor;
         factor *= constants->base_sensor_weight_factor;
         factor *= constants->road_proximity_factor;
-        //factor *= constants->sensor_proximity_factor; /* Only close avs show up in av_set */
 
         /* Apply the factor */
         *(av_set->avs[i]) *= factor;
@@ -481,42 +521,17 @@ static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_
     /* Should have been checked by caller. */
     APP_ERROR_CHECK(!position);
 
-    int8_t x = position->grid_position_x;
-    int8_t y = position->grid_position_y;
-    mm_node_rotation_t rotation = evt->sensor_rotation + position->node_rotation;
-    rotation %= NODE_ROTATION_COUNT;
-
+    /* Figure out what direction the lidar is pointing in. */
+    total_rotation_t rotation = (evt->sensor_rotation + position->node_rotation) % TOTAL_ROTATION_360;
     int8_t dx = 0;
     int8_t dy = 0;
-
-    switch(rotation)
-    {
-        case NODE_ROTATION_0:
-            /* Next node is in +y direction. */
-            dy++;
-            break;
-        case NODE_ROTATION_90:
-            /* Next node is in +x direction. */
-            dx++;   
-            break;
-        case NODE_ROTATION_180:
-            /* Next node is in -y direction. */
-            dy--;
-            break;
-        case NODE_ROTATION_270:
-            /* Next node is in -x direction. */
-            dx--;
-            break;
-        default:
-            /* Current design does not support intermediate angles. */
-            APP_ERROR_CHECK(true);
-            break;
-    }
-
-    mm_node_position_t position_1_forward;
-    mm_node_position_t position_2_forward;
+    get_grid_direction(rotation, &dx, &dy);
 
     /* Fetch positions for 1 forward and 2 forward, replace with local mockups where nodes don't exist. */
+    mm_node_position_t position_1_forward;
+    mm_node_position_t position_2_forward;
+    int8_t x = position->grid_position_x;
+    int8_t y = position->grid_position_y;
     fetch_or_mock_node_position(x + 1 * dx, y + 1 * dy, &position_1_forward);
     fetch_or_mock_node_position(x + 2 * dx, y + 2 * dy, &position_2_forward);
 
@@ -525,37 +540,12 @@ static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_
     int8_t node_1_forward_offset = 0;
     int8_t node_2_forward_offset = 0;
 
-    switch(rotation)
-    {
-        case NODE_ROTATION_0:
-            /* Next node is in +y direction. */
-            node_0_forward_offset = position->grid_offset_y;
-            node_1_forward_offset = position_1_forward.grid_offset_y;
-            node_2_forward_offset = position_2_forward.grid_offset_y;
-            break;
-        case NODE_ROTATION_90:
-            /* Next node is in +x direction. */
-            node_0_forward_offset = position->grid_offset_x;
-            node_1_forward_offset = position_1_forward.grid_offset_x;
-            node_2_forward_offset = position_2_forward.grid_offset_x;
-            break;
-        case NODE_ROTATION_180:
-            /* Next node is in -y direction. */
-            node_0_forward_offset = -position->grid_offset_y;
-            node_1_forward_offset = -position_1_forward.grid_offset_y;
-            node_2_forward_offset = -position_2_forward.grid_offset_y;
-            break;
-        case NODE_ROTATION_270:
-            /* Next node is in -x direction. */
-            node_0_forward_offset = -position->grid_offset_x;
-            node_1_forward_offset = -position_1_forward.grid_offset_x;
-            node_2_forward_offset = -position_2_forward.grid_offset_x;
-            break;
-        default:
-            /* Current design does not support intermediate angles. */
-            APP_ERROR_CHECK(true);
-            break;
-    }
+    node_0_forward_offset += dx * position->grid_offset_x;
+    node_1_forward_offset += dx * position_1_forward.grid_offset_x;
+    node_2_forward_offset += dx * position_2_forward.grid_offset_x;
+    node_0_forward_offset += dy * position->grid_offset_y;
+    node_1_forward_offset += dy * position_1_forward.grid_offset_y;
+    node_2_forward_offset += dy * position_2_forward.grid_offset_y;
 
     uint16_t distance_to_1_node_cm = NODE_SEPERATION_CM + (node_1_forward_offset - node_0_forward_offset) * NODE_OFFSET_SCALE_CM;
     uint16_t distance_to_2_node_cm = 2 * NODE_SEPERATION_CM + (node_2_forward_offset - node_0_forward_offset) * NODE_OFFSET_SCALE_CM;
@@ -600,37 +590,13 @@ static void get_effective_location_for_lidar_detection(mm_node_position_t const 
     }
 
     /* Now we need to mock out a position in the direction of the sensor: */
-    int8_t x = position->grid_position_x;
-    int8_t y = position->grid_position_y;
-    mm_node_rotation_t rotation = record->sensor_rotation + position->node_rotation;
-    rotation %= NODE_ROTATION_COUNT;
-
+    total_rotation_t rotation = (record->sensor_rotation + position->node_rotation) % TOTAL_ROTATION_360;
     int8_t dx = 0;
     int8_t dy = 0;
+    get_grid_direction(rotation, &dx, &dy);
 
-    switch(rotation)
-    {
-        case NODE_ROTATION_0:
-            /* Next node is in +y direction. */
-            dy++;
-            break;
-        case NODE_ROTATION_90:
-            /* Next node is in +x direction. */
-            dx++;   
-            break;
-        case NODE_ROTATION_180:
-            /* Next node is in -y direction. */
-            dy--;
-            break;
-        case NODE_ROTATION_270:
-            /* Next node is in -x direction. */
-            dx--;
-            break;
-        default:
-            /* Current design does not support intermediate angles. */
-            APP_ERROR_CHECK(true);
-            break;
-    }
+    int8_t x = position->grid_position_x;
+    int8_t y = position->grid_position_y;
 
     memset(effective_position, 0, sizeof(mm_node_position_t));
     effective_position->grid_position_x = x + dx;
@@ -642,10 +608,7 @@ static void get_effective_location_for_lidar_detection(mm_node_position_t const 
  * Fetch a record for sensor detection, create one if needed.
  */
 static sensor_record_t* get_sensor_record(sensor_evt_t const * evt)
-{
-    sensor_record_t * p_empty = NULL;
-    sensor_record_t const * p_list_end = &sensor_records[MAX_SENSOR_COUNT];
- 
+{  
     uint16_t node_id;
     sensor_rotation_t rotation;
 
@@ -665,41 +628,42 @@ static sensor_record_t* get_sensor_record(sensor_evt_t const * evt)
             return NULL;
     }
 
-
-    /* Search for existing record */
-    for(sensor_record_t * p_list =  &(sensor_records[0]); p_list <= p_list_end; ++p_list)
+    sensor_record_t * empty = NULL; 
+    for(uint16_t i = 0; i < MAX_SENSOR_COUNT; ++i)
     {
-        if(!p_list->is_valid)
+        sensor_record_t * record = &(sensor_records[i]);
+
+        if(!record->is_valid)
         {
             /* Grab an empty slot while we're here */
-            if(NULL == p_empty)
+            if(NULL == empty)
             {
-                p_empty = p_list;
+                empty = record;
             }
 
             continue;
         }
 
-        if(p_list->node_id != node_id)
+        if(record->node_id != node_id)
         {
             continue;
         }
 
-        if(p_list->sensor_rotation != rotation)
+        if(record->sensor_rotation != rotation)
         {
             continue;
         }
 
         /* Existing record */
-        return p_list;
+        return record;
     }
 
     /* No existing record, should have grabbed a slot while looking */
-    APP_ERROR_CHECK(!p_empty);
+    APP_ERROR_CHECK(!empty);
 
     /* Create and return a new record. */
-    init_sensor_record(evt, p_empty);
-    return p_empty;
+    init_sensor_record(evt, empty);
+    return empty;
 }
 
 /**
@@ -737,41 +701,39 @@ static void find_adjacent_activity_variables(mm_node_position_t const * position
     memset(av_set, 0, sizeof(activity_variable_set_t));
 
     /* Find sensor rotation relative to node rotation 0 */
-    mm_node_rotation_t rotation = position->node_rotation + sensor_rotation;
-    rotation %= NODE_ROTATION_COUNT;
+    total_rotation_t rotation = (position->node_rotation + sensor_rotation) % TOTAL_ROTATION_360;
     int8_t x = position->grid_position_x;
     int8_t y = position->grid_position_y;
 
-    /* Convert node position (-floor(MAX_GRID_SIZE/2.0) to MAX_GRID_SIZE/2) into
+    /* Convert node position (-1 to MAX_GRID_SIZE - 1) into
        'av' coordinates (0 to MAX_GRID_SIZE)) */
-    uint8_t x_array = (uint8_t)(x + (MAX_GRID_SIZE_X / 2)); /* Offset centre based coordinates to left based coordinates. */
-    uint8_t y_array = (uint8_t)(y + (MAX_GRID_SIZE_Y / 2)); /* Offset centre based coordinates to top based coordinates. */
-    y_array = MAX_GRID_SIZE_Y - y_array -1;                 /* Positon coordinates and AV coordinates use inverted Y direction. */
+    uint8_t x_array = x + 1;
+    uint8_t y_array = y + 1;
+    /* Positon coordinates and AV coordinates use inverted Y direction. */
+    y_array = MAX_GRID_SIZE_Y - y_array - 1;
 
     /* On any case x or y may underflow, if that happens they will be too big and won't be saved. */
     switch(rotation)
     {
-        case NODE_ROTATION_0:
+        case TOTAL_ROTATION_0:
             /* Faces up, so can only affect row - 1, and column, column - 1 */
-            y_array--;
-            check_add_av(x_array, y_array, av_set);
-            check_add_av(x_array - 1, y_array, av_set);
+            check_add_av(x_array, y_array - 1, av_set);
+            check_add_av(x_array - 1, y_array - 1, av_set);
             break;
-        case NODE_ROTATION_90:
+        case TOTAL_ROTATION_90:
             /* Faces right, so can only affect row, row - 1, and column */   
             check_add_av(x_array, y_array, av_set);
             check_add_av(x_array, y_array - 1, av_set);
             break;
-        case NODE_ROTATION_180:
+        case TOTAL_ROTATION_180:
             /* Faces down, so can only affect row, and column, column - 1 */ 
             check_add_av(x_array, y_array, av_set);
             check_add_av(x_array - 1, y_array, av_set);
             break;
-        case NODE_ROTATION_270:
+        case TOTAL_ROTATION_270:
             /* Faces left, so can only affect row, row - 1, column - 1 */
-            x_array--;
-            check_add_av(x_array, y_array, av_set);
-            check_add_av(x_array, y_array - 1, av_set);
+            check_add_av(x_array - 1, y_array, av_set);
+            check_add_av(x_array - 1, y_array - 1, av_set);
             break;
         default:
             /* Current design does not support intermediate angles. */
@@ -815,5 +777,32 @@ static void fetch_or_mock_node_position(int8_t x, int8_t y, mm_node_position_t* 
     else
     {
         memcpy(position_out, p_position, sizeof(mm_node_position_t));
+    }
+}
+
+static void get_grid_direction(total_rotation_t rotation, int8_t* dx, int8_t* dy)
+{
+    switch(rotation)
+    {
+        case TOTAL_ROTATION_0:
+            /* Next node is in +y direction. */
+            *dy = 1;
+            break;
+        case TOTAL_ROTATION_90:
+            /* Next node is in +x direction. */
+            *dx = 1;   
+            break;
+        case TOTAL_ROTATION_180:
+            /* Next node is in -y direction. */
+            *dy = -1;
+            break;
+        case TOTAL_ROTATION_270:
+            /* Next node is in -x direction. */
+            *dx = -1;
+            break;
+        default:
+            /* Current design does not support intermediate angles. */
+            APP_ERROR_CHECK(true);
+            break;
     }
 }
