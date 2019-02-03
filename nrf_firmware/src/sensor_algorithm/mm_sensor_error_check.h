@@ -36,4 +36,9 @@ void mm_check_for_sensor_hyperactivity(void);
 */
 bool mm_is_sensor_hyperactive(sensor_evt_t const * evt);
 
+/**
+    Called before clearing node position changed flag.
+*/
+void mm_sensor_error_check_on_node_positions_update(void);
+
 #endif /* MM_SENSOR_ERROR_CHECK_H */

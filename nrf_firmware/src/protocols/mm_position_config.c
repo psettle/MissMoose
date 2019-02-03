@@ -296,20 +296,22 @@ void clear_unread_node_positions( void )
 }
 
 /**
-    Returns the sensor rotation constants for a given node type
+    Returns the number of sensors on a given node type and their sensor rotation constants.
 */
-void get_sensor_rotations( uint8_t node_type, sensor_rotation_t* sensor_1_rotation, sensor_rotation_t* sensor_2_rotation )
+uint8_t get_sensor_rotations( uint8_t node_type, uint16_t sensor_rotations_size, sensor_rotation_t sensor_rotations[] )
 {
 	switch(node_type)
 	{
 		case(HARDWARE_CONFIG_PIR_PIR):
-			*sensor_1_rotation = SENSOR_ROTATION_0;
-			*sensor_2_rotation = SENSOR_ROTATION_270;
-			break;
+			APP_ERROR_CHECK_BOOL( sensor_rotations_size >= 2 );
+			sensor_rotations[1] = SENSOR_ROTATION_0;
+			sensor_rotations[2] = SENSOR_ROTATION_270;
+			return 2;
 		case(HARDWARE_CONFIG_PIR_LIDAR):
 		case(HARDWARE_CONFIG_PIR_LIDAR_LED):
-			*sensor_1_rotation = SENSOR_ROTATION_0;
-			*sensor_2_rotation = SENSOR_ROTATION_90;
-			break;
+			APP_ERROR_CHECK_BOOL( sensor_rotations_size >= 2 );
+			sensor_rotations[1] = SENSOR_ROTATION_0;
+			sensor_rotations[2] = SENSOR_ROTATION_90;
+			return 2;
 	}
 }

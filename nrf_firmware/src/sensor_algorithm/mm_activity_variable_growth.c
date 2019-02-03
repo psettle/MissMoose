@@ -167,7 +167,6 @@ void mm_activity_variable_growth_init(void)
  */
 void mm_activity_variable_growth_on_sensor_detection(sensor_evt_t const * evt)
 {
-    //TODO: check for sensor disable
     apply_activity_variable_addition(evt);
 }
 
@@ -194,7 +193,7 @@ void mm_fetch_node_positions(mm_node_position_t * node_positions_pointer)
 {
     if( have_node_positions_changed() )
     {
-        memcpy(node_positions_pointer, get_node_positions(), sizeof( MAX_NUMBER_NODES ) );
+        memcpy(node_positions_pointer, get_node_positions(), (sizeof( mm_node_position_t ) * MAX_NUMBER_NODES) );
 
         /* Don't clear flag, that could affect other users, the main algorithm file will manage that. */
     }

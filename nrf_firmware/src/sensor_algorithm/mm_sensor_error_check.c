@@ -12,7 +12,6 @@ notes:
 #include "app_error.h"
 #include "mm_sensor_algorithm_config.h"
 #include "mm_position_config.h"
-#include "mm_activity_variable_growth.h"
 
 /**********************************************************
                         CONSTANTS
@@ -32,7 +31,7 @@ typedef struct
 typedef struct
 {
     sensor_record_t   sensor;
-    uint16_t          activity_timestamps[SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE];
+    uint32_t          activity_timestamps[SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE];
     uint16_t          activity_records_count;
     bool              sensor_hyperactive;
 } sensor_activity_record_t;
@@ -53,43 +52,15 @@ static void create_sensor_record(sensor_evt_t const * evt, sensor_record_t * rv)
 static sensor_record_t active_sensors_past_day[ MAX_SENSOR_COUNT ];
 static uint16_t active_sensors_past_day_count = 0;
 static sensor_activity_record_t sensor_activity_record[ MAX_SENSOR_COUNT ];
-static mm_node_position_t   node_positions[MAX_NUMBER_NODES];
 
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
 
 /**
-    Create a sensor_record_t from the given sensor_evt_t
-*/
-static void create_sensor_record(sensor_evt_t const * evt, sensor_record_t * rv)
-{
-    sensor_record_t activity_record;
-    switch(evt->sensor_type)
-    {
-        case SENSOR_TYPE_PIR:
-            activity_record.node_id = evt->pir_data.node_id;
-            activity_record.sensor_type = evt->sensor_type;
-            activity_record.sensor_rotation = evt->pir_data.sensor_rotation;
-            break;
-        case SENSOR_TYPE_LIDAR:
-            activity_record.node_id = evt->lidar_data.node_id;
-            activity_record.sensor_type = evt->sensor_type;
-            activity_record.sensor_rotation = evt->lidar_data.sensor_rotation;
-            break;
-            break;
-        default:
-            /* App error, unknown sensor data type. */
-            APP_ERROR_CHECK(true);
-            break;
-    }
-    memcpy( rv, &activity_record, sizeof( activity_record ) );
-}
-
-/**
     Record that a sensor has been active (has had a detection event).
 */
-void mm_record_sensor_activity(sensor_evt_t const * evt, uint16_t minute_count)
+void mm_record_sensor_activity(sensor_evt_t const * evt, uint32_t minute_count)
 {
     bool first_activity_of_day = true;
     sensor_record_t activity_record;
@@ -108,10 +79,10 @@ void mm_record_sensor_activity(sensor_evt_t const * evt, uint16_t minute_count)
     {
         memcpy(&active_sensors_past_day[active_sensors_past_day_count], &activity_record, sizeof( activity_record ));
         active_sensors_past_day_count++;
-        APP_ERROR_CHECK_BOOL(active_sensors_past_day_count > MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE);
+        APP_ERROR_CHECK_BOOL(active_sensors_past_day_count > MAX_SENSOR_COUNT);
     }
     // check to see if this sensor has an existing activity record and if it does add to it
-    for ( uint16_t i = 0; i < MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE; i++ )
+    for ( uint16_t i = 0; i < MAX_SENSOR_COUNT; i++ )
     {
         sensor_activity_record_t * existing_record = &sensor_activity_record[i];
         if ( activity_record.node_id == existing_record->sensor.node_id &&
@@ -128,7 +99,7 @@ void mm_record_sensor_activity(sensor_evt_t const * evt, uint16_t minute_count)
         }
     }
     // create a new sensor activity record for the current sensor
-    for ( uint16_t i = 0; i < MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE; i++ )
+    for ( uint16_t i = 0; i < MAX_SENSOR_COUNT; i++ )
     {
         sensor_activity_record_t * new_record = &sensor_activity_record[i];
         // nodeid of 0 is an invalid entry and therefore free to overwrite
@@ -148,7 +119,7 @@ void mm_record_sensor_activity(sensor_evt_t const * evt, uint16_t minute_count)
 */
 void mm_check_for_sensor_inactivity(void)
 {
-    mm_fetch_node_positions(&node_positions[0]);
+    mm_node_position_t * node_positions = get_node_positions();
     for ( uint16_t i = 0; i < MAX_NUMBER_NODES; i++)
     {
         if ( !node_positions[i].is_valid )
@@ -156,7 +127,7 @@ void mm_check_for_sensor_inactivity(void)
             continue;
         }
         sensor_rotation_t node_sensor_rotations[MAX_SENSORS_PER_NODE];
-        get_sensor_rotations(node_positions[i].node_type, &node_sensor_rotations[0], &node_sensor_rotations[1]);
+        get_sensor_rotations(node_positions[i].node_type, MAX_SENSORS_PER_NODE, node_sensor_rotations);
         bool node_sensors_active[MAX_SENSORS_PER_NODE];
         for ( uint16_t j = 0; j < active_sensors_past_day_count; j++)
         {
@@ -189,32 +160,6 @@ void mm_check_for_sensor_inactivity(void)
 */
 void mm_check_for_sensor_hyperactivity(void)
 {
-    if ( have_node_positions_changed() )
-    {
-        mm_fetch_node_positions(&node_positions[0]);
-        for ( uint16_t i = 0; i < MAX_SENSORS_PER_NODE; i++ )
-        {
-            sensor_activity_record_t * existing_record = &sensor_activity_record[i];
-            bool sensor_valid = false;
-            for ( uint16_t j = 0; j < MAX_SENSOR_COUNT; j++ )
-            {
-                mm_node_position_t * current_node = &node_positions[j];
-                sensor_rotation_t node_sensor_rotations[MAX_SENSORS_PER_NODE];
-                get_sensor_rotations(current_node->node_type, &node_sensor_rotations[0], &node_sensor_rotations[1]);
-                if ( existing_record->sensor.node_id == current_node->node_id &&
-                     (existing_record->sensor.sensor_rotation == node_sensor_rotations[0] || 
-                      existing_record->sensor.sensor_rotation == node_sensor_rotations[1]) )
-                {
-                    sensor_valid = true;
-                    break;
-                }
-            }
-            if ( !sensor_valid )
-            {
-                existing_record->sensor.node_id = 0; // set sensor invalid
-            }
-        } 
-    }
     for ( uint16_t i = 0; i < MAX_SENSOR_COUNT; i++ )
     {
         sensor_activity_record_t * existing_record = &sensor_activity_record[i];
@@ -253,7 +198,7 @@ bool mm_is_sensor_hyperactive(sensor_evt_t const * evt)
 {
     sensor_record_t activity_record;
     create_sensor_record(evt, &activity_record);
-    for ( uint16_t i = 0; i < MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE; i++)
+    for ( uint16_t i = 0; i < MAX_SENSOR_COUNT; i++)
     {
         sensor_activity_record_t * existing_record = &sensor_activity_record[i];
         if ( activity_record.node_id == existing_record->sensor.node_id &&
@@ -263,4 +208,62 @@ bool mm_is_sensor_hyperactive(sensor_evt_t const * evt)
         }
     }
     return false;
+}
+
+/**
+    Called before clearing node position changed flag.
+*/
+void mm_sensor_error_check_on_node_positions_update(void)
+{
+    if(have_node_positions_changed())
+    {
+        /* make sure to only keep sensor records for sensors that still exist */
+        mm_node_position_t * node_positions = get_node_positions();
+        for ( uint16_t i = 0; i < MAX_SENSOR_COUNT; i++ )
+        {
+            sensor_activity_record_t * existing_record = &sensor_activity_record[i];
+            bool sensor_valid = false;
+            for ( uint16_t j = 0; j < MAX_NUMBER_NODES; j++ )
+            {
+                mm_node_position_t * current_node = &node_positions[j];
+                sensor_rotation_t node_sensor_rotations[MAX_SENSORS_PER_NODE];
+                get_sensor_rotations(current_node->node_type, &node_sensor_rotations[0], &node_sensor_rotations[1]);
+                if ( existing_record->sensor.node_id == current_node->node_id &&
+                     (existing_record->sensor.sensor_rotation == node_sensor_rotations[0] || 
+                      existing_record->sensor.sensor_rotation == node_sensor_rotations[1]) )
+                {
+                    sensor_valid = true;
+                    break;
+                }
+            }
+            if ( !sensor_valid )
+            {
+                existing_record->sensor.node_id = 0; // set sensor invalid
+            }
+        } 
+    }
+}
+
+/**
+    Create a sensor_record_t from the given sensor_evt_t
+*/
+static void create_sensor_record(sensor_evt_t const * evt, sensor_record_t * rv)
+{
+    switch(evt->sensor_type)
+    {
+        case SENSOR_TYPE_PIR:
+            rv->node_id = evt->pir_data.node_id;
+            rv->sensor_type = evt->sensor_type;
+            rv->sensor_rotation = evt->pir_data.sensor_rotation;
+            break;
+        case SENSOR_TYPE_LIDAR:
+            rv->node_id = evt->lidar_data.node_id;
+            rv->sensor_type = evt->sensor_type;
+            rv->sensor_rotation = evt->lidar_data.sensor_rotation;
+            break;
+        default:
+            /* App error, unknown sensor data type. */
+            APP_ERROR_CHECK(true);
+            break;
+    }
 }

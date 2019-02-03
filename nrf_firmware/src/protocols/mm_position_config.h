@@ -94,8 +94,8 @@ bool have_node_positions_changed( void );
 void clear_unread_node_positions( void );
 
 /**
-    Returns the sensor rotation constants for a given node type
+    Returns the number of sensors on a given node type and their sensor rotation constants.
 */
-void get_sensor_rotations( uint8_t node_type, sensor_rotation_t* sensor_1_rotation, sensor_rotation_t* sensor_2_rotation );
+uint8_t get_sensor_rotations( uint8_t node_type, uint16_t sensor_rotations_size, sensor_rotation_t sensor_rotations[] );
 
 #endif /* MM_POSITION_CONFIG_H */
