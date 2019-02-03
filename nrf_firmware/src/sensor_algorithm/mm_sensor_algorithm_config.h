@@ -10,15 +10,18 @@ notes:
                     ALGORITHM TUNING
 **********************************************************/
 
-#define MAX_GRID_SIZE_X         ( 3 )
-#define MAX_GRID_SIZE_Y         ( 3 )
+#define MAX_GRID_SIZE_X                     ( 3 )
+#define MAX_GRID_SIZE_Y                     ( 3 )
+#define MAX_NUMBER_NODES                    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
+#define MAX_SENSORS_PER_NODE                ( 2 )
+#define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )     
 
-#define MAX_NUMBER_NODES			    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
-#define MAX_SENSORS_PER_NODE            ( 2 )
-#define MAX_SENSOR_COUNT                ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )  
+#define MAX_NUMBER_NODES			        ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
+#define MAX_SENSORS_PER_NODE                ( 2 )
+#define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )  
 
-#define ACTIVITY_VARIABLE_MIN   ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX   ( 12.0f )
+#define ACTIVITY_VARIABLE_MIN               ( 1.0f )
+#define ACTIVITY_VARIABLE_MAX               ( 12.0f )
 
 #define COMMON_SENSOR_WEIGHT_FACTOR         ( 1.0f )
 #define BASE_SENSOR_WEIGHT_FACTOR_PIR       ( 3.0f )
