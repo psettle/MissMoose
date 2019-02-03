@@ -323,7 +323,7 @@ static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
 
 static void generate_growth_constants(mm_node_position_t const * position, sensor_type_t sensor_type,activity_variable_sensor_constants_t* constants)
 {
-    memset(&constants, 0, sizeof(activity_variable_sensor_constants_t));
+    memset(constants, 0, sizeof(activity_variable_sensor_constants_t));
 
     constants->common_sensor_weight_factor = COMMON_SENSOR_WEIGHT_FACTOR;
 
