@@ -314,4 +314,5 @@ uint8_t get_sensor_rotations( uint8_t node_type, uint16_t sensor_rotations_size,
 			sensor_rotations[2] = SENSOR_ROTATION_90;
 			return 2;
 	}
+	return -1;
 }

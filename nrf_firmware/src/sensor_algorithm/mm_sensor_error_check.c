@@ -119,7 +119,7 @@ void mm_record_sensor_activity(sensor_evt_t const * evt, uint32_t minute_count)
 */
 void mm_check_for_sensor_inactivity(void)
 {
-    mm_node_position_t * node_positions = get_node_positions();
+    const mm_node_position_t * node_positions = get_node_positions();
     for ( uint16_t i = 0; i < MAX_NUMBER_NODES; i++)
     {
         if ( !node_positions[i].is_valid )
@@ -218,16 +218,16 @@ void mm_sensor_error_check_on_node_positions_update(void)
     if(have_node_positions_changed())
     {
         /* make sure to only keep sensor records for sensors that still exist */
-        mm_node_position_t * node_positions = get_node_positions();
+        const mm_node_position_t * node_positions = get_node_positions();
         for ( uint16_t i = 0; i < MAX_SENSOR_COUNT; i++ )
         {
             sensor_activity_record_t * existing_record = &sensor_activity_record[i];
             bool sensor_valid = false;
             for ( uint16_t j = 0; j < MAX_NUMBER_NODES; j++ )
             {
-                mm_node_position_t * current_node = &node_positions[j];
+                const mm_node_position_t * current_node = &node_positions[j];
                 sensor_rotation_t node_sensor_rotations[MAX_SENSORS_PER_NODE];
-                get_sensor_rotations(current_node->node_type, &node_sensor_rotations[0], &node_sensor_rotations[1]);
+                get_sensor_rotations(current_node->node_type, MAX_SENSORS_PER_NODE, node_sensor_rotations);
                 if ( existing_record->sensor.node_id == current_node->node_id &&
                      (existing_record->sensor.sensor_rotation == node_sensor_rotations[0] || 
                       existing_record->sensor.sensor_rotation == node_sensor_rotations[1]) )
@@ -264,6 +264,9 @@ static void create_sensor_record(sensor_evt_t const * evt, sensor_record_t * rv)
         default:
             /* App error, unknown sensor data type. */
             APP_ERROR_CHECK(true);
+            rv->node_id = 0;
+            rv->sensor_type = SENSOR_TYPE_UNKNOWN;
+            rv->sensor_rotation = SENSOR_ROTATION_0;
             break;
     }
 }
