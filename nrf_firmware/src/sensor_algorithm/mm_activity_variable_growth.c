@@ -22,12 +22,7 @@ notes:
                         CONSTANTS
 **********************************************************/
 
-#define MAX_NUMBER_NODES			    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
-#define MAX_SENSORS_PER_NODE            ( 2 )
 #define MAX_ADJACENT_ACTIVITY_VARIABLES ( 2 )   /* The max number of regions a sensor can affect per detection. */
-#define MAX_SENSOR_COUNT                ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )     
-#define NODE_SEPERATION_CM              ( 800 )
-#define NODE_OFFSET_SCALE_CM            ( 5 )
 
 /**********************************************************
                         MACROS
@@ -82,17 +77,11 @@ typedef struct
                        VARIABLES
 **********************************************************/
 
-static mm_node_position_t   node_positions[MAX_NUMBER_NODES];
 static sensor_record_t      sensor_records[MAX_SENSOR_COUNT];
 
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
-
-/**
- * Check if node positions have changed and update if needed.
- */ 
-static void fetch_node_positions(void);
 
 /**
  * Apply growth factors to activity variables on sensor detection.
@@ -108,6 +97,11 @@ static void apply_activity_variable_addition_pir(sensor_evt_t const * evt);
  * Apply growth factors to activity variables on lidar sensor detection.
  */ 
 static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt);
+
+/**
+ * Fetch the constants that define how an AV will grow.
+ */
+static void generate_growth_constants(mm_node_position_t const * position, sensor_type_t sensor_type, activity_variable_sensor_constants_t* constants);
 
 /**
  * Apply persistent growth factors to detecting sensors
@@ -143,6 +137,13 @@ static void init_sensor_record(sensor_evt_t const * evt, sensor_record_t* p_reco
 static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_data_t* out_data);
 
 /**
+ * Grabs the position for a node in the grid. Creates a 'mock' default position if there isn't a node there.
+ * 
+ * [out] A mm_node_position_t object describing a node at x,y. That node may or may not actually exist.
+ */
+static void fetch_or_mock_node_position(int8_t x, int8_t y, mm_node_position_t* position_out);
+
+/**
  * Fetch a virtual location for a lidar detection using the detection region and the original sensor position.
  */
 static void get_effective_location_for_lidar_detection(mm_node_position_t const * position, sensor_record_t const * record, mm_node_position_t* effective_position);
@@ -168,10 +169,7 @@ static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set);
  */
 void mm_activity_variable_growth_init(void)
 {
-    memset(&node_positions[0], 0, sizeof(node_positions));
-    memset(&sensor_records[0], 0, sizeof(sensor_records));
-
-    fetch_node_positions();
+    memset(&(sensor_records[0]), 0, sizeof(sensor_records));
 }
 
 /**
@@ -189,27 +187,6 @@ void mm_activity_variable_growth_on_sensor_detection(sensor_evt_t const * evt)
 void mm_activity_variable_growth_on_second_elapsed(void)
 {
     apply_activity_variable_trickle_factor();
-}
-
-/**
-    Called before clearing node position changed flag.
-*/
-void mm_activity_variable_growth_on_node_positions_update(void)
-{
-    fetch_node_positions();
-}
-
-/**
-    Check for change in node positions, and fetch if needed.
-*/
-static void fetch_node_positions(void)
-{
-    if( have_node_positions_changed() )
-    {
-        memcpy(&node_positions[0], get_node_positions(), sizeof( node_positions) );
-
-        /* Don't clear flag, that could affect other users, the main algorithm file will manage that. */
-    }
 }
 
 /**
@@ -251,7 +228,6 @@ static void apply_activity_variable_addition_pir(sensor_evt_t const * evt)
     pir_evt_data_t const * pir_evt = &evt->pir_data;
 
     /* Do we know the node that generated the event? */
-    fetch_node_positions();
     mm_node_position_t const * position = get_position_for_node(pir_evt->node_id);
 
     if(NULL == position)
@@ -264,9 +240,15 @@ static void apply_activity_variable_addition_pir(sensor_evt_t const * evt)
     sensor_record_t* record = get_sensor_record(evt);
 
     /* Does this event represent a new detection? (Easy for PIR sensors) */
-    bool is_new_detection = pir_evt->detection && !record->pir_detected;
-
-    /* Apply growth */
+    bool is_new_detection = false;
+    if(pir_evt->detection)
+    {
+        if(!record->pir_detected)
+        {
+            is_new_detection = true;
+        }
+    }
+ 
     if(is_new_detection)
     {
         /* Which AV's does the detection apply to? */
@@ -275,28 +257,9 @@ static void apply_activity_variable_addition_pir(sensor_evt_t const * evt)
 
         /* Generate a sensor constants structure. */
         activity_variable_sensor_constants_t constants;
+        generate_growth_constants(position, SENSOR_TYPE_PIR, &constants);
 
-        memset(&constants, 0, sizeof(constants));
-        constants.common_sensor_weight_factor = COMMON_SENSOR_WEIGHT_FACTOR;
-        constants.base_sensor_weight_factor   = BASE_SENSOR_WEIGHT_FACTOR_PIR;
-
-        switch(position->grid_position_y)
-        {
-            case -1:
-                constants.road_proximity_factor = ROAD_PROXIMITY_FACTOR_0;
-                break;
-            case 0:
-                constants.road_proximity_factor = ROAD_PROXIMITY_FACTOR_1;
-                break;
-            case 1:
-                constants.road_proximity_factor = ROAD_PROXIMITY_FACTOR_2;
-                break;
-            default:
-                /* Invalid grid position given grid height */
-                APP_ERROR_CHECK(true);
-                break;
-        }
-
+        /* Apply growth */
         grow_activity_variables(&av_set, &constants);
     }
 
@@ -312,7 +275,6 @@ static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
     lidar_evt_data_t const * lidar_evt = &evt->lidar_data;
 
     /* Do we know the node that generated the event? */
-    fetch_node_positions();
     mm_node_position_t const * position = get_position_for_node(lidar_evt->node_id);
 
     if(NULL == position)
@@ -332,9 +294,15 @@ static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
 
     /* Does this event represent a new detection?
        Is it in a detectable region and different than last measurement? */
-    bool is_new_detection = ((region == LIDAR_REGION_REGION_0) || (region == LIDAR_REGION_REGION_1)) && (region != record->lidar_region);
+    bool is_new_detection = false;
+    if((region == LIDAR_REGION_REGION_0) || (region == LIDAR_REGION_REGION_1))
+    {
+        if(region != record->lidar_region)
+        {
+            is_new_detection = true;
+        }
+    }
 
-    /* Apply growth */
     if(is_new_detection)
     {
         /* Which AV's does the detection apply to? */
@@ -343,33 +311,52 @@ static void apply_activity_variable_addition_lidar(sensor_evt_t const * evt)
 
         /* Generate a sensor constants structure. */
         activity_variable_sensor_constants_t constants;
+        generate_growth_constants(position, SENSOR_TYPE_LIDAR, &constants);
 
-        memset(&constants, 0, sizeof(constants));
-        constants.common_sensor_weight_factor = COMMON_SENSOR_WEIGHT_FACTOR;
-        constants.base_sensor_weight_factor   = BASE_SENSOR_WEIGHT_FACTOR_LIDAR;
-
-        switch(position->grid_position_y)
-        {
-            case -1:
-                constants.road_proximity_factor = ROAD_PROXIMITY_FACTOR_0;
-                break;
-            case 0:
-                constants.road_proximity_factor = ROAD_PROXIMITY_FACTOR_1;
-                break;
-            case 1:
-                constants.road_proximity_factor = ROAD_PROXIMITY_FACTOR_2;
-                break;
-            default:
-                /* Invalid grid position given grid height */
-                APP_ERROR_CHECK(true);
-                break;
-        }
-
+        /* Apply growth */
         grow_activity_variables(&av_set, &constants);
     }
 
     /* Update sensor record so we can correctly interpret the next signal. */
     record->lidar_region = region;
+}
+
+static void generate_growth_constants(mm_node_position_t const * position, sensor_type_t sensor_type,activity_variable_sensor_constants_t* constants)
+{
+    memset(constants, 0, sizeof(activity_variable_sensor_constants_t));
+
+    constants->common_sensor_weight_factor = COMMON_SENSOR_WEIGHT_FACTOR;
+
+    switch(sensor_type)
+    {
+        case SENSOR_TYPE_PIR:
+            constants->base_sensor_weight_factor   = BASE_SENSOR_WEIGHT_FACTOR_PIR;
+            break;
+        case SENSOR_TYPE_LIDAR:
+            constants->base_sensor_weight_factor   = BASE_SENSOR_WEIGHT_FACTOR_LIDAR;
+            break;
+        default:
+            /* Invalid sensor type. */
+            APP_ERROR_CHECK(true);
+            break;
+    }
+
+    switch(position->grid_position_y)
+    {
+        case -1:
+            constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_0;
+            break;
+        case 0:
+            constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_1;
+            break;
+        case 1:
+            constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_2;
+            break;
+        default:
+            /* Invalid grid position given grid height */
+            APP_ERROR_CHECK(true);
+            break;
+    }
 }
 
 /**
@@ -405,7 +392,6 @@ static void apply_activity_variable_trickle_to_record(sensor_record_t const * re
 
 
     /* Do we know the node that generated the event? */
-    fetch_node_positions();
     mm_node_position_t const * position = get_position_for_node(record->node_id);
 
     if(NULL == position)
@@ -527,30 +513,12 @@ static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_
             break;
     }
 
+    mm_node_position_t position_1_forward;
+    mm_node_position_t position_2_forward;
+
     /* Fetch positions for 1 forward and 2 forward, replace with local mockups where nodes don't exist. */
-    mm_node_position_t const * position_1_forward = get_node_for_position(x + dx, y + dy);   
-    mm_node_position_t const * position_2_forward = get_node_for_position(x + 2 * dx, y + 2 * dy);
-
-    mm_node_position_t position_1_forward_backup;
-    mm_node_position_t position_2_forward_backup;
-
-    if(position_1_forward == NULL)
-    {
-        position_1_forward = &position_1_forward_backup;
-        memset(&position_1_forward_backup, 0, sizeof(position_1_forward_backup));
-        position_1_forward_backup.grid_position_x = x + dx;
-        position_1_forward_backup.grid_position_y = y + dy;
-        position_1_forward_backup.node_rotation = position->node_rotation;
-    }
-
-    if(position_2_forward == NULL)
-    {
-        position_2_forward = &position_2_forward_backup;
-        memset(&position_2_forward_backup, 0, sizeof(position_2_forward_backup));
-        position_2_forward_backup.grid_position_x = x + 2 * dx;
-        position_2_forward_backup.grid_position_y = y + 2 * dy;
-        position_2_forward_backup.node_rotation = position->node_rotation;
-    }
+    fetch_or_mock_node_position(x + 1 * dx, y + 1 * dy, &position_1_forward);
+    fetch_or_mock_node_position(x + 2 * dx, y + 2 * dy, &position_2_forward);
 
     /* Fetch relevant offsets for distance calculation: */
     int8_t node_0_forward_offset = 0;
@@ -562,26 +530,26 @@ static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_
         case NODE_ROTATION_0:
             /* Next node is in +y direction. */
             node_0_forward_offset = position->grid_offset_y;
-            node_1_forward_offset = position_1_forward->grid_offset_y;
-            node_2_forward_offset = position_2_forward->grid_offset_y;
+            node_1_forward_offset = position_1_forward.grid_offset_y;
+            node_2_forward_offset = position_2_forward.grid_offset_y;
             break;
         case NODE_ROTATION_90:
             /* Next node is in +x direction. */
             node_0_forward_offset = position->grid_offset_x;
-            node_1_forward_offset = position_1_forward->grid_offset_x;
-            node_2_forward_offset = position_2_forward->grid_offset_x;
+            node_1_forward_offset = position_1_forward.grid_offset_x;
+            node_2_forward_offset = position_2_forward.grid_offset_x;
             break;
         case NODE_ROTATION_180:
             /* Next node is in -y direction. */
             node_0_forward_offset = -position->grid_offset_y;
-            node_1_forward_offset = -position_1_forward->grid_offset_y;
-            node_2_forward_offset = -position_2_forward->grid_offset_y;
+            node_1_forward_offset = -position_1_forward.grid_offset_y;
+            node_2_forward_offset = -position_2_forward.grid_offset_y;
             break;
         case NODE_ROTATION_270:
             /* Next node is in -x direction. */
             node_0_forward_offset = -position->grid_offset_x;
-            node_1_forward_offset = -position_1_forward->grid_offset_x;
-            node_2_forward_offset = -position_2_forward->grid_offset_x;
+            node_1_forward_offset = -position_1_forward.grid_offset_x;
+            node_2_forward_offset = -position_2_forward.grid_offset_x;
             break;
         default:
             /* Current design does not support intermediate angles. */
@@ -603,9 +571,10 @@ static void lidar_get_region(lidar_evt_data_t const * evt, lidar_get_region_out_
     else if(distance_measured < distance_to_2_node_cm)
     {
         out_data->region = LIDAR_REGION_REGION_1;
-        memcpy(&(out_data->effective_position), position_1_forward, sizeof(out_data->effective_position));
+        memcpy(&(out_data->effective_position), &position_1_forward, sizeof(out_data->effective_position));
 
-        /* Set the node to have the same rotation so that the normalized sensor direction is the same as from the node the sensor is physically on. */
+        /* Set the node to have the same rotation so that the normalized sensor
+           direction is the same as from the node the sensor is physically on. */
         out_data->effective_position.node_rotation = position->node_rotation;
     }
     else
@@ -698,7 +667,7 @@ static sensor_record_t* get_sensor_record(sensor_evt_t const * evt)
 
 
     /* Search for existing record */
-    for(sensor_record_t* p_list =  &(sensor_records[0]); p_list <= p_list_end; ++p_list)
+    for(sensor_record_t * p_list =  &(sensor_records[0]); p_list <= p_list_end; ++p_list)
     {
         if(!p_list->is_valid)
         {
@@ -831,4 +800,20 @@ static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set)
     APP_ERROR_CHECK(av_set->av_count >= MAX_ADJACENT_ACTIVITY_VARIABLES);
     av_set->avs[av_set->av_count] = mm_av_access(x, y);
     av_set->av_count++;
+}
+
+static void fetch_or_mock_node_position(int8_t x, int8_t y, mm_node_position_t* position_out)
+{
+    mm_node_position_t const * p_position = get_node_for_position(x, y);
+
+    if(p_position == NULL)
+    {
+        memset(position_out, 0, sizeof(mm_node_position_t));
+        position_out->grid_position_x = x;
+        position_out->grid_position_y = y;
+    }
+    else
+    {
+        memcpy(position_out, p_position, sizeof(mm_node_position_t));
+    }
 }
