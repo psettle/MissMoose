@@ -30,7 +30,6 @@ notes:
 #define ONE_SECOND_TICKS    APP_TIMER_TICKS(ONE_SECOND_MS)
 #define SECONDS_PER_MINUTE  ( 60 )
 
-
 /**********************************************************
                           TYPES
 **********************************************************/
@@ -53,6 +52,14 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt);
     Timer handler to process second tick.
 */
 static void one_second_timer_handler(void * p_context);
+
+/**
+    Check if node positions have changed, and apply an update to all
+    users if so.
+
+    Then clear the flag.
+ */
+static void update_node_positions(void);
 
 /**
  * Tick events, second, minute, etc.
@@ -101,6 +108,9 @@ void mm_sensor_algorithm_init(void)
 */
 static void sensor_data_evt_handler(sensor_evt_t const * evt)
 {
+    /* Make sure everyone has valid node positions before processing the event. */
+    update_node_positions();
+
     /* Always send sensor events to the monitoring dispatch. */
     send_monitoring_dispatch(evt);
 
@@ -139,7 +149,6 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt)
     }
 }
 
-
 /**
     Timer handler to process second tick.
 */
@@ -155,6 +164,9 @@ static void one_second_timer_handler(void * p_context)
 */
 static void on_second_elapsed(void* p_unused, uint16_t size_0)
 {
+    /* Make sure everyone has valid node positions before processing the event. */
+    update_node_positions();
+
     if(second_counter == 0)
     {
         on_minute_elapsed();
@@ -162,15 +174,6 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
 
     second_counter++;
     second_counter %= SECONDS_PER_MINUTE;
-
-    if(have_node_positions_changed())
-    {
-        /* Tell all users we are about to clear the flag: */
-        mm_activity_variable_growth_on_node_positions_update();
-
-        /* Clear the flag: */
-        clear_unread_node_positions();
-    }
 
     mm_activity_variable_growth_on_second_elapsed();
 }
@@ -181,4 +184,21 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
 static void on_minute_elapsed(void)
 {
 
+}
+
+/**
+    Check if node positions have changed, and apply an update to all
+    users if so.
+
+    Then clear the flag.
+ */
+static void update_node_positions(void)
+{
+    if(have_node_positions_changed())
+    {
+        /* Tell all users we are about to clear the flag: */
+
+        /* Clear the flag: */
+        clear_unread_node_positions();
+    }
 }
