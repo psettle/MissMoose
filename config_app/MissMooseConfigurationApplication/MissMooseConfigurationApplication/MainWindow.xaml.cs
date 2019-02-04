@@ -54,7 +54,7 @@ namespace MissMooseConfigurationApplication
             };
             if(File.Exists(ConfigurationSaveFileName))
             {
-                //LoadConfiguration();
+                LoadConfiguration();
             }
             // app starts on config screen
             PageSwitchClick(ConfigPageButton);
@@ -149,13 +149,13 @@ namespace MissMooseConfigurationApplication
                 foreach(NodeAttributes node in loadednodes)
                 {
                     SensorNode sensornode = new SensorNode(node.configuration, node.NodeID);
-                    sensornode.xpos = node.xpos;
-                    sensornode.ypos = node.ypos;
-                    sensornode.xoffset = node.xoffset;
-                    sensornode.yoffset = node.yoffset;
+                    sensornode.xpos = (sbyte)node.xpos;
+                    sensornode.ypos = (sbyte)node.ypos;
+                    sensornode.xoffset = (sbyte)node.xoffset;
+                    sensornode.yoffset = (sbyte)node.yoffset;
                     sensornode.Rotation = new Rotation(node.rotation);
                     ((ConfigurationPage)navigationItems[ConfigPageButton]).AddExistingNode(sensornode);
-                    ((SystemOverviewPage)navigationItems[SystemOverviewPageButton]).AddNode(sensornode);
+                    ((SystemOverviewPage)navigationItems[SystemOverviewPageButton]).UpdateNode(sensornode);
                 }
             }
         }

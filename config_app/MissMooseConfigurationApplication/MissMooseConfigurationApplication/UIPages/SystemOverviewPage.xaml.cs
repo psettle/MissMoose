@@ -50,7 +50,7 @@ namespace MissMooseConfigurationApplication
         /// Added nodes cannot be modified, re-add to update display
         /// </summary>
         /// <param name="node">The node to be displayed, can not be modified while added</param>
-        public void AddNode(SensorNode node)
+        public void UpdateNode(SensorNode node)
         {
             //attempt to remove first to ensure everything is cleaned up correctly
             RemoveNode(node);
@@ -143,17 +143,25 @@ namespace MissMooseConfigurationApplication
         {
             MarkSensorDetection(node.xpos, node.ypos, direction, colour);
 
-            // If the colour is being set to red or yellow
-            // or if the colour is being set to blue and there are no other lines set to red or yellow,
-            // set the node status colour to the given colour
-            if (!colour.Equals(StatusColour.Blue)
-                || lineSegmentAssociations[node.xpos][node.ypos].Where(x => x.Key != direction && x.Value.Stroke.Equals(colour)).Count() == 0)
+            if(colour.Equals(StatusColour.Blue))
             {
-                SensorNode nodeToSet = nodes.Where(x => x.NodeID == node.NodeID).FirstOrDefault();
-                if (nodeToSet != null)
+                /* Colour is being set to blue, check that no other line segemnts are active. */
+                foreach(var segment in lineSegmentAssociations[node.xpos][node.ypos])
                 {
-                    nodeToSet.SetStatusColour(colour);
+                    if(!segment.Value.Stroke.Equals(StatusColour.Blue))
+                    {
+                        /* Another segment is still active, so we can't turn the node off yet. */
+                        return;
+                    }
                 }
+            } /* Else, colour is being set to red or yellow, so there is no concern about setting it */
+
+            /* Which node to set? */ 
+            SensorNode nodeToSet = nodes.Where(x => x.NodeID == node.NodeID).FirstOrDefault();
+
+            if (nodeToSet != null)
+            {
+                nodeToSet.SetStatusColour(colour);
             }
         }
         #endregion

@@ -94,16 +94,17 @@ namespace MissMooseConfigurationApplication
                         MonitoringUI.MarkSensorDetection(node, direction, colour);
                     });
                 }
-
-                // Send an acknowledgement page so the gateway knows this sensor data was received
-                MonitoringDataAckPage ackPage = new MonitoringDataAckPage
-                {
-                    MessageId = dataPage.MessageId
-                };
-
-                responder.SendBroadcast(ackPage);
-                Console.Out.WriteLine("Sent Ack for Lidar Msg: " + ackPage.MessageId);
+ 
             }
+
+            // Send an acknowledgement page so the gateway knows this sensor data was received
+            MonitoringDataAckPage ackPage = new MonitoringDataAckPage
+            {
+                MessageId = dataPage.MessageId
+            };
+
+            responder.SendBroadcast(ackPage);
+            Console.Out.WriteLine("Sent Ack for Lidar Msg: " + ackPage.MessageId);
 
             //keep connection alive
             return true;
@@ -129,15 +130,17 @@ namespace MissMooseConfigurationApplication
                     });
                 }
 
-                // Send an acknowledgement page so the gateway knows this sensor data was received
-                MonitoringDataAckPage ackPage = new MonitoringDataAckPage
-                {
-                    MessageId = dataPage.MessageId
-                };
-
-                responder.SendBroadcast(ackPage);
-                Console.Out.WriteLine("Sent Ack for PIR Msg: " + ackPage.MessageId);
+                
             }
+
+            // Send an acknowledgement page so the gateway knows this sensor data was received
+            MonitoringDataAckPage ackPage = new MonitoringDataAckPage
+            {
+                MessageId = dataPage.MessageId
+            };
+
+            responder.SendBroadcast(ackPage);
+            Console.Out.WriteLine("Sent Ack for PIR Msg: " + ackPage.MessageId);
 
             //keep connection alive
             return true;
@@ -273,7 +276,7 @@ namespace MissMooseConfigurationApplication
                     // A node has changed, so update the monitoring UI
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
 
-                        MonitoringUI.AddNode(node);
+                        MonitoringUI.UpdateNode(node);
                     });
                 }
             }

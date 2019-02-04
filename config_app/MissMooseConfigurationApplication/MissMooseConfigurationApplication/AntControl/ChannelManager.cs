@@ -60,11 +60,13 @@ namespace MissMooseConfigurationApplication
                 }
                 else
                 {
-                    deviceRunning = true;
-                    device.enableRxExtendedMessages(true);
+
 
                     try
                     {
+                        deviceRunning = true;
+                        device.enableRxExtendedMessages(true);
+
                         // Get an unused ANT channel from the device
                         channel = device.getChannel(channelNum);
                         channel.channelResponse += new dChannelResponseHandler(ChannelResponse);

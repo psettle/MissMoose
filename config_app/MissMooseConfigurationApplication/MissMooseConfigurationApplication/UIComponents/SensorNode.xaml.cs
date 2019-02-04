@@ -159,11 +159,11 @@ namespace MissMooseConfigurationApplication
 
         public Rotation Rotation { get; set; } = new Rotation(Rotation.R0);
 
-        public int xpos { get; set; } = -1;
-        public int ypos { get; set; } = -1;
+        public sbyte xpos { get; set; } = -1;
+        public sbyte ypos { get; set; } = -1;
 
-        public int xoffset { get; set; } = 0;
-        public int yoffset { get; set; } = 0;
+        public sbyte xoffset { get; set; } = 0;
+        public sbyte yoffset { get; set; } = 0;
         public HardwareConfiguration configuration { get; private set; }
 		
         #endregion

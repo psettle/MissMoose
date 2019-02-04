@@ -42,10 +42,10 @@ namespace MissMooseConfigurationApplication
             set { nodeRotation = value; OnPropertyChanged("NodeRotation"); }
         }
 
-        public int xpos { get; set; }
-        public int ypos { get; set; }
-        public int xoffset { get; set; }
-        public int yoffset { get; set; }
+        public sbyte xpos { get; set; }
+        public sbyte ypos { get; set; }
+        public sbyte xoffset { get; set; }
+        public sbyte yoffset { get; set; }
 
         #endregion
 

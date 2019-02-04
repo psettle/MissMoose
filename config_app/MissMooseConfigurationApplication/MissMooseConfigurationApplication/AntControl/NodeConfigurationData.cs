@@ -10,13 +10,13 @@ namespace MissMooseConfigurationApplication
     {
         public HardwareConfiguration nodeType;
         public Rotation nodeRotation;
-        public int xpos;
-        public int ypos;
-        public int xoffset;
-        public int yoffset;
+        public sbyte xpos;
+        public sbyte ypos;
+        public sbyte xoffset;
+        public sbyte yoffset;
         public bool isSent = false;
 
-        public NodeConfigurationData(HardwareConfiguration nodeType, Rotation nodeRotation, int xpos, int ypos, int xoffset, int yoffset)
+        public NodeConfigurationData(HardwareConfiguration nodeType, Rotation nodeRotation, sbyte xpos, sbyte ypos, sbyte xoffset, sbyte yoffset)
         {
             this.nodeType = nodeType;
             this.nodeRotation = nodeRotation;

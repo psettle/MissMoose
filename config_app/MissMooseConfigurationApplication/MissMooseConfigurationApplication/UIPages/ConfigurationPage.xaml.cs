@@ -160,7 +160,7 @@ namespace MissMooseConfigurationApplication.UIPages
             SetNodeRotation(destination, node.Rotation);
             UpdatePulseStates();
 
-            int row, col;
+            sbyte row, col;
             for(row = 0; row < GridSize; ++row)
             {
                 for (col = 0; col < GridSize; ++col)
