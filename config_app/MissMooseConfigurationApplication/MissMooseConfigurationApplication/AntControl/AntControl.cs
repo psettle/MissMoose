@@ -101,7 +101,7 @@ namespace MissMooseConfigurationApplication
             //ConfigUI.AddExistingNode(node);
 
             //demo add new node
-            ConfigUI.AddNewNode(new SensorNode(HardwareConfiguration.Pir2, 3));
+            //ConfigUI.AddNewNode(new SensorNode(HardwareConfiguration.Pir2, 3));
 
 
             //demo read input state

@@ -31,15 +31,15 @@
         </Grid>
 
         <Grid Grid.Row="1" Grid.Column="0">
-            <Viewbox Margin="20,130">
-                <Grid>
-                    <Rectangle Stroke="Black" Fill="DarkGray" Height="160"/>
+            <Viewbox>
+                <Grid Margin="20,0,20,0">
+                    <Rectangle Stroke="Black" Fill="DarkGray" Height="180" Width="125"/>
                     <Viewbox Name="NewSensorViewbox" Width="100" Height="100" Stretch="Fill" Margin="0,40,0,20">
                         <Viewbox.RenderTransform>
                             <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
                         </Viewbox.RenderTransform>
                     </Viewbox>
-                    <Label Name="NewNodeLabel" Content="New Node!" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="125" FontSize="18"/>
+                    <Label Name="NewNodeLabel" Foreground="White" Content="New Node!" VerticalAlignment="Top" HorizontalContentAlignment="Center" Width="125" FontSize="18"/>
                 </Grid>
             </Viewbox>
         </Grid>
