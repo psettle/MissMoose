@@ -50,7 +50,7 @@ namespace MissMooseConfigurationApplication
         /// Added nodes cannot be modified, re-add to update display
         /// </summary>
         /// <param name="node">The node to be displayed, can not be modified while added</param>
-        public void AddNode(SensorNode node)
+        public void UpdateNode(SensorNode node)
         {
             //attempt to remove first to ensure everything is cleaned up correctly
             RemoveNode(node);
@@ -131,7 +131,7 @@ namespace MissMooseConfigurationApplication
             if (lineSegmentAssociations[xpos][ypos].ContainsKey(direction))
             {
                 lineSegmentAssociations[xpos][ypos][direction].Stroke = colour;
-                lineSegmentAssociations[xpos][ypos][direction].Visibility = Visibility.Visible;
+                lineSegmentAssociations[xpos][ypos][direction].Visibility = Visibility.Visible;                
             }
             else
             {
@@ -142,6 +142,27 @@ namespace MissMooseConfigurationApplication
         public void MarkSensorDetection(SensorNode node, LineDirection direction, Brush colour)
         {
             MarkSensorDetection(node.xpos, node.ypos, direction, colour);
+
+            if(colour.Equals(StatusColour.Blue))
+            {
+                /* Colour is being set to blue, check that no other line segemnts are active. */
+                foreach(var segment in lineSegmentAssociations[node.xpos][node.ypos])
+                {
+                    if(!segment.Value.Stroke.Equals(StatusColour.Blue))
+                    {
+                        /* Another segment is still active, so we can't turn the node off yet. */
+                        return;
+                    }
+                }
+            } /* Else, colour is being set to red or yellow, so there is no concern about setting it */
+
+            /* Which node to set? */ 
+            SensorNode nodeToSet = nodes.Where(x => x.NodeID == node.NodeID).FirstOrDefault();
+
+            if (nodeToSet != null)
+            {
+                nodeToSet.SetStatusColour(colour);
+            }
         }
         #endregion
 
@@ -263,7 +284,7 @@ namespace MissMooseConfigurationApplication
             viewbox.Margin = margin;
         }
 
-        private void SetNodeRotation(Viewbox viewbox, NodeRotation rotation)
+        private void SetNodeRotation(Viewbox viewbox, Rotation rotation)
         {
             var r = viewbox.RenderTransform as RotateTransform;
             r.Angle = rotation.Val;

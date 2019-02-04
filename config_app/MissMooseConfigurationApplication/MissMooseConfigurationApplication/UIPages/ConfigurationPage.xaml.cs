@@ -172,7 +172,7 @@ namespace MissMooseConfigurationApplication.UIPages
             SetNodeRotation(destination, node.Rotation);
             UpdatePulseStates();
 
-            int row, col;
+            sbyte row, col;
             for(row = 0; row < GridSize; ++row)
             {
                 for (col = 0; col < GridSize; ++col)
@@ -187,10 +187,10 @@ namespace MissMooseConfigurationApplication.UIPages
             }
         }
 
-        private void SetNodeRotation(Viewbox viewbox, NodeRotation rotation)
+        private void SetNodeRotation(Viewbox viewbox, Rotation rotation)
         {
             SensorNode node = viewbox.Child as SensorNode;
-            node.Rotation = new NodeRotation(rotation.Val);
+            node.Rotation = new Rotation(rotation.Val);
 
             var r = viewbox.RenderTransform as RotateTransform;
             r.Angle = rotation.Val;
@@ -315,7 +315,7 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             var node = ActiveViewbox.Child as SensorNode;
-            node.Rotation.Add(NodeRotation.R90);
+            node.Rotation.Add(Rotation.R90);
 
             SetNodeRotation(ActiveViewbox, node.Rotation);
         }
@@ -328,7 +328,7 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             var node = ActiveViewbox.Child as SensorNode;
-            node.Rotation.Add(-NodeRotation.R90);
+            node.Rotation.Add(-Rotation.R90);
 
             SetNodeRotation(ActiveViewbox, node.Rotation);
         }

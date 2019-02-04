@@ -81,9 +81,15 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AntControl\AntControl.cs" />
+    <Compile Include="AntControl\ChannelManager.cs" />
+    <Compile Include="AntControl\NodeConfigurationData.cs" />
+    <Compile Include="AntControl\PageHandler.cs" />
+    <Compile Include="ANTDataPages\LidarMonitoringPage.cs" />
+    <Compile Include="ANTDataPages\MonitoringDataAckPage.cs" />
+    <Compile Include="ANTDataPages\PirMonitoringPage.cs" />
     <Compile Include="ANTDataPages\PositionConfigurationCommandPage.cs" />
-    <Compile Include="Utils\ANTUtils\PageSender.cs" />
-    <Compile Include="Utils\ANTUtils\PageParser.cs" />
+    <Compile Include="AntControl\PageSender.cs" />
+    <Compile Include="AntControl\PageParser.cs" />
     <Compile Include="UIComponents\ArrowButton.xaml.cs">
       <DependentUpon>ArrowButton.xaml</DependentUpon>
     </Compile>
