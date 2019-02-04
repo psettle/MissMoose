@@ -31,10 +31,10 @@
         </Grid>
 
         <Grid Grid.Row="1" Grid.Column="0">
-            <Viewbox Margin="20,140">
+            <Viewbox Margin="20,130">
                 <Grid>
-                    <Rectangle Stroke="Black" Fill="DarkGray" Height="150"/>
-                    <Viewbox Name="NewSensorViewbox" Width="100" Height="100" Stretch="Fill">
+                    <Rectangle Stroke="Black" Fill="DarkGray" Height="160"/>
+                    <Viewbox Name="NewSensorViewbox" Width="100" Height="100" Stretch="Fill" Margin="0,30">
                         <Viewbox.RenderTransform>
                             <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
                         </Viewbox.RenderTransform>
