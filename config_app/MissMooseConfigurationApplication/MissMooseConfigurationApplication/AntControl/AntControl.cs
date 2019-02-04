@@ -91,14 +91,14 @@ namespace MissMooseConfigurationApplication
             startConfigDevice();
 
             //demo add existing node
-            var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2);
-            node.xpos = 1;
-            node.ypos = 1;
-            node.Rotation = new NodeRotation(NodeRotation.R90);
-            node.xoffset = -3;
-            node.yoffset = 3;
+            //var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2);
+            //node.xpos = 1;
+            //node.ypos = 1;
+            //node.Rotation = new NodeRotation(NodeRotation.R90);
+            //node.xoffset = -3;
+            //node.yoffset = 3;
 
-            ConfigUI.AddExistingNode(node);
+            //ConfigUI.AddExistingNode(node);
 
             //demo add new node
             ConfigUI.AddNewNode(new SensorNode(HardwareConfiguration.Pir2, 3));
