@@ -90,19 +90,21 @@ namespace MissMooseConfigurationApplication
             // Open the ANT slave channel to search for a node
             startConfigDevice();
 
-            ////demo add existing node
-            //var node = new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_1_PIR_1_LIDAR_LEDS, 2);
-            //node.SetPosition(1, 1);
-            //node.SetRotation(NodeRotation.NODEROTATION_135);
-            //node.SetOffset(-3, 3);
+            //demo add existing node
+            //var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2);
+            //node.xpos = 1;
+            //node.ypos = 1;
+            //node.Rotation = new NodeRotation(NodeRotation.R90);
+            //node.xoffset = -3;
+            //node.yoffset = 3;
 
             //ConfigUI.AddExistingNode(node);
 
-            ////demo add new node
-            //ConfigUI.AddNewNode(new SensorNode(HardwareConfiguration.HARDWARECONFIGURATION_2_PIR, 3));
+            //demo add new node
+            //ConfigUI.AddNewNode(new SensorNode(HardwareConfiguration.Pir2, 3));
 
 
-            ////demo read input state
+            //demo read input state
             //var nodes = ConfigUI.GetCurrentNodes();
         }
 		
@@ -111,7 +113,7 @@ namespace MissMooseConfigurationApplication
             this.MonitoringUI = MonitoringUI;
 
             //demo: add existing node
-            var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2);
+            var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2, true);
             node.xpos = 1;
             node.ypos = 1;
             node.Rotation = new NodeRotation(NodeRotation.R90);
@@ -131,7 +133,7 @@ namespace MissMooseConfigurationApplication
             MonitoringUI.MarkSensorDetection(node, LineDirection.Down, StatusColour.Red);
 
             //demo: add existing node
-            node = new SensorNode(HardwareConfiguration.Pir2, 3);
+            node = new SensorNode(HardwareConfiguration.Pir2, 3, false);
             node.xpos = 1;
             node.ypos = 2;
             node.Rotation = new NodeRotation(NodeRotation.R90);
@@ -413,7 +415,7 @@ namespace MissMooseConfigurationApplication
                 // Add a new node to the UI for the user
                 Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
 
-                    ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId));
+                    ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId, dataPage.IsGatewayNode));
                 });
 
                 // Save this node's device number
