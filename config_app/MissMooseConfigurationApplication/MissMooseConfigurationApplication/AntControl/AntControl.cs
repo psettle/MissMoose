@@ -77,9 +77,9 @@ namespace MissMooseConfigurationApplication
 
                 if (dataPage != null)
                 {
-                    bool closeConnection = pageHandler.HandlePage(dataPage, channelManager.masterDeviceNumber, channelManager.pageSender);
+                    bool keepConnection = pageHandler.HandlePage(dataPage, channelManager.masterDeviceNumber, channelManager.pageSender);
 
-                    if(!closeConnection)
+                    if(!keepConnection)
                     {
                         channelManager.CloseChannel();
                     }

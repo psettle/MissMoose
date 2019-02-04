@@ -15,34 +15,16 @@ notes:
 #include "mm_monitoring_dispatch.h"
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
+#include "mm_activity_variables.h"
 
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
 
-#define MAX_GRID_SIZE_X         ( 3 )
-#define MAX_GRID_SIZE_Y         ( 3 )
-
-/* Ease of access macros, optional usage. */
-#define AV(x, y)                ( activity_variables[(x) * (MAX_GRID_SIZE_X - 1) + (y)] )
-#define AV_TOP_LEFT             ( AV(0,0) )
-#define AV_TOP_RIGHT            ( AV(1,0) )
-#define AV_BOTTOM_LEFT          ( AV(0,1) )
-#define AV_BOTTOM_RIGHT         ( AV(1,1) )
-
-/**********************************************************
-                    ALGORITHM TUNING
-**********************************************************/
-
-#define ACTIVITY_VARIABLE_MIN   ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX   #error not implemented
-
 /**********************************************************
                           TYPES
 **********************************************************/
-
-typedef float activity_variable_t;
 
 /**********************************************************
                        DEFINITIONS
@@ -62,16 +44,6 @@ static void send_monitoring_dispatch(sensor_evt_t const * evt);
                        VARIABLES
 **********************************************************/
 
-/**
-     Activity variable definition, can be accessed as AV(x, y).
-
-     X is indexed left -> right. (In direction of North-American traffic)
-     Y is indexed top -> bottom. (Moving away from the road)
-
-     Variable (x, y) is located at activity_variables[x * (MAX_GRID_SIZE_X - 1) + y]
-*/
-static activity_variable_t activity_variables[(MAX_GRID_SIZE_X - 1) * (MAX_GRID_SIZE_Y - 1)];
-
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
@@ -82,11 +54,7 @@ static activity_variable_t activity_variables[(MAX_GRID_SIZE_X - 1) * (MAX_GRID_
 void mm_sensor_algorithm_init(void)
 {
     /* Initialize activity variables. */
-    memset(&(activity_variables[0]), 0, sizeof(activity_variables));
-    AV_TOP_LEFT = ACTIVITY_VARIABLE_MIN;
-    AV_TOP_RIGHT = ACTIVITY_VARIABLE_MIN;
-    AV_BOTTOM_LEFT = ACTIVITY_VARIABLE_MIN;
-    AV_BOTTOM_RIGHT = ACTIVITY_VARIABLE_MIN;
+    mm_activity_variables_init();
 
     /* Register for sensor data with sensor_transmission.h */
     mm_sensor_transmission_register_sensor_data(sensor_data_evt_handler);

@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -165,26 +166,41 @@ namespace MissMooseConfigurationApplication
         public sbyte xoffset { get; set; } = 0;
         public sbyte yoffset { get; set; } = 0;
         public HardwareConfiguration configuration { get; private set; }
-		
+
+        public bool isgateway
+        {
+            get
+            {
+                return isGateway;
+            }
+            set
+            {
+                isGateway = value;
+                NodeGatewayLabel.Visibility = isGateway ? Visibility.Visible : Visibility.Hidden;
+            }
+        }
+
         #endregion
 
         #region Private Members
 
         private Brush ledColour;
         private Brush statusColour;
+        private bool isGateway;
         #endregion
 
         #region Public Methods
 
-        public SensorNode(HardwareConfiguration configuration, int NodeID)
+        public SensorNode(HardwareConfiguration configuration, int NodeID, bool IsGateway)
         {
             InitializeComponent();
 
             this.configuration = configuration;
             this.NodeID = NodeID;
             NodeIDLabel.Content = NodeID;
+            isgateway = IsGateway;
 
-            switch(configuration)
+            switch (configuration)
             {
                 case HardwareConfiguration.Pir2:
                     PIR_0_Deg.Visibility = Visibility.Visible;
@@ -234,7 +250,7 @@ namespace MissMooseConfigurationApplication
 
         public SensorNode Clone()
         {
-            var node = new SensorNode(configuration, NodeID)
+            var node = new SensorNode(configuration, NodeID, isgateway)
             {
                 xoffset = xoffset,
                 yoffset = yoffset,
@@ -246,6 +262,32 @@ namespace MissMooseConfigurationApplication
             node.SetStatusColour(statusColour);
 
             return node;
+        }
+
+        /// <summary>
+        /// Change to a set of visual properties that make the node look active
+        /// </summary>
+        public void UseActivePalette()
+        {
+            InnerCircle.Fill = Brushes.DarkGray;
+            Effect = new DropShadowEffect
+            {
+                Color = new Color { A = 255, R = 125, G = 125, B = 125 },
+                Direction = 320,
+                ShadowDepth = 10,
+                Opacity = 10
+            };
+            NodeIDLabel.Foreground = Brushes.White;
+        }
+
+        /// <summary>
+        /// Change to a set of visual properties that make the node look inactive
+        /// </summary>
+        public void UseInactivePalette()
+        {
+            InnerCircle.Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#b2b2b2"));
+            Effect = null;
+            NodeIDLabel.Foreground = Brushes.DarkSlateGray;
         }
 
         #endregion

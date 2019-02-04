@@ -23,14 +23,12 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/util/nrf_assert.c \
   $(SDK_ROOT)/components/libraries/strerror/nrf_strerror.c \
   $(SDK_ROOT)/components/libraries/scheduler/app_scheduler.c \
-  $(SDK_ROOT)/components/libraries/pwm/app_pwm.c \
   $(SDK_ROOT)/components/libraries/low_power_pwm/low_power_pwm.c \
   $(SDK_ROOT)/components/drivers_nrf/clock/nrf_drv_clock.c \
   $(SDK_ROOT)/components/drivers_nrf/common/nrf_drv_common.c \
   $(SDK_ROOT)/components/drivers_nrf/gpiote/nrf_drv_gpiote.c \
   $(SDK_ROOT)/components/drivers_nrf/uart/nrf_drv_uart.c \
   $(SDK_ROOT)/components/drivers_nrf/timer/nrf_drv_timer.c \
-  $(SDK_ROOT)/components/drivers_nrf/ppi/nrf_drv_ppi.c \
   $(SDK_ROOT)/components/drivers_nrf/twi_master/nrf_drv_twi.c \
   $(SDK_ROOT)/components/ant/ant_channel_config/ant_channel_config.c \
   $(SDK_ROOT)/components/ant/ant_key_manager/ant_key_manager.c \
@@ -44,17 +42,12 @@ SRC_FILES += \
   $(PROJ_DIR)/src/wireless/blaze/mm_blaze_control.c \
   $(PROJ_DIR)/src/protocols/mm_node_config.c \
   $(PROJ_DIR)/src/protocols/mm_switch_config.c \
-  $(PROJ_DIR)/src/protocols/mm_monitoring_dispatch.c \
-  $(PROJ_DIR)/src/protocols/mm_position_config.c \
+  $(PROJ_DIR)/src/protocols/mm_led_control.c \
   $(PROJ_DIR)/src/sensors/pir/pir_st_00081.c \
-  $(PROJ_DIR)/src/sensors/pir/pir_28027.c \
-  $(PROJ_DIR)/src/sensors/ir_led/ky_022_receive.c \
-  $(PROJ_DIR)/src/sensors/ir_led/ir_led_transmit.c \
   $(PROJ_DIR)/src/sensors/lidar/lidar.c \
   $(PROJ_DIR)/src/sensors/mm_hardware_test.c \
   $(PROJ_DIR)/src/sensor_management/mm_sensor_manager.c \
   $(PROJ_DIR)/src/sensor_management/mm_sensor_transmission.c \
-  $(PROJ_DIR)/src/sensor_algorithm/mm_sensor_algorithm.c \
   $(PROJ_DIR)/src/peripherals/mm_rgb_led.c \
   $(PROJ_DIR)/src/peripherals/mm_power_bank_timer.c \
   $(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
@@ -63,6 +56,16 @@ SRC_FILES += \
   $(SDK_ROOT)/components/toolchain/gcc/gcc_startup_nrf52.S \
   $(SDK_ROOT)/components/toolchain/system_nrf52.c \
   $(SDK_ROOT)/components/softdevice/common/softdevice_handler/softdevice_handler.c \
+
+
+#gateway only source
+ifeq ($(IS_BLAZE_GATEWAY),1)	
+SRC_FILES += \
+  $(PROJ_DIR)/src/sensor_algorithm/mm_sensor_algorithm.c \
+  $(PROJ_DIR)/src/sensor_algorithm/mm_activity_variables.c \
+  $(PROJ_DIR)/src/protocols/mm_monitoring_dispatch.c \
+  $(PROJ_DIR)/src/protocols/mm_position_config.c
+endif
 
 # Include folders common to all targets
 INC_FOLDERS += \
@@ -90,13 +93,10 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/bsp \
   $(SDK_ROOT)/components/ant/ant_key_manager/config \
   $(SDK_ROOT)/components/drivers_nrf/clock \
-  $(SDK_ROOT)/components/drivers_nrf/ppi \
   $(SDK_ROOT)/components/drivers_nrf/timer \
   $(SDK_ROOT)/components/drivers_nrf/twi_master \
-  $(SDK_ROOT)/components/libraries/pwm \
   $(SDK_ROOT)/components/libraries/low_power_pwm \
   $(PROJ_DIR)/src/sensors/pir \
-  $(PROJ_DIR)/src/sensors/ir_led \
   $(PROJ_DIR)/src/sensors/lidar \
   $(PROJ_DIR)/src/sensors \
   $(PROJ_DIR)/src/sensor_management/ \

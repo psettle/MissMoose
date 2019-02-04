@@ -53,6 +53,11 @@
         <Ellipse Name="InnerCircle" Fill="DarkGray" Height="200" Width="200" />
 
         <Label Name="NodeIDLabel" Content="X" Foreground="White" FontSize="120" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Label Name="NodeGatewayLabel" Content="G" Foreground="White" FontSize="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,185,0,0" FontWeight="Bold">
+            <Label.Effect>
+                <DropShadowEffect ShadowDepth="6" BlurRadius="10" Direction="300"/>
+            </Label.Effect>
+        </Label>
         <Button Name="Button" Opacity="0"></Button>
         
     </Grid>

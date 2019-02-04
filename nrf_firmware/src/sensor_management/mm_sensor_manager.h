@@ -31,8 +31,4 @@
  * processing sensor data events.*/
 void mm_sensor_manager_init( bool led_debug_enabled );
 
-/* @brief Main method which invokes the sensor update methods
- * associated with this node's hardware configuration.*/
-void mm_sensor_manager_main( void );
-
 #endif /* SRC_SENSOR_MANAGEMENT_SENSOR_MANAGER_H_ */

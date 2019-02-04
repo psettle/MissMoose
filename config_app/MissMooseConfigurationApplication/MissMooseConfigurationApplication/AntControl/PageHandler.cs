@@ -159,7 +159,7 @@ namespace MissMooseConfigurationApplication
                     // Add a new node to the UI for the user
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
 
-                        ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId));
+                        ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId, true));
                     });
 
                     // Save this node's device number
@@ -182,7 +182,7 @@ namespace MissMooseConfigurationApplication
                     // Add a new node to the UI for the user
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
 
-                        ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId));
+                        ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId, false));
                     });
 
                     // Save this node's device number

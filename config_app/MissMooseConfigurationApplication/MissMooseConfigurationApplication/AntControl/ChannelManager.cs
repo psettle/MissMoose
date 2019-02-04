@@ -60,8 +60,6 @@ namespace MissMooseConfigurationApplication
                 }
                 else
                 {
-
-
                     try
                     {
                         deviceRunning = true;

@@ -34,6 +34,7 @@ static void process_pir_evt(pir_evt_t * evt);
                         VARIABLES
 **********************************************************/
 
+static bool				 sensor_manager_init_complete = false;
 static hardware_config_t hardware_config = HARDWARE_CONFIG_UNKNOWN;
 
 /**********************************************************
@@ -78,25 +79,8 @@ void mm_sensor_manager_init( bool led_debug_enabled )
         default:
         	APP_ERROR_CHECK(true);
     }
-}
 
-void mm_sensor_manager_main( void )
-{
-    switch(hardware_config)
-    {
-        case HARDWARE_CONFIG_PIR_PIR:
-        	pir_update_main();
-            break;
-
-        case HARDWARE_CONFIG_PIR_LIDAR:
-        case HARDWARE_CONFIG_PIR_LIDAR_LED:
-        	lidar_update_main();
-        	pir_update_main();
-            break;
-
-        default:
-        	APP_ERROR_CHECK(true);
-    }
+    sensor_manager_init_complete = true;
 }
 
 static void process_pir_evt(pir_evt_t * evt)
