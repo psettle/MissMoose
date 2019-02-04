@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -243,6 +244,32 @@ namespace MissMooseConfigurationApplication
             node.SetStatusColour(statusColour);
 
             return node;
+        }
+
+        /// <summary>
+        /// Change to a set of visual properties that make the node look active
+        /// </summary>
+        public void UseActivePalette()
+        {
+            InnerCircle.Fill = Brushes.DarkGray;
+            Effect = new DropShadowEffect
+            {
+                Color = new Color { A = 255, R = 125, G = 125, B = 125 },
+                Direction = 320,
+                ShadowDepth = 10,
+                Opacity = 10
+            };
+            NodeIDLabel.Foreground = Brushes.White;
+        }
+
+        /// <summary>
+        /// Change to a set of visual properties that make the node look inactive
+        /// </summary>
+        public void UseInactivePalette()
+        {
+            InnerCircle.Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#b2b2b2"));
+            Effect = null;
+            NodeIDLabel.Foreground = Brushes.DarkSlateGray;
         }
 
         #endregion
