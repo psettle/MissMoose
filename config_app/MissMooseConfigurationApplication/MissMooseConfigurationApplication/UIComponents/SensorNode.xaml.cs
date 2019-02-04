@@ -156,7 +156,9 @@ namespace MissMooseConfigurationApplication
         public const int MaxOffset = 5;
         public const int OffsetScale = 10;
 
-        public int NodeID { get; }
+        public ushort DeviceNumber { get; }
+
+        public ushort NodeID { get; }
 
         public Rotation Rotation { get; set; } = new Rotation(Rotation.R0);
 
@@ -191,14 +193,15 @@ namespace MissMooseConfigurationApplication
 
         #region Public Methods
 
-        public SensorNode(HardwareConfiguration configuration, int NodeID, bool IsGateway)
+        public SensorNode(ushort deviceNumber, HardwareConfiguration configuration, ushort NodeID, bool isGateway)
         {
             InitializeComponent();
 
+            this.DeviceNumber = deviceNumber;
             this.configuration = configuration;
             this.NodeID = NodeID;
             NodeIDLabel.Content = NodeID;
-            isgateway = IsGateway;
+            isgateway = isGateway;
 
             switch (configuration)
             {
@@ -250,7 +253,7 @@ namespace MissMooseConfigurationApplication
 
         public SensorNode Clone()
         {
-            var node = new SensorNode(configuration, NodeID, isgateway)
+            var node = new SensorNode(DeviceNumber, configuration, NodeID, isgateway)
             {
                 xoffset = xoffset,
                 yoffset = yoffset,
