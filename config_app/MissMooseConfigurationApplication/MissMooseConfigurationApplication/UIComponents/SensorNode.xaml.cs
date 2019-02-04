@@ -165,26 +165,41 @@ namespace MissMooseConfigurationApplication
         public int xoffset { get; set; } = 0;
         public int yoffset { get; set; } = 0;
         public HardwareConfiguration configuration { get; private set; }
-		
+
+        public bool isgateway
+        {
+            get
+            {
+                return isGateway;
+            }
+            set
+            {
+                isGateway = value;
+                NodeGatewayLabel.Visibility = isGateway ? Visibility.Visible : Visibility.Hidden;
+            }
+        }
+
         #endregion
 
         #region Private Members
 
         private Brush ledColour;
         private Brush statusColour;
+        private bool isGateway;
         #endregion
 
         #region Public Methods
 
-        public SensorNode(HardwareConfiguration configuration, int NodeID)
+        public SensorNode(HardwareConfiguration configuration, int NodeID, bool IsGateway)
         {
             InitializeComponent();
 
             this.configuration = configuration;
             this.NodeID = NodeID;
             NodeIDLabel.Content = NodeID;
+            isgateway = IsGateway;
 
-            switch(configuration)
+            switch (configuration)
             {
                 case HardwareConfiguration.Pir2:
                     PIR_0_Deg.Visibility = Visibility.Visible;
@@ -232,7 +247,7 @@ namespace MissMooseConfigurationApplication
 
         public SensorNode Clone()
         {
-            var node = new SensorNode(configuration, NodeID)
+            var node = new SensorNode(configuration, NodeID, isgateway)
             {
                 xoffset = xoffset,
                 yoffset = yoffset,

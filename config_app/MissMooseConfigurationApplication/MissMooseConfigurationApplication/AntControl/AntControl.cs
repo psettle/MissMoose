@@ -113,7 +113,7 @@ namespace MissMooseConfigurationApplication
             this.MonitoringUI = MonitoringUI;
 
             //demo: add existing node
-            var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2);
+            var node = new SensorNode(HardwareConfiguration.PirLidarLed, 2, true);
             node.xpos = 1;
             node.ypos = 1;
             node.Rotation = new NodeRotation(NodeRotation.R90);
@@ -133,7 +133,7 @@ namespace MissMooseConfigurationApplication
             MonitoringUI.MarkSensorDetection(node, LineDirection.Down, StatusColour.Red);
 
             //demo: add existing node
-            node = new SensorNode(HardwareConfiguration.Pir2, 3);
+            node = new SensorNode(HardwareConfiguration.Pir2, 3, false);
             node.xpos = 1;
             node.ypos = 2;
             node.Rotation = new NodeRotation(NodeRotation.R90);
@@ -415,7 +415,7 @@ namespace MissMooseConfigurationApplication
                 // Add a new node to the UI for the user
                 Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
 
-                    ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId));
+                    ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId, dataPage.IsGatewayNode));
                 });
 
                 // Save this node's device number
