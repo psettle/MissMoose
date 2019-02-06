@@ -84,7 +84,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)test_framework/test_cases;$(ProjectDir)test_framework/util;$(ProjectDir)test_framework/test_runner;$(ProjectDir)test_framework/mocked_interfaces;$(ProjectDir)src/sensor_management;$(ProjectDir)src/protocols;$(ProjectDir)src/sensor_algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)test_framework/test_cases;$(ProjectDir)test_framework/util;$(ProjectDir)test_framework/test_runner;$(ProjectDir)test_framework/mocked_interfaces;$(ProjectDir)src/sensor_algorithm/activity_variable_growth;$(ProjectDir)src/sensor_management;$(ProjectDir)src/protocols;$(ProjectDir)src/sensor_algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MM_BLAZE_GATEWAY;MM_ALLOW_SIMULATED_TIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -110,7 +110,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)test_framework/test_cases;$(ProjectDir)test_framework/util;$(ProjectDir)test_framework/test_runner;$(ProjectDir)test_framework/mocked_interfaces;$(ProjectDir)src/sensor_management;$(ProjectDir)src/protocols;$(ProjectDir)src/sensor_algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)test_framework/test_cases;$(ProjectDir)test_framework/util;$(ProjectDir)test_framework/test_runner;$(ProjectDir)test_framework/mocked_interfaces;$(ProjectDir)src/sensor_algorithm/activity_variable_growth;$(ProjectDir)src/sensor_management;$(ProjectDir)src/protocols;$(ProjectDir)src/sensor_algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MM_BLAZE_GATEWAY;MM_ALLOW_SIMULATED_TIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -119,8 +119,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth.c" />
+    <ClCompile Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_lidar.c" />
+    <ClCompile Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_pir.c" />
+    <ClCompile Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_sensor_records.c" />
     <ClCompile Include="src\sensor_algorithm\mm_activity_variables.c" />
-    <ClCompile Include="src\sensor_algorithm\mm_activity_variable_growth.c" />
     <ClCompile Include="src\sensor_algorithm\mm_sensor_algorithm.c" />
     <ClCompile Include="test_framework\main.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_led_control.cpp" />
@@ -133,6 +136,11 @@
     <ClCompile Include="test_framework\util\simulate_time.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth.h" />
+    <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_lidar_prv.h" />
+    <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_pir_prv.h" />
+    <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_prv.h" />
+    <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_sensor_records_prv.h" />
     <ClInclude Include="src\sensor_algorithm\mm_activity_variables.h" />
     <ClInclude Include="src\sensor_algorithm\mm_activity_variable_growth.h" />
     <ClInclude Include="src\sensor_algorithm\mm_sensor_algorithm.h" />
