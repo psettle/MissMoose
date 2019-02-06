@@ -36,9 +36,6 @@
     <ClCompile Include="src\sensor_algorithm\mm_sensor_algorithm.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\sensor_algorithm\mm_activity_variable_growth.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="test_framework\util\simulate_time.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -46,6 +43,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="test_framework\test_cases\test_demo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_lidar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_pir.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_sensor_records.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -78,6 +87,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="test_framework\test_cases\tests.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_lidar_prv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_pir_prv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_prv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_sensor_records_prv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
