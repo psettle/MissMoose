@@ -29,6 +29,6 @@ typedef void(*test_case_cb)(void);
                        DECLARATIONS
 **********************************************************/
 
-void test_runner_init(std::vector<test_case_cb> const & tests, std::string const & output_destination);
+void test_runner_init(std::vector<test_case_cb> const & tests, std::vector<const char*> test_names, std::string const & output_destination);
 
 #endif /* TEST_RUNNER_HPP */

@@ -26,6 +26,6 @@ typedef void(*test_case_cb)(void);
                        DECLARATIONS
 **********************************************************/
 
-void test_demo_add_tests(std::vector<test_case_cb>& tests);
+void test_demo_add_tests(std::vector<test_case_cb>& tests, std::vector<const char*>& test_names);
 
 #endif /* TESTS_HPP */
