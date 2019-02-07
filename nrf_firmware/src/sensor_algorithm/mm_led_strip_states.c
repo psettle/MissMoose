@@ -437,6 +437,10 @@ static void update_timeout_counters(void)
             {
                 led_signalling_state_records[i].second_counter = 0;
                 led_signalling_state_records[i].timeout_active = false;
+                led_signalling_state_records[i].state = IDLE;
+
+                led_signalling_states[i] = led_signalling_state_records[i].state;
+
             }
 
             led_signalling_state_records[i].second_counter++;
