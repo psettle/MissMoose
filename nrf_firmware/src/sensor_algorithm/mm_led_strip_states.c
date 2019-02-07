@@ -77,7 +77,7 @@ static void update_current_output_states(void);
 /**
     Sends an signalling state update to an LED node.
 */
-static void set_led_output_state(uint16_t x, uint16_t y, led_signalling_state_t * p_state);
+static void set_led_output_state(uint16_t x, uint16_t y, led_signalling_state_t state);
 
 /**
     Determines if the activity variable located at (x, y)
@@ -113,7 +113,7 @@ static output_set_t const * get_output_set_for_av(bool is_road_side, mm_activity
 /**
     Determines if a current_output_state has timed out.
 */
-static bool has_current_output_state_timed_out(led_signalling_state_record_t state_record);
+static bool has_current_output_state_timed_out(led_signalling_state_record_t const * p_record);
 
 /**
     Resets all current_av_states.
@@ -251,7 +251,7 @@ static void update_current_output_states(void)
             led_signalling_state_records[i].current_output_state = led_signalling_state_records[i].current_av_state;
 
             /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
-            set_led_output_state(i, 1, &(led_signalling_state_records[i].current_output_state));
+            set_led_output_state(i, 1, led_signalling_state_records[i].current_output_state);
         }
         else if (led_signalling_state_records[i].current_av_state == led_signalling_state_records[i].current_output_state)
         {
@@ -266,7 +266,7 @@ static void update_current_output_states(void)
         {
             /* If the current_av_state is less than the current_output_state,
              * check to see if the current_output_state has timed out.. */
-            if (has_current_output_state_timed_out(led_signalling_state_records[i]))
+            if (has_current_output_state_timed_out(&(led_signalling_state_records[i])))
             {
                 /* ...if it has, turn off timeout and update current_output_state. */
                 led_signalling_state_records[i].second_counter = 0;
@@ -274,7 +274,7 @@ static void update_current_output_states(void)
                 led_signalling_state_records[i].current_output_state = led_signalling_state_records[i].current_av_state;
 
                 /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
-                set_led_output_state(i, 1, &(led_signalling_state_records[i].current_output_state));
+                set_led_output_state(i, 1, led_signalling_state_records[i].current_output_state);
             }
             else
             {
@@ -288,12 +288,18 @@ static void update_current_output_states(void)
 /**
     Sends an signalling state update to an LED node.
 */
-static void set_led_output_state(uint16_t x, uint16_t y, led_signalling_state_t * p_state)
+static void set_led_output_state(uint16_t x, uint16_t y, led_signalling_state_t state)
 {
     /* Get the position of the LED node. */
     mm_node_position_t const * node_position = get_node_for_position( x, y);
 
-    switch ( *p_state )
+    if (node_position == NULL)
+    {
+        /* This node doesn't exist in the network! */
+        APP_ERROR_CHECK(true);
+    }
+
+    switch ( state )
     {
         case CONCERN:
             mm_led_control_update_node_leds
@@ -437,11 +443,14 @@ static output_set_t const * get_output_set_for_av(bool is_road_side, mm_activity
 /**
     Determines if a current_output_state has timed out.
 */
-static bool has_current_output_state_timed_out(led_signalling_state_record_t state_record)
+static bool has_current_output_state_timed_out(led_signalling_state_record_t const * p_record)
 {
+    /* If the timeout isn't running, something is wrong! */
+    APP_ERROR_CHECK(!p_record->timeout_active);
+
     return (
-            (state_record.current_output_state == CONCERN && state_record.second_counter >= MINIMUM_CONCERN_SIGNAL_DURATION_S) ||
-            (state_record.current_output_state == ALARM && state_record.second_counter >= MINIMUM_ALARM_SIGNAL_DURATION_S)
+            (p_record->current_output_state == CONCERN && p_record->second_counter >= MINIMUM_CONCERN_SIGNAL_DURATION_S) ||
+            (p_record->current_output_state == ALARM && p_record->second_counter >= MINIMUM_ALARM_SIGNAL_DURATION_S)
            );
 }
 
