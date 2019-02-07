@@ -113,6 +113,8 @@ namespace MissMooseConfigurationApplication
             public double rotation;
             [XmlAttribute]
             public HardwareConfiguration configuration;
+            [XmlAttribute]
+            public bool isgateway;
         }
 
         public void SaveConfiguration(object sender, EventArgs e)
@@ -131,7 +133,8 @@ namespace MissMooseConfigurationApplication
                         xoffset = node.xoffset,
                         yoffset = node.yoffset,
                         rotation = node.Rotation.Val,
-                        configuration = node.configuration });
+                        configuration = node.configuration,
+                        isgateway = node.isgateway });
                 }
                 serializer.Serialize(stream, nodes.ToArray());
                 stream.Position = 0;
@@ -148,14 +151,15 @@ namespace MissMooseConfigurationApplication
                 NodeAttributes[] loadednodes = ((NodeAttributes[])serializer.Deserialize(stream));
                 foreach(NodeAttributes node in loadednodes)
                 {
-                    SensorNode sensornode = new SensorNode(node.configuration, node.NodeID);
-                    sensornode.xpos = node.xpos;
-                    sensornode.ypos = node.ypos;
-                    sensornode.xoffset = node.xoffset;
-                    sensornode.yoffset = node.yoffset;
-                    sensornode.Rotation = new NodeRotation(node.rotation);
+                    SensorNode sensornode = new SensorNode(node.configuration, node.NodeID, node.isgateway);
+                    sensornode.xpos = (sbyte)node.xpos;
+                    sensornode.ypos = (sbyte)node.ypos;
+                    sensornode.xoffset = (sbyte)node.xoffset;
+                    sensornode.yoffset = (sbyte)node.yoffset;
+                    sensornode.Rotation = new Rotation(node.rotation);
+
                     ((ConfigurationPage)navigationItems[ConfigPageButton]).AddExistingNode(sensornode);
-                    ((SystemOverviewPage)navigationItems[SystemOverviewPageButton]).AddNode(sensornode);
+                    ((SystemOverviewPage)navigationItems[SystemOverviewPageButton]).UpdateNode(sensornode);
                 }
             }
         }
