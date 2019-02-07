@@ -174,8 +174,12 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
 
     mm_activity_variable_growth_on_second_elapsed();
 	mm_apply_activity_variable_drain_factor();
-	mm_update_led_signalling_states();
-	mm_update_node_led_colors();
+	mm_led_signalling_states_on_second_elapsed();
+
+	if (mm_have_led_signalling_states_changed())
+	{
+	    mm_on_led_signalling_states_change();
+	}
 
 	/* Space left to add other once-per-second updates if
 	 * necessary in the future. */

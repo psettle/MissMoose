@@ -22,6 +22,9 @@
                         CONSTANTS
 **********************************************************/
 
+#define MINIMUM_CONCERN_SIGNAL_DURATION_S ( 30 )
+#define MINIMUM_ALARM_SIGNAL_DURATION_S   ( 60 )
+
 /**********************************************************
                         MACROS
 **********************************************************/
@@ -50,9 +53,33 @@ typedef struct
     output_set_t detection;
 } output_table_t;
 
+typedef struct
+{
+    led_signalling_state_t  state;
+    bool                    output_active;
+    bool                    timeout_active;
+    uint16_t                second_counter;
+} led_signalling_state_record_t;
+
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
+
+/**
+    Updates the signalling state of the LEDs based on the
+    current value of the activity variables.
+
+    Hardcoded for 3x3 grids for now.
+*/
+static void update_led_signalling_states(void);
+
+/**
+    Sends blaze messages to each LED node to update the colors based
+    on the current LED signalling states.
+
+    Hardcoded for 3x3 grids for now.
+*/
+static void update_node_led_colors(void);
 
 /**
     Determines if the activity variable located at (x, y)
@@ -85,6 +112,21 @@ static output_table_t const * get_output_table_for_av(uint16_t x, uint16_t y);
 */
 static output_set_t const * get_output_set_for_av(bool is_road_side, mm_activity_variable_t av, output_table_t const * output_table);
 
+/**
+    Updates the timeout counters.
+*/
+static void update_timeout_counters(void);
+
+/**
+    Determines if a timeout on an LED state has occurred.
+*/
+static bool has_led_signalling_state_timed_out(led_signalling_state_record_t state_record);
+
+/**
+    Updates the LED signalling state records.
+*/
+static void update_led_signalling_state_records(void);
+
 /**********************************************************
                        VARIABLES
 **********************************************************/
@@ -94,6 +136,9 @@ static led_signalling_state_t led_signalling_states [MAX_GRID_SIZE_X];
 
 /* For tracking the last sent LED signalling states. */
 static led_signalling_state_t last_sent_led_signalling_states [MAX_GRID_SIZE_X];
+
+/* Records for managing minimum signalling duration timeouts. */
+static led_signalling_state_record_t led_signalling_state_records [MAX_GRID_SIZE_X];
 
 static output_table_t const top_left_output =
 {
@@ -164,15 +209,51 @@ static output_table_t const default_output =
                        DECLARATIONS
 **********************************************************/
 
-/**
-    Creates the 30 second timer responsible for de-escalating
-    the "concern" state, but does not start it.
-*/
 void mm_led_strip_states_init(void)
 {
     /* Initialize LED signalling states */
     memset( &led_signalling_states[0], 0, sizeof(led_signalling_states) );
     memset( &last_sent_led_signalling_states[0], 0, sizeof(last_sent_led_signalling_states) );
+
+    /* All flags are off to start. */
+    memset( &led_signalling_state_records[0], 0, sizeof(led_signalling_state_records) );
+}
+
+
+/**
+    Determines whether or not the LED signalling states have changed.
+*/
+bool mm_have_led_signalling_states_changed(void)
+{
+    for (uint8_t i = 0; i < MAX_GRID_SIZE_X; i++)
+    {
+        if (led_signalling_states[i] != last_sent_led_signalling_states[i])
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+    Sends blaze messages to updated LED nodes and implements
+    de-escalation.
+*/
+void mm_on_led_signalling_states_change(void)
+{
+    update_led_signalling_state_records();
+    update_node_led_colors();
+}
+
+/**
+    Updates current LED signalling states and increments
+    timeout counter.
+*/
+void mm_led_signalling_states_on_second_elapsed(void)
+{
+    update_led_signalling_states();
+    update_timeout_counters();
 }
 
 /**
@@ -181,7 +262,7 @@ void mm_led_strip_states_init(void)
 
     Hardcoded for only 3x3 grids right now.
 */
-void mm_update_led_signalling_states(void)
+static void update_led_signalling_states(void)
 {
     /* Clear previous states */
     memset( &led_signalling_states[0], 0, sizeof(led_signalling_states) );
@@ -203,27 +284,33 @@ void mm_update_led_signalling_states(void)
 
     Hardcoded for 3x3 grids for now.
 */
-void mm_update_node_led_colors(void)
+static void update_node_led_colors(void)
 {
-	for ( uint16_t i = 0; i < MAX_GRID_SIZE_X; i++ )
-	{
-		/* Assumes LED nodes are always at the "top" of the grid. */
-		//mm_node_position_t const * node_position = get_node_at_position( i, 1);
+    for ( uint16_t i = 0; i < MAX_GRID_SIZE_X; i++ )
+    {
+        /* Assumes LED nodes are always at the "top" of the grid. */
+        //mm_node_position_t const * node_position = get_node_at_position( i, 1);
 
-		switch ( led_signalling_states[i] )
-		{
-			case CONCERN:
-				//mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW );
-				break;
-			case ALARM:
-				//mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED );
-				break;
-			case IDLE:
-			default:
-				//mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_OFF, LED_COLOURS_RED );
-				break;
-		}
-	}
+        if (led_signalling_state_records[i].output_active)
+        {
+            switch ( led_signalling_state_records[i].state )
+            {
+                case CONCERN:
+                    //mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW );
+                    break;
+                case ALARM:
+                    //mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED );
+                    break;
+                case IDLE:
+                default:
+                    //mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_OFF, LED_COLOURS_RED );
+                    break;
+            }
+        }
+
+        led_signalling_state_records[i].output_active = false;
+        last_sent_led_signalling_states[i] = led_signalling_states[i];
+    }
 }
 
 /**
@@ -337,3 +424,58 @@ static output_set_t const * get_output_set_for_av(bool is_road_side, mm_activity
     }
 }
 
+/**
+    Updates the timeout counters.
+*/
+static void update_timeout_counters(void)
+{
+    for (uint8_t i = 0; i < MAX_GRID_SIZE_X; i++)
+    {
+        if (led_signalling_state_records[i].timeout_active == true)
+        {
+            if (has_led_signalling_state_timed_out(led_signalling_state_records[i]))
+            {
+                led_signalling_state_records[i].second_counter = 0;
+                led_signalling_state_records[i].timeout_active = false;
+            }
+
+            led_signalling_state_records[i].second_counter++;
+        }
+    }
+}
+
+/**
+    Determines if a timeout on an LED state has occurred.
+*/
+static bool has_led_signalling_state_timed_out(led_signalling_state_record_t state_record)
+{
+    return (
+            (state_record.state == CONCERN && state_record.second_counter == MINIMUM_CONCERN_SIGNAL_DURATION_S) ||
+            (state_record.state == ALARM && state_record.second_counter == MINIMUM_ALARM_SIGNAL_DURATION_S)
+           );
+}
+
+/**
+    Updates the LED signalling state records.
+*/
+static void update_led_signalling_state_records(void)
+{
+    for (uint8_t i = 0; i < MAX_GRID_SIZE_X; i++)
+    {
+        if (led_signalling_states[i] != last_sent_led_signalling_states[i])
+        {
+            led_signalling_state_records[i].state = led_signalling_states[i];
+            led_signalling_state_records[i].output_active = true;
+            led_signalling_state_records[i].second_counter = 0;
+
+            if (led_signalling_states[i] < last_sent_led_signalling_states[i])
+            {
+                led_signalling_state_records[i].timeout_active = true;
+            }
+            else
+            {
+                led_signalling_state_records[i].timeout_active = false;
+            }
+        }
+    }
+}

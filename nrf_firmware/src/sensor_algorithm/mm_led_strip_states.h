@@ -26,41 +26,23 @@
                        DECLARATIONS
 **********************************************************/
 
-/**
-    Creates the 30 second timer (responsible for de-escalating
-    the "concern" state), but does not start it, and
-    initializes led_signalling_states.
-*/
 void mm_led_strip_states_init(void);
 
 /**
-    Updates the signalling state of the LEDs based on the
-    current value of the activity variables.
-
-    Hardcoded for 3x3 grids for now.
+    Determines whether or not the LED signalling states have changed.
 */
-void mm_update_led_signalling_states(void);
+bool mm_have_led_signalling_states_changed(void);
 
 /**
-    Sends blaze messages to each LED node to update the colors based
-    on the current LED signalling states.
-
-    Hardcoded for 3x3 grids for now.
+    Sends blaze messages to updated LED nodes and implements
+    de-escalation.
 */
-void mm_update_node_led_colors(void);
+void mm_on_led_signalling_states_change(void);
 
 /**
-    Gets the value of has_concern_state to determine
-    if the timer should be started. True if
-    a concern state LED state has been detected.
+    Updates current LED signalling states and increments
+    timeout counter.
 */
-bool mm_should_start_thirty_second_timer(void);
-
-/**
-    Starts thirty second timer which de-escalates a concern
-    state after thirty seconds. Clears has_concern_state
-    back to false.
-*/
-void mm_start_thirty_second_timer(void);
+void mm_led_signalling_states_on_second_elapsed(void);
 
 #endif /* MM_LED_STRIP_STATES_H */
