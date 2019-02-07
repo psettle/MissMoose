@@ -472,7 +472,7 @@ static void update_led_signalling_state_records(void)
             led_signalling_state_records[i].output_active = true;
             led_signalling_state_records[i].second_counter = 0;
 
-            if (led_signalling_states[i] < last_sent_led_signalling_states[i])
+            if (led_signalling_states[i] < last_sent_led_signalling_states[i] || led_signalling_states[i] == ALARM )
             {
                 led_signalling_state_records[i].timeout_active = true;
             }
