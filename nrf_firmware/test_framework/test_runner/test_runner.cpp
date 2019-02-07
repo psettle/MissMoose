@@ -27,7 +27,7 @@ extern "C" {
 /**
  * Run a particular test
  */
-static void run_test_case(test_case_cb test, const char* test_name, std::string const & output_destination);
+static void run_test_case(test_case_cb test, std::string const & test_name, std::string const & output_destination);
 
 /**
  * Prepare for test run by initializing all components and utilities.
@@ -43,7 +43,7 @@ static void deinit_test_case(void);
                        DEFINITIONS
 **********************************************************/
 
-void test_runner_init(std::vector<test_case_cb> const & tests, std::vector<const char*> test_names, std::string const & output_destination)
+void test_runner_init(std::vector<test_case_cb> const & tests, std::vector<std::string> test_names, std::string const & output_destination)
 {
 	for (int i = 0; i < tests.size(); i++)
     {
@@ -51,7 +51,7 @@ void test_runner_init(std::vector<test_case_cb> const & tests, std::vector<const
     }
 }
 
-static void run_test_case(test_case_cb test, const char* test_name, std::string const & output_destination)
+static void run_test_case(test_case_cb test, std::string const & test_name, std::string const & output_destination)
 {
     init_test_case();
 

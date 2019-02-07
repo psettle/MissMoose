@@ -23,14 +23,11 @@ CONSTANTS
 DECLARATIONS
 **********************************************************/
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
 void handle_error(int line, const char* file, uint32_t code);
-
 
 #ifdef __cplusplus
 }

@@ -22,7 +22,7 @@
 int main()
 {
     std::vector<test_case_cb> tests;
-	std::vector<const char*> test_names;
+	std::vector<std::string> test_names;
 
     test_demo_add_tests(tests, test_names);
 

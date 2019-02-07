@@ -21,9 +21,7 @@ DECLARATIONS
 DEFINITIONS
 **********************************************************/
 
-#ifdef __cplusplus
 extern "C" {
-#endif
 
 void handle_error(int line, const char* file, uint32_t code)
 {
@@ -32,6 +30,4 @@ void handle_error(int line, const char* file, uint32_t code)
 	throw std::runtime_error(ss.str());
 }
 
-#ifdef __cplusplus
 }
-#endif
