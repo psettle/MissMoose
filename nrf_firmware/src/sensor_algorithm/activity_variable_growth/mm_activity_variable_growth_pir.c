@@ -151,6 +151,7 @@ static void pir_on_second_evt(sensor_record_t const * record)
 
     /* Still detecting, send a trickle event. */
     abstract_sensor_detection_t abstract_detection;
+    memset(&abstract_detection, 0, sizeof(abstract_detection));
     abstract_detection.xpos = detection.xpos;
     abstract_detection.ypos = detection.ypos;
     abstract_detection.rotation = detection.direction;
