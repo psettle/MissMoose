@@ -30,5 +30,15 @@ notes:
 #define ROAD_TRICKLE_PROXIMITY_FACTOR_1     ( 1.002f )
 #define ROAD_TRICKLE_PROXIMITY_FACTOR_2     ( 1.0f )
 
+#define ACTIVITY_VARIABLE_DECAY_FACTOR      ( 0.97f )
+#define ACTIVITY_DECAY_PERIOD_MS            ( ONE_SECOND_MS )
+
+/* Road-side (RS), non-road-side (NRS) */
+#define POSSIBLE_DETECTION_THRESHOLD_RS     ( 3.0f )
+#define POSSIBLE_DETECTION_THRESHOLD_NRS    ( 4.0f )
+
+#define DETECTION_THRESHOLD_RS              ( 6.0f )
+#define DETECTION_THRESHOLD_NRS             ( 7.0f )
+
 #endif /* MM_SENSOR_ALGORITHM_CONFIG_H */
 

@@ -19,7 +19,6 @@ notes:
 #include "mm_sensor_algorithm.h"
 #include "mm_activity_variables.h"
 #include "mm_activity_variable_drain.h"
-#include "mm_sensor_algorithm_config.h"
 #include "mm_led_strip_states.h"
 #include "mm_activity_variable_growth.h"
 #include "mm_position_config.h"
@@ -174,14 +173,9 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
     }
 
     mm_activity_variable_growth_on_second_elapsed();
-	apply_activity_variable_drain_factor();
-	update_led_signalling_states();
-	update_node_led_colors();
-
-	if (should_start_thirty_second_timer())
-	{
-		start_thirty_second_timer();
-	}
+	mm_apply_activity_variable_drain_factor();
+	mm_update_led_signalling_states();
+	mm_update_node_led_colors();
 
 	/* Space left to add other once-per-second updates if
 	 * necessary in the future. */
