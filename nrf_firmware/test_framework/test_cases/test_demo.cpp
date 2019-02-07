@@ -10,6 +10,11 @@ notes:
 
 #include "tests.hpp"
 
+
+/**********************************************************
+                        CONSTANTS
+**********************************************************/
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
@@ -21,9 +26,9 @@ static void test_case_3_days_idle(void);
                        DEFINITIONS
 **********************************************************/
 
-void test_demo_add_tests(std::vector<test_case_cb>& tests)
+void test_demo_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names)
 {
-    tests.push_back(test_case_3_days_idle);
+	ADD_TEST(test_case_3_days_idle)
 }
 
 static void test_case_3_days_idle(void)

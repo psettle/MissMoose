@@ -22,10 +22,11 @@
 int main()
 {
     std::vector<test_case_cb> tests;
+	std::vector<std::string> test_names;
 
-    test_demo_add_tests(tests);
+    test_demo_add_tests(tests, test_names);
 
-    test_runner_init(tests, "");
+    test_runner_init(tests, test_names, "");
 
     return 0;
 }

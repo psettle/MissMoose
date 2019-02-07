@@ -27,7 +27,7 @@ extern "C" {
 /**
  * Run a particular test
  */
-static void run_test_case(test_case_cb test, std::string const & output_destination);
+static void run_test_case(test_case_cb test, std::string const & test_name, std::string const & output_destination);
 
 /**
  * Prepare for test run by initializing all components and utilities.
@@ -43,15 +43,15 @@ static void deinit_test_case(void);
                        DEFINITIONS
 **********************************************************/
 
-void test_runner_init(std::vector<test_case_cb> const & tests, std::string const & output_destination)
+void test_runner_init(std::vector<test_case_cb> const & tests, std::vector<std::string> test_names, std::string const & output_destination)
 {
-    for (auto test : tests)
+	for (int i = 0; i < tests.size(); i++)
     {
-        run_test_case(test, output_destination);
+        run_test_case(tests[i], test_names[i], output_destination);
     }
 }
 
-static void run_test_case(test_case_cb test, std::string const & output_destination)
+static void run_test_case(test_case_cb test, std::string const & test_name, std::string const & output_destination)
 {
     init_test_case();
 
@@ -61,7 +61,7 @@ static void run_test_case(test_case_cb test, std::string const & output_destinat
     }
     catch (const std::exception& ex) /* Catch everything, who knows what the test code could do! */
     {
-        std::cout << std::string("Test Failed: ") + ex.what() << std::endl;
+        std::cout << std::string("Test \"") + test_name + std::string("\" Failed: ") + ex.what() << std::endl;
     }
     
     deinit_test_case();
