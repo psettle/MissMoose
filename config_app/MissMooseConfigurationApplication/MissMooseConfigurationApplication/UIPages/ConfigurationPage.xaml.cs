@@ -127,13 +127,25 @@ namespace MissMooseConfigurationApplication.UIPages
             {
                 foreach(var v in list)
                 {
-                    v.Opacity = 0.8;
+                    v.Opacity = 0.7;
+                    // See if there's actually a sensornode on this child
+                    if (v.Child != null)
+                    {
+                        ((SensorNode)v.Child).UseInactivePalette();
+                    }
                 }
             }
 
-            NewSensorViewbox.Opacity = 0.8;
-
+            NewSensorViewbox.Opacity = 0.7;
+            if (NewSensorViewbox.Child != null)
+            {
+                ((SensorNode)NewSensorViewbox.Child).UseInactivePalette();
+            }
             ActiveViewbox = newActive;
+            if (ActiveViewbox.Child != null)
+            {
+                ((SensorNode)ActiveViewbox.Child).UseActivePalette();
+            }
             ActiveViewbox.Opacity = 1.0f;
 
             var node = ActiveViewbox.Child as SensorNode;
@@ -160,7 +172,7 @@ namespace MissMooseConfigurationApplication.UIPages
             SetNodeRotation(destination, node.Rotation);
             UpdatePulseStates();
 
-            int row, col;
+            sbyte row, col;
             for(row = 0; row < GridSize; ++row)
             {
                 for (col = 0; col < GridSize; ++col)
@@ -175,10 +187,10 @@ namespace MissMooseConfigurationApplication.UIPages
             }
         }
 
-        private void SetNodeRotation(Viewbox viewbox, NodeRotation rotation)
+        private void SetNodeRotation(Viewbox viewbox, Rotation rotation)
         {
             SensorNode node = viewbox.Child as SensorNode;
-            node.Rotation = new NodeRotation(rotation.Val);
+            node.Rotation = new Rotation(rotation.Val);
 
             var r = viewbox.RenderTransform as RotateTransform;
             r.Angle = rotation.Val;
@@ -303,7 +315,7 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             var node = ActiveViewbox.Child as SensorNode;
-            node.Rotation.Add(NodeRotation.R90);
+            node.Rotation.Add(Rotation.R90);
 
             SetNodeRotation(ActiveViewbox, node.Rotation);
         }
@@ -316,7 +328,7 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             var node = ActiveViewbox.Child as SensorNode;
-            node.Rotation.Add(-NodeRotation.R90);
+            node.Rotation.Add(-Rotation.R90);
 
             SetNodeRotation(ActiveViewbox, node.Rotation);
         }

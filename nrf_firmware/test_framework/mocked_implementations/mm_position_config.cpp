@@ -35,3 +35,8 @@ bool have_node_positions_changed(void) { return false; }
  * have changed recently, and therefore, allows them to avoid
  * making redundant checks on node position data.*/
 void clear_unread_node_positions(void) {}
+
+/**
+    Returns the number of sensors on a given node type and their sensor rotation constants.
+*/
+uint8_t get_sensor_rotations(uint8_t node_type, uint16_t sensor_rotations_size, sensor_rotation_t * sensor_rotations) { return 0;  }
