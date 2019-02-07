@@ -293,39 +293,37 @@ static void set_led_output_state(uint16_t x, uint16_t y, led_signalling_state_t 
     /* Get the position of the LED node. */
     mm_node_position_t const * node_position = get_node_for_position( x, y);
 
-    if (node_position == NULL)
+    /* Check to make sure that this node actually exists before sending anything!*/
+    if (node_position != NULL)
     {
-        /* This node doesn't exist in the network! */
-        APP_ERROR_CHECK(true);
-    }
-
-    switch ( state )
-    {
-        case CONCERN:
-            mm_led_control_update_node_leds
-            (
-                node_position->node_id,
-                LED_FUNCTION_LEDS_BLINKING,
-                LED_COLOURS_YELLOW
-            );
-            break;
-        case ALARM:
-            mm_led_control_update_node_leds
-            (
-                node_position->node_id,
-                LED_FUNCTION_LEDS_BLINKING,
-                LED_COLOURS_RED
-            );
-            break;
-        case IDLE:
-        default:
-            mm_led_control_update_node_leds
-            (
-                node_position->node_id,
-                LED_FUNCTION_LEDS_OFF,
-                LED_COLOURS_RED
-            );
-            break;
+        switch ( state )
+        {
+            case CONCERN:
+                mm_led_control_update_node_leds
+                (
+                    node_position->node_id,
+                    LED_FUNCTION_LEDS_BLINKING,
+                    LED_COLOURS_YELLOW
+                );
+                break;
+            case ALARM:
+                mm_led_control_update_node_leds
+                (
+                    node_position->node_id,
+                    LED_FUNCTION_LEDS_BLINKING,
+                    LED_COLOURS_RED
+                );
+                break;
+            case IDLE:
+            default:
+                mm_led_control_update_node_leds
+                (
+                    node_position->node_id,
+                    LED_FUNCTION_LEDS_OFF,
+                    LED_COLOURS_RED
+                );
+                break;
+        }
     }
 }
 
