@@ -18,6 +18,8 @@ notes:
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
 #include "mm_activity_variables.h"
+#include "mm_activity_variable_drain.h"
+#include "mm_led_strip_states.h"
 #include "mm_activity_variable_growth.h"
 #include "mm_position_config.h"
 
@@ -100,7 +102,6 @@ void mm_sensor_algorithm_init(void)
 
     err_code = app_timer_start(m_second_timer_id, ONE_SECOND_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
-
 }
 
 /**
@@ -176,6 +177,11 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
     second_counter %= SECONDS_PER_MINUTE;
 
     mm_activity_variable_growth_on_second_elapsed();
+	mm_apply_activity_variable_drain_factor();
+	mm_led_signalling_states_on_second_elapsed();
+
+	/* Space left to add other once-per-second updates if
+	 * necessary in the future. */
 }
 
 /**
