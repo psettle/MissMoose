@@ -29,17 +29,6 @@
 void mm_led_strip_states_init(void);
 
 /**
-    Determines whether or not the LED signalling states have changed.
-*/
-bool mm_have_led_signalling_states_changed(void);
-
-/**
-    Sends blaze messages to updated LED nodes and implements
-    de-escalation.
-*/
-void mm_on_led_signalling_states_change(void);
-
-/**
     Updates current LED signalling states and increments
     timeout counter.
 */

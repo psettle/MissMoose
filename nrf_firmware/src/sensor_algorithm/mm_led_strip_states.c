@@ -16,14 +16,12 @@
 #include "mm_led_strip_states.h"
 #include "mm_sensor_algorithm_config.h"
 #include "mm_activity_variables.h"
-//#include "mm_led_control.h"
+#include "mm_led_control.h"
+#include "mm_position_config.h"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
-
-#define MINIMUM_CONCERN_SIGNAL_DURATION_S ( 30 )
-#define MINIMUM_ALARM_SIGNAL_DURATION_S   ( 60 )
 
 /**********************************************************
                         MACROS
@@ -55,8 +53,8 @@ typedef struct
 
 typedef struct
 {
-    led_signalling_state_t  state;
-    bool                    output_active;
+    led_signalling_state_t  current_av_state;
+    led_signalling_state_t  current_output_state;
     bool                    timeout_active;
     uint16_t                second_counter;
 } led_signalling_state_record_t;
@@ -66,20 +64,20 @@ typedef struct
 **********************************************************/
 
 /**
-    Updates the signalling state of the LEDs based on the
-    current value of the activity variables.
-
-    Hardcoded for 3x3 grids for now.
+    Updates the current_av_states based on the raw AV values
 */
-static void update_led_signalling_states(void);
+static void update_current_av_states(void);
 
 /**
-    Sends blaze messages to each LED node to update the colors based
-    on the current LED signalling states.
-
-    Hardcoded for 3x3 grids for now.
+    Updates the current_output_states by considering any state changes
+    and timeouts.
 */
-static void update_node_led_colors(void);
+static void update_current_output_states(void);
+
+/**
+    Sends an signalling state update to an LED node.
+*/
+static void set_led_output_state(uint16_t x, uint16_t y, led_signalling_state_t * p_state);
 
 /**
     Determines if the activity variable located at (x, y)
@@ -90,7 +88,7 @@ static bool is_road_side_av( uint16_t x, uint16_t y );
 /**
     Updates the LED signalling states based on an output set.
 */
-static void escalate_set(led_signalling_state_t* p_state, output_set_t const * escalate_to);
+static void escalate_set(led_signalling_state_record_t * p_record, output_set_t const * escalate_to);
 
 /**
     Updates an individual LED signalling state, escalating compounding CONCERN states.
@@ -113,31 +111,23 @@ static output_table_t const * get_output_table_for_av(uint16_t x, uint16_t y);
 static output_set_t const * get_output_set_for_av(bool is_road_side, mm_activity_variable_t av, output_table_t const * output_table);
 
 /**
-    Updates the timeout counters.
+    Determines if a current_output_state has timed out.
 */
-static void update_timeout_counters(void);
+static bool has_current_output_state_timed_out(led_signalling_state_record_t state_record);
 
 /**
-    Determines if a timeout on an LED state has occurred.
+    Resets all current_av_states.
 */
-static bool has_led_signalling_state_timed_out(led_signalling_state_record_t state_record);
-
-/**
-    Updates the LED signalling state records.
-*/
-static void update_led_signalling_state_records(void);
+static void clear_all_current_av_states(void);
 
 /**********************************************************
                        VARIABLES
 **********************************************************/
 
-/* Assumes that there are MAX_GRID_SIZE_X nodes with LEDs. */
-static led_signalling_state_t led_signalling_states [MAX_GRID_SIZE_X];
-
-/* For tracking the last sent LED signalling states. */
-static led_signalling_state_t last_sent_led_signalling_states [MAX_GRID_SIZE_X];
-
-/* Records for managing minimum signalling duration timeouts. */
+/**
+    Records for managing minimum signalling duration timeouts.
+    Assumes that there are MAX_GRID_SIZE_X nodes with LEDs.
+*/
 static led_signalling_state_record_t led_signalling_state_records [MAX_GRID_SIZE_X];
 
 static output_table_t const top_left_output =
@@ -212,38 +202,7 @@ static output_table_t const default_output =
 void mm_led_strip_states_init(void)
 {
     /* Initialize LED signalling states */
-    memset( &led_signalling_states[0], 0, sizeof(led_signalling_states) );
-    memset( &last_sent_led_signalling_states[0], 0, sizeof(last_sent_led_signalling_states) );
-
-    /* All flags are off to start. */
     memset( &led_signalling_state_records[0], 0, sizeof(led_signalling_state_records) );
-}
-
-
-/**
-    Determines whether or not the LED signalling states have changed.
-*/
-bool mm_have_led_signalling_states_changed(void)
-{
-    for (uint8_t i = 0; i < MAX_GRID_SIZE_X; i++)
-    {
-        if (led_signalling_states[i] != last_sent_led_signalling_states[i])
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/**
-    Sends blaze messages to updated LED nodes and implements
-    de-escalation.
-*/
-void mm_on_led_signalling_states_change(void)
-{
-    update_led_signalling_state_records();
-    update_node_led_colors();
 }
 
 /**
@@ -252,20 +211,17 @@ void mm_on_led_signalling_states_change(void)
 */
 void mm_led_signalling_states_on_second_elapsed(void)
 {
-    update_led_signalling_states();
-    update_timeout_counters();
+    update_current_av_states();
+    update_current_output_states();
 }
 
 /**
-    Updates the signalling state of the LEDs based on the
-    current value of the activity variables.
-
-    Hardcoded for only 3x3 grids right now.
+    Updates the current_av_states based on the raw AV values
 */
-static void update_led_signalling_states(void)
+static void update_current_av_states(void)
 {
     /* Clear previous states */
-    memset( &led_signalling_states[0], 0, sizeof(led_signalling_states) );
+    clear_all_current_av_states();
 
     for (uint16_t x = 0; x < (MAX_AV_SIZE_X); x++)
     {
@@ -273,43 +229,97 @@ static void update_led_signalling_states(void)
         {
             output_table_t const * output_table = get_output_table_for_av(x, y);
             output_set_t const * output_set = get_output_set_for_av(is_road_side_av(x, y), AV(x, y), output_table);
-            escalate_set(led_signalling_states, output_set);
+            escalate_set(led_signalling_state_records, output_set);
         }
     }
 }
 
 /**
-    Sends blaze messages to each LED node to update the colors based
-    on the current LED signalling states.
-
-    Hardcoded for 3x3 grids for now.
+    Updates the current_output_states by considering any state changes
+    and timeouts.
 */
-static void update_node_led_colors(void)
+static void update_current_output_states(void)
 {
-    for ( uint16_t i = 0; i < MAX_GRID_SIZE_X; i++ )
+    for (uint16_t i = 0; i < MAX_GRID_SIZE_X; i++)
     {
-        /* Assumes LED nodes are always at the "top" of the grid. */
-        //mm_node_position_t const * node_position = get_node_at_position( i, 1);
-
-        if (led_signalling_state_records[i].output_active)
+        if (led_signalling_state_records[i].current_av_state > led_signalling_state_records[i].current_output_state)
         {
-            switch ( led_signalling_state_records[i].state )
+            /* If the current_av_state is greater than the current_output_state,
+             * start the timeout and update the output state. */
+            led_signalling_state_records[i].second_counter = 0;
+            led_signalling_state_records[i].timeout_active = true;
+            led_signalling_state_records[i].current_output_state = led_signalling_state_records[i].current_av_state;
+
+            /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
+            set_led_output_state(i, 1, &(led_signalling_state_records[i].current_output_state));
+        }
+        else if (led_signalling_state_records[i].current_av_state == led_signalling_state_records[i].current_output_state)
+        {
+            /* If there was no change in state, just update the timeout counter
+             * if the timeout is active. */
+            if (led_signalling_state_records[i].timeout_active)
             {
-                case CONCERN:
-                    //mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW );
-                    break;
-                case ALARM:
-                    //mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED );
-                    break;
-                case IDLE:
-                default:
-                    //mm_led_control_update_node_leds( node_position->node_id, LED_FUNCTION_LEDS_OFF, LED_COLOURS_RED );
-                    break;
+                led_signalling_state_records[i].second_counter++;
             }
         }
+        else
+        {
+            /* If the current_av_state is less than the current_output_state,
+             * check to see if the current_output_state has timed out.. */
+            if (has_current_output_state_timed_out(led_signalling_state_records[i]))
+            {
+                /* ...if it has, turn off timeout and update current_output_state. */
+                led_signalling_state_records[i].second_counter = 0;
+                led_signalling_state_records[i].timeout_active = false;
+                led_signalling_state_records[i].current_output_state = led_signalling_state_records[i].current_av_state;
 
-        led_signalling_state_records[i].output_active = false;
-        last_sent_led_signalling_states[i] = led_signalling_states[i];
+                /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
+                set_led_output_state(i, 1, &(led_signalling_state_records[i].current_output_state));
+            }
+            else
+            {
+                /* ...otherwise, just update the timeout counter. */
+                led_signalling_state_records[i].second_counter++;
+            }
+        }
+    }
+}
+
+/**
+    Sends an signalling state update to an LED node.
+*/
+static void set_led_output_state(uint16_t x, uint16_t y, led_signalling_state_t * p_state)
+{
+    /* Get the position of the LED node. */
+    mm_node_position_t const * node_position = get_node_for_position( x, y);
+
+    switch ( *p_state )
+    {
+        case CONCERN:
+            mm_led_control_update_node_leds
+            (
+                node_position->node_id,
+                LED_FUNCTION_LEDS_BLINKING,
+                LED_COLOURS_YELLOW
+            );
+            break;
+        case ALARM:
+            mm_led_control_update_node_leds
+            (
+                node_position->node_id,
+                LED_FUNCTION_LEDS_BLINKING,
+                LED_COLOURS_RED
+            );
+            break;
+        case IDLE:
+        default:
+            mm_led_control_update_node_leds
+            (
+                node_position->node_id,
+                LED_FUNCTION_LEDS_OFF,
+                LED_COLOURS_RED
+            );
+            break;
     }
 }
 
@@ -328,11 +338,11 @@ static bool is_road_side_av( uint16_t x, uint16_t y )
 /**
     Updates the LED signalling states based on an output set.
 */
-static void escalate_set(led_signalling_state_t* p_state, output_set_t const * escalate_to)
+static void escalate_set(led_signalling_state_record_t * p_record, output_set_t const * escalate_to)
 {
     for(uint8_t i = 0; i < MAX_AV_SIZE_X; ++i)
     {
-        escalate_output(&p_state[i], escalate_to->states[i]);
+        escalate_output(&(p_record[i].current_av_state), escalate_to->states[i]);
     }
 }
 
@@ -425,61 +435,23 @@ static output_set_t const * get_output_set_for_av(bool is_road_side, mm_activity
 }
 
 /**
-    Updates the timeout counters.
+    Determines if a current_output_state has timed out.
 */
-static void update_timeout_counters(void)
-{
-    for (uint8_t i = 0; i < MAX_GRID_SIZE_X; i++)
-    {
-        if (led_signalling_state_records[i].timeout_active == true)
-        {
-            if (has_led_signalling_state_timed_out(led_signalling_state_records[i]))
-            {
-                led_signalling_state_records[i].second_counter = 0;
-                led_signalling_state_records[i].timeout_active = false;
-                led_signalling_state_records[i].state = IDLE;
-
-                led_signalling_states[i] = led_signalling_state_records[i].state;
-
-            }
-
-            led_signalling_state_records[i].second_counter++;
-        }
-    }
-}
-
-/**
-    Determines if a timeout on an LED state has occurred.
-*/
-static bool has_led_signalling_state_timed_out(led_signalling_state_record_t state_record)
+static bool has_current_output_state_timed_out(led_signalling_state_record_t state_record)
 {
     return (
-            (state_record.state == CONCERN && state_record.second_counter == MINIMUM_CONCERN_SIGNAL_DURATION_S) ||
-            (state_record.state == ALARM && state_record.second_counter == MINIMUM_ALARM_SIGNAL_DURATION_S)
+            (state_record.current_output_state == CONCERN && state_record.second_counter >= MINIMUM_CONCERN_SIGNAL_DURATION_S) ||
+            (state_record.current_output_state == ALARM && state_record.second_counter >= MINIMUM_ALARM_SIGNAL_DURATION_S)
            );
 }
 
 /**
-    Updates the LED signalling state records.
+    Resets all current_av_states.
 */
-static void update_led_signalling_state_records(void)
+static void clear_all_current_av_states(void)
 {
-    for (uint8_t i = 0; i < MAX_GRID_SIZE_X; i++)
+    for (uint16_t i = 0; i < MAX_GRID_SIZE_X; i++)
     {
-        if (led_signalling_states[i] != last_sent_led_signalling_states[i])
-        {
-            led_signalling_state_records[i].state = led_signalling_states[i];
-            led_signalling_state_records[i].output_active = true;
-            led_signalling_state_records[i].second_counter = 0;
-
-            if (led_signalling_states[i] < last_sent_led_signalling_states[i] || led_signalling_states[i] == ALARM )
-            {
-                led_signalling_state_records[i].timeout_active = true;
-            }
-            else
-            {
-                led_signalling_state_records[i].timeout_active = false;
-            }
-        }
+        led_signalling_state_records[i].current_av_state = IDLE;
     }
 }

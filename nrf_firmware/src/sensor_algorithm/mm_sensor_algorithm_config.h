@@ -40,5 +40,8 @@ notes:
 #define DETECTION_THRESHOLD_RS              ( 6.0f )
 #define DETECTION_THRESHOLD_NRS             ( 7.0f )
 
+#define MINIMUM_CONCERN_SIGNAL_DURATION_S ( 30 )
+#define MINIMUM_ALARM_SIGNAL_DURATION_S   ( 60 )
+
 #endif /* MM_SENSOR_ALGORITHM_CONFIG_H */
 
