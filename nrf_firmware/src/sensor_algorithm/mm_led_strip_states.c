@@ -183,11 +183,6 @@ void mm_update_led_signalling_states(void)
     {
         for (uint16_t y = 0; y < (MAX_AV_SIZE_Y); y++)
         {
-            if (is_av_below_detection_threshold(is_road_side_av(x, y), AV(x, y)))
-            {
-                continue;
-            }
-
             output_table_t output_table = get_output_table_for_av(x, y);
             output_set_t output_set = get_output_set_for_av(is_road_side_av(x, y), AV(x, y), &output_table);
             escalate_set(led_signalling_states, &output_set);
