@@ -77,6 +77,7 @@ static bool have_positions_changed = false;
                        DEFINITIONS
 **********************************************************/
 
+/* Initialize position configuration */
 void mm_position_config_init( void )
 {
 	memset(&node_positions[0], 0, sizeof( node_positions ) );
@@ -85,6 +86,7 @@ void mm_position_config_init( void )
     mm_ant_evt_handler_set(&process_ant_evt);
 }
 
+/* Processes an ANT event */
 static void process_ant_evt(ant_evt_t * evt)
 {
     ANT_MESSAGE * p_message = (ANT_MESSAGE *)evt->msg.evt_buffer;
@@ -109,6 +111,7 @@ static void process_ant_evt(ant_evt_t * evt)
     }
 }
 
+/* Decodes an ANT position page message payload */
 static void decode_position_page(void* p_evt, uint16_t size)
 {
     ant_evt_t * evt = (ant_evt_t*)p_evt;
@@ -213,6 +216,7 @@ static void decode_position_page(void* p_evt, uint16_t size)
 		);
 }
 
+/* Sign extends a number in 2's complement form */
 static int8_t sign_extend( uint8_t uint, uint8_t size_bits )
 {
 	int8_t result;
@@ -237,11 +241,15 @@ static int8_t sign_extend( uint8_t uint, uint8_t size_bits )
 	return result;
 }
 
+/* Gets the entire array of node positions for the system */
 mm_node_position_t const * get_node_positions( void )
 {
 	return node_positions;
 }
 
+/* Gets a specific node position by node id. Returns NULL if
+ * the node doesn't exist in the list yet.
+ */
 mm_node_position_t const * get_position_for_node( uint16_t node_id )
 {
 	for ( uint16_t i = 0; i < MAX_NUMBER_NODES; i ++ )
@@ -255,6 +263,9 @@ mm_node_position_t const * get_position_for_node( uint16_t node_id )
 	return NULL;
 }
 
+/* Gets a specific node position by it's x and y grid position. Returns
+ * NULL is the node doesn't exist in the list yet.
+ */
 mm_node_position_t const * get_node_for_position(int8_t x, int8_t y)
 {
 	for ( uint16_t i = 0; i < MAX_NUMBER_NODES; ++i )
@@ -280,16 +291,28 @@ mm_node_position_t const * get_node_for_position(int8_t x, int8_t y)
 	return NULL;
 }
 
+/* Gets the current number of nodes whose positions have been configured. */
 uint16_t get_number_of_nodes( void )
 {
 	return current_number_of_nodes;
 }
 
+/* Determines if the node positions have changed since the last read.
+ * Assumes that clear_unread_node_positions is called after reading
+ * "unread" position changes.
+ *
+ * Allows users to avoid making redundant
+ * checks on node position data.*/
 bool have_node_positions_changed( void )
 {
 	return have_positions_changed;
 }
 
+/* Used to clear "unread" changes in node positions.
+ *
+ * Allows users to keep track of whether or not node positions
+ * have changed recently, and therefore, allows them to avoid
+ * making redundant checks on node position data.*/
 void clear_unread_node_positions( void )
 {
 	have_positions_changed = false;
