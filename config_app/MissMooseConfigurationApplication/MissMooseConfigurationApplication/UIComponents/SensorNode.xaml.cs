@@ -193,7 +193,7 @@ namespace MissMooseConfigurationApplication
 
         #region Public Methods
 
-        public SensorNode(ushort deviceNumber, HardwareConfiguration configuration, ushort NodeID, bool isGateway)
+        public SensorNode(ushort deviceNumber, HardwareConfiguration configuration, ushort NodeID, bool IsGateway)
         {
             InitializeComponent();
 
@@ -201,7 +201,7 @@ namespace MissMooseConfigurationApplication
             this.configuration = configuration;
             this.NodeID = NodeID;
             NodeIDLabel.Content = NodeID;
-            isgateway = isGateway;
+            isgateway = IsGateway;
 
             switch (configuration)
             {
