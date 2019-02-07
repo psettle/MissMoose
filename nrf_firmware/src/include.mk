@@ -64,7 +64,10 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensor_algorithm/mm_activity_variables.c \
   $(PROJ_DIR)/src/sensor_algorithm/mm_activity_variable_drain.c \
   $(PROJ_DIR)/src/sensor_algorithm/mm_led_strip_states.c \
-  $(PROJ_DIR)/src/sensor_algorithm/mm_activity_variable_growth.c \
+  $(PROJ_DIR)/src/sensor_algorithm/activity_variable_growth/mm_activity_variable_growth.c \
+  $(PROJ_DIR)/src/sensor_algorithm/activity_variable_growth/mm_activity_variable_growth_lidar.c \
+  $(PROJ_DIR)/src/sensor_algorithm/activity_variable_growth/mm_activity_variable_growth_pir.c \
+  $(PROJ_DIR)/src/sensor_algorithm/activity_variable_growth/mm_activity_variable_growth_sensor_records.c \
   $(PROJ_DIR)/src/protocols/mm_monitoring_dispatch.c \
   $(PROJ_DIR)/src/protocols/mm_position_config.c
 endif
@@ -103,6 +106,7 @@ INC_FOLDERS += \
   $(PROJ_DIR)/src/sensors \
   $(PROJ_DIR)/src/sensor_management/ \
   $(PROJ_DIR)/src/sensor_algorithm/ \
+  $(PROJ_DIR)/src/sensor_algorithm/activity_variable_growth \
   ../config \
   $(SDK_ROOT)/components/libraries/hardfault \
   $(SDK_ROOT)/components/libraries/util \

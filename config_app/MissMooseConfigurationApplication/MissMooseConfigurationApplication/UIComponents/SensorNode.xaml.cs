@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -37,11 +38,11 @@ namespace MissMooseConfigurationApplication
         public static readonly Brush Blue = Brushes.Blue;
     }
 
-    public class NodeRotation
+    public class Rotation
     {
         public double Val { get; private set; }
 
-        public NodeRotation(double val)
+        public Rotation(double val)
         {
             Val = val;
         }
@@ -60,7 +61,7 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public void Add(NodeRotation val)
+        public void Add(Rotation val)
         {
             Add(val.Val);
         }
@@ -153,48 +154,66 @@ namespace MissMooseConfigurationApplication
     {
         #region Public Members
         public const int MaxOffset = 5;
+        public const int OffsetScale = 10;
 
         public int NodeID { get; }
 
-        public NodeRotation Rotation { get; set; } = new NodeRotation(NodeRotation.R0);
+        public Rotation Rotation { get; set; } = new Rotation(Rotation.R0);
 
-        public int xpos { get; set; } = -1;
-        public int ypos { get; set; } = -1;
+        public sbyte xpos { get; set; } = -1;
+        public sbyte ypos { get; set; } = -1;
 
-        public int xoffset { get; set; } = 0;
-        public int yoffset { get; set; } = 0;
+        public sbyte xoffset { get; set; } = 0;
+        public sbyte yoffset { get; set; } = 0;
         public HardwareConfiguration configuration { get; private set; }
-		
+
+        public bool isgateway
+        {
+            get
+            {
+                return isGateway;
+            }
+            set
+            {
+                isGateway = value;
+                NodeGatewayLabel.Visibility = isGateway ? Visibility.Visible : Visibility.Hidden;
+            }
+        }
+
         #endregion
 
         #region Private Members
 
         private Brush ledColour;
         private Brush statusColour;
+        private bool isGateway;
         #endregion
 
         #region Public Methods
 
-        public SensorNode(HardwareConfiguration configuration, int NodeID)
+        public SensorNode(HardwareConfiguration configuration, int NodeID, bool IsGateway)
         {
             InitializeComponent();
 
             this.configuration = configuration;
             this.NodeID = NodeID;
             NodeIDLabel.Content = NodeID;
+            isgateway = IsGateway;
 
-            switch(configuration)
+            switch (configuration)
             {
                 case HardwareConfiguration.Pir2:
                     PIR_0_Deg.Visibility = Visibility.Visible;
+                    PIR_90_Deg.Visibility = Visibility.Hidden;
                     PIR_270_Deg.Visibility = Visibility.Visible;
-                    Lidar_270_Deg.Visibility = Visibility.Hidden;
+                    Lidar_0_Deg.Visibility = Visibility.Hidden;
                     break;
                 case HardwareConfiguration.PirLidar:
                 case HardwareConfiguration.PirLidarLed:
-                    PIR_0_Deg.Visibility = Visibility.Visible;
+                    PIR_0_Deg.Visibility = Visibility.Hidden;
+                    PIR_90_Deg.Visibility = Visibility.Visible;
                     PIR_270_Deg.Visibility = Visibility.Hidden;
-                    Lidar_270_Deg.Visibility = Visibility.Visible;
+                    Lidar_0_Deg.Visibility = Visibility.Visible;
                     break;
             }
 
@@ -231,18 +250,44 @@ namespace MissMooseConfigurationApplication
 
         public SensorNode Clone()
         {
-            var node = new SensorNode(configuration, NodeID)
+            var node = new SensorNode(configuration, NodeID, isgateway)
             {
                 xoffset = xoffset,
                 yoffset = yoffset,
                 xpos = xpos,
                 ypos = ypos,
-                Rotation = new NodeRotation(Rotation.Val)
+                Rotation = new Rotation(Rotation.Val)
             };
             node.SetLedColour(ledColour);
             node.SetStatusColour(statusColour);
 
             return node;
+        }
+
+        /// <summary>
+        /// Change to a set of visual properties that make the node look active
+        /// </summary>
+        public void UseActivePalette()
+        {
+            InnerCircle.Fill = Brushes.DarkGray;
+            Effect = new DropShadowEffect
+            {
+                Color = new Color { A = 255, R = 125, G = 125, B = 125 },
+                Direction = 320,
+                ShadowDepth = 10,
+                Opacity = 10
+            };
+            NodeIDLabel.Foreground = Brushes.White;
+        }
+
+        /// <summary>
+        /// Change to a set of visual properties that make the node look inactive
+        /// </summary>
+        public void UseInactivePalette()
+        {
+            InnerCircle.Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#b2b2b2"));
+            Effect = null;
+            NodeIDLabel.Foreground = Brushes.DarkSlateGray;
         }
 
         #endregion
