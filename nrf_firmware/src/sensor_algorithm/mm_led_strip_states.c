@@ -78,12 +78,12 @@ static bool is_av_below_detection_threshold(bool is_road_side, mm_activity_varia
 /**
     Gets an output table for an AV based on it's location.
 */
-static output_table_t get_output_table_for_av(uint16_t x, uint16_t y);
+static output_table_t const * get_output_table_for_av(uint16_t x, uint16_t y);
 
 /**
     Gets the output set for an AV based on it's location and current value.
 */
-static output_set_t get_output_set_for_av(bool is_road_side, mm_activity_variable_t av, output_table_t const * output_table);
+static output_set_t const * get_output_set_for_av(bool is_road_side, mm_activity_variable_t av, output_table_t const * output_table);
 
 /**********************************************************
                        VARIABLES
@@ -91,6 +91,9 @@ static output_set_t get_output_set_for_av(bool is_road_side, mm_activity_variabl
 
 /* Assumes that there are MAX_GRID_SIZE_X nodes with LEDs. */
 static led_signalling_state_t led_signalling_states [MAX_GRID_SIZE_X];
+
+/* For tracking the last sent LED signalling states. */
+static led_signalling_state_t last_sent_led_signalling_states [MAX_GRID_SIZE_X];
 
 static output_table_t const top_left_output =
 {
@@ -169,6 +172,7 @@ void mm_led_strip_states_init(void)
 {
     /* Initialize LED signalling states */
     memset( &led_signalling_states[0], 0, sizeof(led_signalling_states) );
+    memset( &last_sent_led_signalling_states[0], 0, sizeof(last_sent_led_signalling_states) );
 }
 
 /**
@@ -179,13 +183,16 @@ void mm_led_strip_states_init(void)
 */
 void mm_update_led_signalling_states(void)
 {
+    /* Clear previous states */
+    memset( &led_signalling_states[0], 0, sizeof(led_signalling_states) );
+
     for (uint16_t x = 0; x < (MAX_AV_SIZE_X); x++)
     {
         for (uint16_t y = 0; y < (MAX_AV_SIZE_Y); y++)
         {
-            output_table_t output_table = get_output_table_for_av(x, y);
-            output_set_t output_set = get_output_set_for_av(is_road_side_av(x, y), AV(x, y), &output_table);
-            escalate_set(led_signalling_states, &output_set);
+            output_table_t const * output_table = get_output_table_for_av(x, y);
+            output_set_t const * output_set = get_output_set_for_av(is_road_side_av(x, y), AV(x, y), output_table);
+            escalate_set(led_signalling_states, output_set);
         }
     }
 }
@@ -201,7 +208,7 @@ void mm_update_node_led_colors(void)
 	for ( uint16_t i = 0; i < MAX_GRID_SIZE_X; i++ )
 	{
 		/* Assumes LED nodes are always at the "top" of the grid. */
-		//mm_node_position_t const * node_position = get_node_at_position( i, 0);
+		//mm_node_position_t const * node_position = get_node_at_position( i, 1);
 
 		switch ( led_signalling_states[i] )
 		{
@@ -271,59 +278,62 @@ static bool is_av_below_detection_threshold(bool is_road_side, mm_activity_varia
 /**
     Gets an output table for an AV based on it's location.
 */
-static output_table_t get_output_table_for_av(uint16_t x, uint16_t y)
+static output_table_t const * get_output_table_for_av(uint16_t x, uint16_t y)
 {
     if (x == 0 && y == 0)
     {
-        return top_left_output;
+        return &top_left_output;
     }
     else if ( x == 1 && y == 0)
     {
-        return top_right_output;
+        return &top_right_output;
     }
     else if ( x == 0 && y == 1)
     {
-        return bottom_left_output;
+        return &bottom_left_output;
     }
     else if ( x == 1 && y == 1)
     {
-        return bottom_right_output;
+        return &bottom_right_output;
     }
     else
     {
-        return default_output;
+        /* We don't support anything other than 3x3 configurations right now. */
+
+        APP_ERROR_CHECK(true);
+        return &default_output;
     }
 }
 
 /**
     Gets the output set for an AV based on it's location and current value.
 */
-static output_set_t get_output_set_for_av(bool is_road_side, mm_activity_variable_t av, output_table_t const * output_table)
+static output_set_t const * get_output_set_for_av(bool is_road_side, mm_activity_variable_t av, output_table_t const * output_table)
 {
     if (is_av_below_detection_threshold(is_road_side, av))
     {
-        return output_table->no_detection;
+        return &output_table->no_detection;
     }
 
     if (is_road_side)
     {
         if (av > DETECTION_THRESHOLD_RS)
         {
-            return output_table->detection;
+            return &output_table->detection;
         }
         else
         {
-            return output_table->possible_detection;
+            return &output_table->possible_detection;
         }
     }
 
     if (av > DETECTION_THRESHOLD_NRS)
     {
-        return output_table->detection;
+        return &output_table->detection;
     }
     else
     {
-        return output_table->possible_detection;
+        return &output_table->possible_detection;
     }
 }
 
