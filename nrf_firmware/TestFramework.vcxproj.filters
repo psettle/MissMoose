@@ -101,6 +101,9 @@
     <ClInclude Include="test_framework\test_cases\tests.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="test_framework\mocked_implementations\mm_sensor_transmission.hpp">
+	      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth.h">
       <Filter>Header Files</Filter>
     </ClInclude>

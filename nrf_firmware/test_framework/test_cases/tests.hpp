@@ -11,6 +11,7 @@ notes:
 **********************************************************/
 
 #include "test_runner.hpp"
+#include "mm_sensor_transmission.hpp"
 
 /**********************************************************
                           TYPES
@@ -22,7 +23,7 @@ typedef void(*test_case_cb)(void);
                         CONSTANTS
 **********************************************************/
 
-#define ADD_TEST(test_case)   tests.push_back(test_case); test_names.push_back(#test_case);
+#define ADD_TEST(test_case)  do{ tests.push_back(test_case); test_names.push_back(#test_case); } while(0) 
 
 /**********************************************************
                        DECLARATIONS
