@@ -89,10 +89,10 @@ void mm_activity_variable_growth_on_sensor_detection(sensor_evt_t const * evt)
     switch(evt->sensor_type)
     {
     case SENSOR_TYPE_PIR:
-        translate_pir_detection(&evt->pir_data);
+        translate_pir_detection(evt);
         break;
     case SENSOR_TYPE_LIDAR:
-        translate_lidar_detection(&evt->lidar_data);
+        translate_lidar_detection(evt);
         break;
     default:
         APP_ERROR_CHECK(true);

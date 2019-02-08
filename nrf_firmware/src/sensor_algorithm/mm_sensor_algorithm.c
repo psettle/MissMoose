@@ -49,11 +49,6 @@ notes:
 static void sensor_data_evt_handler(sensor_evt_t const * evt);
 
 /**
-    Send sensor events to the monitoring dispatch manager.
-*/
-static void send_monitoring_dispatch(sensor_evt_t const * evt);
-
-/**
     Timer handler to process second tick.
 */
 static void one_second_timer_handler(void * p_context);
@@ -67,21 +62,13 @@ static void one_second_timer_handler(void * p_context);
 static void update_node_positions(void);
 
 /**
- * Tick events, second, minute, etc.
+ * Tick events, second, minute, hour, day.
  * 
  * Invoked from main context.
  */
 static void on_second_elapsed(void* p_unused, uint16_t size_0);
 static void on_minute_elapsed(void);
-
-/**
-    Called every hour from main context.
-*/
 static void on_hour_elapsed(void);
-
-/**
-    Called every day from main context.
-*/
 static void on_day_elapsed(void);
 
 /**
@@ -132,50 +119,11 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt)
     /* Make sure everyone has valid node positions before processing the event. */
     update_node_positions();
 
-    /* Always send sensor events to the monitoring dispatch. */
-    send_monitoring_dispatch(evt);
-
-    /* Now sensor data can be processed with respect to the algorithm. */
+    /* check for sensor error states. */
     mm_record_sensor_activity(evt, get_minute_timestamp());
 
-    /* if the sensor that triggered the current event is hyperactive do not process the event further */
-    if ( mm_is_sensor_hyperactive(evt) )
-    {
-        return;
-    }
-    
+    /* Apply growth to AV variables on detection. */
     mm_activity_variable_growth_on_sensor_detection(evt);
-}
-
-/**
-    Send sensor events to the monitoring dispatch manager.
-*/
-static void send_monitoring_dispatch(sensor_evt_t const * evt)
-{
-    /* Switch on sensor type and call the appropriate monitoring dispatch function. */
-    switch(evt->sensor_type)
-    {
-        case SENSOR_TYPE_PIR:
-            mm_monitoring_dispatch_send_pir_data
-                (
-                evt->pir_data.node_id,
-                evt->pir_data.sensor_rotation,
-                evt->pir_data.detection
-                );
-            break;
-        case SENSOR_TYPE_LIDAR:
-            mm_monitoring_dispatch_send_lidar_data
-                (
-                evt->lidar_data.node_id,
-                evt->lidar_data.sensor_rotation,
-                evt->lidar_data.distance_measured
-                );
-            break;
-        default:
-            /* App error, unknown sensor data type. */
-            APP_ERROR_CHECK(true);
-            break;
-    }
 }
 
 /**

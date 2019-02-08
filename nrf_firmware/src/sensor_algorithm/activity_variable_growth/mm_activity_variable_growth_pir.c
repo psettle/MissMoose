@@ -18,6 +18,8 @@ notes:
 #include "mm_activity_variable_growth_prv.h"
 #include "mm_activity_variable_growth_sensor_records_prv.h"
 #include "mm_position_config.h"
+#include "mm_sensor_error_check.h"
+#include "mm_monitoring_dispatch.h"
 
 /**********************************************************
                         MACROS
@@ -79,13 +81,30 @@ static void generate_trickle_constants(abstract_pir_detection_t const * detectio
 /**
  * Translates a pir detection event into an abstract detection event.
  */
-void translate_pir_detection(pir_evt_data_t const * evt)
+void translate_pir_detection(sensor_evt_t const * sensor_evt)
 {
+    pir_evt_data_t const * evt = &(sensor_evt->pir_data);
+
     /* Translate into an abstract detection: */
     abstract_pir_detection_t detection;
     if(!sensor_evt_to_pir_detection(evt, &detection))
     {
         /* Invalid event. */
+        return;
+    }
+
+    /* Send monitoring dispatch */
+    mm_monitoring_dispatch_send_pir_data
+        (
+        evt->node_id,
+        evt->sensor_rotation,
+        evt->detection
+        );
+
+    /* Is the sensor hyperactive? */
+    if(mm_is_sensor_hyperactive(sensor_evt))
+    {
+        /* If so, don't process further. */
         return;
     }
 
