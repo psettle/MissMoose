@@ -13,7 +13,7 @@ namespace MissMooseConfigurationApplication
         private static readonly byte dataPageNumber = 0x11;
         private UInt16 nodeId;
         private HardwareConfiguration nodeType;
-        private NodeRotation nodeRotation;
+        private Rotation nodeRotation;
 
         #endregion
 
@@ -36,11 +36,16 @@ namespace MissMooseConfigurationApplication
             set { nodeType = value; OnPropertyChanged("NodeType"); }
         }
 
-        public NodeRotation NodeRotation
+        public Rotation NodeRotation
         {
             get { return nodeRotation; }
             set { nodeRotation = value; OnPropertyChanged("NodeRotation"); }
         }
+
+        public sbyte xpos { get; set; }
+        public sbyte ypos { get; set; }
+        public sbyte xoffset { get; set; }
+        public sbyte yoffset { get; set; }
 
         #endregion
 
@@ -58,9 +63,13 @@ namespace MissMooseConfigurationApplication
 
             txBuffer[4] = (byte)NodeRotation.ToEnum();
 
-            txBuffer[5] = BitManipulation.ReservedOnes;
-            txBuffer[6] = BitManipulation.ReservedOnes;
-            txBuffer[7] = BitManipulation.ReservedOnes;
+            byte xpos_encoded = (byte)((xpos - 1) & 0x0F);
+            byte ypos_encoded = (byte)((1 - ypos) & 0x0F);
+            ypos_encoded <<= 4;
+
+            txBuffer[5] = (byte)(xpos_encoded | ypos_encoded);
+            txBuffer[6] = (byte)xoffset;
+            txBuffer[7] = (byte)yoffset;
         }
 
         /* Decodes the given rxBuffer into this page's data fields */

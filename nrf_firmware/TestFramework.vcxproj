@@ -124,7 +124,10 @@
     <ClCompile Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_pir.c" />
     <ClCompile Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_sensor_records.c" />
     <ClCompile Include="src\sensor_algorithm\mm_activity_variables.c" />
+    <ClCompile Include="src\sensor_algorithm\mm_activity_variable_drain.c" />
+    <ClCompile Include="src\sensor_algorithm\mm_led_strip_states.c" />
     <ClCompile Include="src\sensor_algorithm\mm_sensor_algorithm.c" />
+    <ClCompile Include="src\sensor_algorithm\mm_sensor_error_check.c" />
     <ClCompile Include="test_framework\main.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_led_control.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_monitoring_dispatch.cpp" />
@@ -142,9 +145,12 @@
     <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_prv.h" />
     <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth_sensor_records_prv.h" />
     <ClInclude Include="src\sensor_algorithm\mm_activity_variables.h" />
+    <ClInclude Include="src\sensor_algorithm\mm_activity_variable_drain.h" />
     <ClInclude Include="src\sensor_algorithm\mm_activity_variable_growth.h" />
+    <ClInclude Include="src\sensor_algorithm\mm_led_strip_states.h" />
     <ClInclude Include="src\sensor_algorithm\mm_sensor_algorithm.h" />
     <ClInclude Include="src\sensor_algorithm\mm_sensor_algorithm_config.h" />
+    <ClInclude Include="src\sensor_algorithm\mm_sensor_error_check.h" />
     <ClInclude Include="test_framework\mocked_implementations\mm_sensor_transmission.hpp" />
     <ClInclude Include="test_framework\mocked_interfaces\app_error.h" />
     <ClInclude Include="test_framework\mocked_interfaces\app_scheduler.h" />

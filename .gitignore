@@ -10,3 +10,4 @@ nrf_firmware/.vs
 /config_app/MissMooseConfigurationApplication/.vs
 /config_app/MissMooseConfigurationApplication/MissMooseConfigurationApplication/bin
 /config_app/MissMooseConfigurationApplication/MissMooseConfigurationApplication/obj
+/nrf_firmware/.vscode/settings.json

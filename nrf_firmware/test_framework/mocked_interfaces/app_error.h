@@ -18,6 +18,7 @@ CONSTANTS
 
 /* Mock out error checking. If the error code isn't zero, handle the error. */
 #define APP_ERROR_CHECK(cond) if(cond) { handle_error(__LINE__, __FILE__, cond); }
+#define APP_ERROR_CHECK_BOOL(cond) if(cond) { handle_error(__LINE__, __FILE__, 1); }
 
 /**********************************************************
 DECLARATIONS
