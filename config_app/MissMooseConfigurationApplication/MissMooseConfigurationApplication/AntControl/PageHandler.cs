@@ -54,37 +54,6 @@ namespace MissMooseConfigurationApplication
          */
         public bool HandlePage(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
-            // If the node is missing a node ID or a network ID, send a Network Configuration Command page
-            if (dataPage.NodeId == 0 || dataPage.NetworkId == 0)
-            {
-                ushort nodeId;
-                SensorNode node = ConfigUI.nodes.Where(x => x.DeviceNumber == deviceNum).FirstOrDefault();
-
-                // If we previously configured a node with this ANT device number,
-                // assign it the same node ID as last time.                
-                if (node != null)
-                {
-                    nodeId = node.NodeID;
-
-                    // If this node which we are reconfiguring is the gateway node,
-                    // it has probably lost all of its node position data.
-                    // Mark all node data as unsent so that the gateway gets it again.
-                    foreach (NodeConfigurationData data in nodeConfigList.Values)
-                    {
-                        data.isSent = false;
-                    }
-                }
-                // Otherwise, give it a new node ID.
-                else
-                {
-                    nodeId = GetNextNodeId();
-                }
-
-                SendNetworkConfiguration(nodeId, responder);
-
-                
-            }
-
             if (dataPage.IsGatewayNode)
             {
                 return HandleNodeConfigPage_Gateway(dataPage, deviceNum, responder);
@@ -172,7 +141,29 @@ namespace MissMooseConfigurationApplication
 
         private bool HandleNodeConfigPage_Gateway(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
-            if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
+            // If the node is missing a network ID, send a Network Configuration Command page
+            if (dataPage.NetworkId == 0)
+            {
+                SensorNode node = ConfigUI.nodes.Where(x => x.DeviceNumber == deviceNum).FirstOrDefault();
+
+                // If we previously configured a node with this ANT device number,
+                // assign it the same node ID as last time.                
+                if (node != null)
+                {
+                    // We are reconfiguring the gateway node,
+                    // so it has probably lost all of its node position data.
+                    // Mark all node data as unsent so that the gateway gets it again.
+                    foreach (NodeConfigurationData data in nodeConfigList.Values)
+                    {
+                        data.isSent = false;
+                    }
+                }
+
+                // The gateway node has a hardcoded node ID, so we only need to send it a network ID.
+                // Send the node ID field in the network configuration page to 0.
+                SendNetworkConfiguration(0, responder);
+            }
+            else if (dataPage.NodeType != HardwareConfiguration.Unknown)
             {
                 if (ConfigUI.nodes.Count(x => x.DeviceNumber == deviceNum) == 0)
                 {
@@ -192,7 +183,27 @@ namespace MissMooseConfigurationApplication
 
         private bool HandleNodeConfigPage_Node(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
-            if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
+            // If the node is missing a node ID or a network ID, send a Network Configuration Command page
+            if (dataPage.NodeId == 0 || dataPage.NetworkId == 0)
+            {
+                ushort nodeId;
+                SensorNode node = ConfigUI.nodes.Where(x => x.DeviceNumber == deviceNum).FirstOrDefault();
+
+                // If we previously configured a node with this ANT device number,
+                // assign it the same node ID as last time.                
+                if (node != null)
+                {
+                    nodeId = node.NodeID;
+                }
+                // Otherwise, give it a new node ID.
+                else
+                {
+                    nodeId = GetNextNodeId();
+                }
+
+                SendNetworkConfiguration(nodeId, responder);
+            }
+            else if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
             {
                 if (ConfigUI.nodes.Count(x => x.DeviceNumber == deviceNum) == 0)
                 {
