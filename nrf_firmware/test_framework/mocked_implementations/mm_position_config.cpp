@@ -41,7 +41,12 @@ static bool have_positions_changed = true;
                        DEFINITIONS
 **********************************************************/
 
-/* Initialize position configuration */
+/* 
+ * Initialize position configuration 
+ * Note: As of Feb 8, 2019: The node positions are based on the Sensor Algorithm 1.0 file.
+ * Node IDs are generated right to left, starting from the top left node (ID 1)
+ * 
+*/
 void mm_position_config_init(void) 
 {
     have_positions_changed = true;
