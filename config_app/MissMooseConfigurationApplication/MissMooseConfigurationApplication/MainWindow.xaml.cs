@@ -100,7 +100,9 @@ namespace MissMooseConfigurationApplication
         public class NodeAttributes
         {
             [XmlAttribute]
-            public int NodeID;
+            public ushort DeviceNumber;
+            [XmlAttribute]
+            public ushort NodeID;
             [XmlAttribute]
             public int xpos;
             [XmlAttribute]
@@ -127,6 +129,7 @@ namespace MissMooseConfigurationApplication
                 foreach(SensorNode node in ((ConfigurationPage)navigationItems[ConfigPageButton]).nodes)
                 {
                     nodes.Add(new NodeAttributes {
+                        DeviceNumber = node.DeviceNumber,
                         NodeID = node.NodeID,
                         xpos = node.xpos,
                         ypos = node.ypos,
@@ -151,7 +154,7 @@ namespace MissMooseConfigurationApplication
                 NodeAttributes[] loadednodes = ((NodeAttributes[])serializer.Deserialize(stream));
                 foreach(NodeAttributes node in loadednodes)
                 {
-                    SensorNode sensornode = new SensorNode(node.configuration, node.NodeID, node.isgateway);
+                    SensorNode sensornode = new SensorNode(node.DeviceNumber, node.configuration, node.NodeID, node.isgateway);
                     sensornode.xpos = (sbyte)node.xpos;
                     sensornode.ypos = (sbyte)node.ypos;
                     sensornode.xoffset = (sbyte)node.xoffset;
