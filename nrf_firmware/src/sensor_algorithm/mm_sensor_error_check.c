@@ -9,7 +9,10 @@ notes:
 **********************************************************/
 
 #include <string.h>
+
 #include "app_error.h"
+
+#include "mm_sensor_error_check.h"
 #include "mm_sensor_algorithm_config.h"
 #include "mm_position_config.h"
 
@@ -57,10 +60,17 @@ static sensor_activity_record_t sensor_activity_record[ MAX_SENSOR_COUNT ];
                        DECLARATIONS
 **********************************************************/
 
+void mm_sensor_error_init(void)
+{
+    memset(&active_sensors_past_day[0], 0, sizeof(active_sensors_past_day));
+    active_sensors_past_day_count = 0;
+    memset(&sensor_activity_record[0], 0, sizeof(sensor_activity_record));
+}
+
 /**
     Record that a sensor has been active (has had a detection event).
 */
-void mm_record_sensor_activity(sensor_evt_t const * evt, uint32_t minute_count)
+void mm_sensor_error_record_sensor_activity(sensor_evt_t const * evt, uint32_t minute_count)
 {
     bool first_activity_of_day = true;
     sensor_record_t activity_record;
@@ -117,7 +127,7 @@ void mm_record_sensor_activity(sensor_evt_t const * evt, uint32_t minute_count)
 /**
     Checks to ensure all sensors have made at least 1 detection in the last 24 hours
 */
-void mm_check_for_sensor_inactivity(void)
+void mm_sensor_error_check_for_sensor_inactivity(void)
 {
     const mm_node_position_t * node_positions = get_node_positions();
     for ( uint16_t i = 0; i < MAX_NUMBER_NODES; i++)
@@ -158,7 +168,7 @@ void mm_check_for_sensor_inactivity(void)
 /**
     Checks for any sensors which are hyperactive. Flags hyperactive sensors so their events will be ignored.
 */
-void mm_check_for_sensor_hyperactivity(void)
+void mm_sensor_error_check_for_sensor_hyperactivity(void)
 {
     for ( uint16_t i = 0; i < MAX_SENSOR_COUNT; i++ )
     {
@@ -194,7 +204,7 @@ void mm_check_for_sensor_hyperactivity(void)
 /**
     Returns true if the sensor in the given event is marked as hyperactive
 */
-bool mm_is_sensor_hyperactive(sensor_evt_t const * evt)
+bool mm_sensor_error_is_sensor_hyperactive(sensor_evt_t const * evt)
 {
     sensor_record_t activity_record;
     create_sensor_record(evt, &activity_record);
@@ -213,7 +223,7 @@ bool mm_is_sensor_hyperactive(sensor_evt_t const * evt)
 /**
     Called before clearing node position changed flag.
 */
-void mm_sensor_error_check_on_node_positions_update(void)
+void mm_sensor_error_on_node_positions_update(void)
 {
     if(have_node_positions_changed())
     {

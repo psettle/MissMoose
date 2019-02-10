@@ -33,7 +33,7 @@ void mm_sensor_transmission_init(void)
 {
     // Clear the list of listeners - Otherwise, new listeners will be added for every test called
     // when initialization occurs.
-	listeners.clear();
+    listeners.clear();
 }
 
 /* Registers a listener for sensor data events. 
@@ -51,13 +51,13 @@ void test_send_pir_data
 )
 {
     // Create a sensor_event_t with SENSOR_TYPE_PIR
-	sensor_evt_t sensor_evt;
-	memset(&sensor_evt, 0, sizeof(sensor_evt));
+    sensor_evt_t sensor_evt;
+    memset(&sensor_evt, 0, sizeof(sensor_evt));
     
     sensor_evt.sensor_type = SENSOR_TYPE_PIR;
     sensor_evt.pir_data.node_id = node_id;
-	sensor_evt.pir_data.sensor_rotation = sensor_rotation;
-	sensor_evt.pir_data.detection = detection;
+    sensor_evt.pir_data.sensor_rotation = sensor_rotation;
+    sensor_evt.pir_data.detection = detection;
 
     //Send message to listeners
     sensor_data_evt_message_dispatch(&sensor_evt); 
@@ -72,13 +72,13 @@ void test_send_lidar_data
 )
 {
     //Create a sensor_event_t with SENSOR_TYPE_PIR
-	sensor_evt_t sensor_evt;
-	memset(&sensor_evt, 0, sizeof(sensor_evt));
+    sensor_evt_t sensor_evt;
+    memset(&sensor_evt, 0, sizeof(sensor_evt));
     
     sensor_evt.sensor_type = SENSOR_TYPE_LIDAR;
-	sensor_evt.lidar_data.node_id = node_id;
-	sensor_evt.lidar_data.sensor_rotation = sensor_rotation;
-	sensor_evt.lidar_data.distance_measured = distance_measured;
+    sensor_evt.lidar_data.node_id = node_id;
+    sensor_evt.lidar_data.sensor_rotation = sensor_rotation;
+    sensor_evt.lidar_data.distance_measured = distance_measured;
 
     //Send message to listeners
     sensor_data_evt_message_dispatch(&sensor_evt); 

@@ -109,10 +109,14 @@ static uint32_t hour_counter = 0;
 void mm_sensor_algorithm_init(void)
 {
     second_counter = 0;
+    minute_counter = 0;
+    hour_counter = 0;
 
     /* Initialize algorithm components. */
+    mm_sensor_error_init();
     mm_activity_variables_init();
     mm_activity_variable_growth_init();
+    mm_led_strip_states_init();
 
     /* Register for sensor data with sensor_transmission.h */
     mm_sensor_transmission_register_sensor_data(sensor_data_evt_handler);
@@ -148,10 +152,10 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt)
     send_monitoring_dispatch(evt);
 
     /* Now sensor data can be processed with respect to the algorithm. */
-    mm_record_sensor_activity(evt, get_minute_timestamp());
+    mm_sensor_error_record_sensor_activity(evt, get_minute_timestamp());
 
     /* if the sensor that triggered the current event is hyperactive do not process the event further */
-    if ( mm_is_sensor_hyperactive(evt) )
+    if ( mm_sensor_error_is_sensor_hyperactive(evt) )
     {
         return;
     }
@@ -217,11 +221,11 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
     second_counter %= SECONDS_PER_MINUTE;
 
     mm_activity_variable_growth_on_second_elapsed();
-	mm_apply_activity_variable_drain_factor();
-	mm_led_signalling_states_on_second_elapsed();
+    mm_apply_activity_variable_drain_factor();
+    mm_led_signalling_states_on_second_elapsed();
 
-	/* Space left to add other once-per-second updates if
-	 * necessary in the future. */
+    /* Space left to add other once-per-second updates if
+     * necessary in the future. */
 }
 
 /**
@@ -236,7 +240,7 @@ static void on_minute_elapsed(void)
     minute_counter++;
     minute_counter %= MINUTES_PER_HOUR;
 
-    mm_check_for_sensor_hyperactivity();
+    mm_sensor_error_check_for_sensor_hyperactivity();
 }
 
 /**
@@ -258,7 +262,7 @@ static void on_hour_elapsed(void)
 */
 static void on_day_elapsed(void)
 {
-    mm_check_for_sensor_inactivity();
+    mm_sensor_error_check_for_sensor_inactivity();
 }
 
 /**
@@ -280,7 +284,7 @@ static void update_node_positions(void)
     if(have_node_positions_changed())
     {
         /* Tell all users we are about to clear the flag: */
-        mm_sensor_error_check_on_node_positions_update();
+        mm_sensor_error_on_node_positions_update();
 
         /* Clear the flag: */
         clear_unread_node_positions();

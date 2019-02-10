@@ -16,7 +16,7 @@ notes:
 #define MAX_SENSORS_PER_NODE                ( 2 )
 #define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )     
 
-#define MAX_NUMBER_NODES			        ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
+#define MAX_NUMBER_NODES                    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
 #define MAX_SENSORS_PER_NODE                ( 2 )
 #define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )  
 
