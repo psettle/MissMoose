@@ -163,7 +163,7 @@ static void pir_on_second_evt(sensor_record_t const * record)
  */ 
 static bool sensor_evt_to_pir_detection(pir_evt_data_t const * evt, abstract_pir_detection_t* detection)
 {
-    memset(&(detection), 0, sizeof(detection));
+    memset(detection, 0, sizeof(abstract_pir_detection_t));
 
     mm_node_position_t const * position = get_position_for_node(evt->node_id);
     
@@ -190,7 +190,7 @@ static bool sensor_evt_to_pir_detection(pir_evt_data_t const * evt, abstract_pir
  */
 static void sensor_record_to_pir_detection(sensor_record_t const * record, abstract_pir_detection_t* detection)
 {
-    memset(&detection, 0, sizeof(detection));
+    memset(detection, 0, sizeof(abstract_pir_detection_t));
 
     if(!record->detection_status)
     {

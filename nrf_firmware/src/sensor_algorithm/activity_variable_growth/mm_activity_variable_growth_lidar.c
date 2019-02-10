@@ -180,7 +180,7 @@ static void lidar_on_second_evt(sensor_record_t const * record)
  */ 
 static bool sensor_evt_to_lidar_detection(lidar_evt_data_t const * evt, abstract_lidar_detection_t* detection)
 {
-    memset(&(detection), 0, sizeof(detection));
+    memset(detection, 0, sizeof(abstract_lidar_detection_t));
     /* The regions can shift around a lot due to the offset system, so we need 2 values:
             - distance to first node
             - distance to second node
@@ -253,7 +253,7 @@ static bool sensor_evt_to_lidar_detection(lidar_evt_data_t const * evt, abstract
  */
 static void sensor_record_to_lidar_detection(sensor_record_t const * record, abstract_lidar_detection_t* detection)
 {
-    memset(&detection, 0, sizeof(detection));
+    memset(detection, 0, sizeof(abstract_lidar_detection_t));
 
     detection->region = record->detection_status;
 
