@@ -43,7 +43,7 @@ static void test_case_lidar_on_let_drain_to_1(void);
 
 void test_demo_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names)
 {
-	ADD_TEST(test_case_3_days_idle);
+    ADD_TEST(test_case_3_days_idle);
     ADD_TEST(test_case_test_sending_sensor_data);
 
     //Basic tests

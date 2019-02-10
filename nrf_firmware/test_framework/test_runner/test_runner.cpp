@@ -45,7 +45,7 @@ static void deinit_test_case(void);
 
 void test_runner_init(std::vector<test_case_cb> const & tests, std::vector<std::string> test_names, std::string const & output_destination)
 {
-	for (int i = 0; i < tests.size(); i++)
+    for (int i = 0; i < tests.size(); i++)
     {
         run_test_case(tests[i], test_names[i], output_destination);
     }

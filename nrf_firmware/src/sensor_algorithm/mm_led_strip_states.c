@@ -336,7 +336,7 @@ static void set_led_output_state(uint8_t x, uint8_t y, led_signalling_state_t st
 */
 static bool is_road_side_av( uint16_t x, uint16_t y )
 {
-	return y == 0;
+    return y == 0;
 }
 
 /**
