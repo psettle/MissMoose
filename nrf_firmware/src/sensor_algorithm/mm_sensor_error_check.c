@@ -89,7 +89,7 @@ void mm_sensor_error_record_sensor_activity(sensor_evt_t const * evt, uint32_t m
     {
         memcpy(&active_sensors_past_day[active_sensors_past_day_count], &activity_record, sizeof( activity_record ));
         active_sensors_past_day_count++;
-        APP_ERROR_CHECK_BOOL(active_sensors_past_day_count > MAX_SENSOR_COUNT);
+        APP_ERROR_CHECK_BOOL(active_sensors_past_day_count <= MAX_SENSOR_COUNT);
     }
     // check to see if this sensor has an existing activity record and if it does add to it
     for ( uint16_t i = 0; i < MAX_SENSOR_COUNT; i++ )
