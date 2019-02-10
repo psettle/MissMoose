@@ -14,9 +14,10 @@ notes:
 /**********************************************************
                         CONSTANTS
 **********************************************************/
-#define LIDAR_DETECT_DISTANCE_350CM     (350)
-#define PIR_DETECTION_START             (true) //Used to indicate that a PIR has started detecting
-#define PIR_DETECTION_END               (false) //Used to indicate that a PIR has stopped detecting
+#define LIDAR_DETECT_DISTANCE_350CM         (350) //350 cm = 3.5 meters
+#define LIDAR_DETECT_DISTANCE_OUTOFRANGE    (30000) //30 meters - Outside of the range lidars are used to detect
+#define PIR_DETECTION_START                 (true) //Used to indicate that a PIR has started detecting
+#define PIR_DETECTION_END                   (false) //Used to indicate that a PIR has stopped detecting
 
 /**********************************************************
                        DECLARATIONS
@@ -161,7 +162,8 @@ static void test_case_lidar_on_let_drain_to_1(void)
 {
     // Use node 1's lidar. Send that a detection occurred.
     test_send_lidar_data(1, SENSOR_ROTATION_0, LIDAR_DETECT_DISTANCE_350CM);
-
+    simulate_time(15); //Let 15 seconds pass so that the AV charges up
+    test_send_lidar_data(1, SENSOR_ROTATION_0, LIDAR_DETECT_DISTANCE_OUTOFRANGE);
 
     simulate_time(DAYS(1)); //Let the variable drain
 }
