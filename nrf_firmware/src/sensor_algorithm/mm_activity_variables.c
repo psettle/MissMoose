@@ -32,7 +32,7 @@ notes:
      X is indexed left -> right. (In direction of North-American traffic)
      Y is indexed top -> bottom. (Moving away from the road)
 
-     Variable (x, y) is located at activity_variables[y * MAX_AV_SIZE_X + x]
+     Variable (x, y) is located at activity_variables[y * MAX_AV_SIZE_Y + x]
 */
 static mm_activity_variable_t activity_variables[ACTIVITY_VARIABLES_NUM];
 
@@ -57,5 +57,5 @@ void mm_activity_variables_init(void)
 
 mm_activity_variable_t* mm_av_access(uint8_t x, uint8_t y)
 {
-    return &activity_variables[y * MAX_AV_SIZE_X + x];
+    return &activity_variables[y * MAX_AV_SIZE_Y + x];
 }
