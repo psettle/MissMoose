@@ -69,6 +69,9 @@
     <ClCompile Include="src\sensor_algorithm\mm_sensor_error_check.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_framework\test_cases\test_basic_sensor_activity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_framework\mocked_interfaces\app_error.h">
@@ -126,6 +129,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\sensor_algorithm\mm_sensor_error_check.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test_framework\test_cases\test_basic_sensor_activity.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test_framework\test_cases\test_constants.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

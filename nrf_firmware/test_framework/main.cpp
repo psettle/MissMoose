@@ -10,6 +10,7 @@
 
 #include "test_runner.hpp"
 #include "tests.hpp"
+#include "test_basic_sensor_activity.hpp"
 
 /**********************************************************
                         CONSTANTS
@@ -25,6 +26,7 @@ int main()
     std::vector<std::string> test_names;
 
     test_demo_add_tests(tests, test_names);
+    test_basic_sensor_activity_add_tests(tests, test_names);
 
     test_runner_init(tests, test_names, "");
 
