@@ -10,7 +10,6 @@
 
 #include "test_runner.hpp"
 #include "tests.hpp"
-#include "test_basic_sensor_activity.hpp"
 
 /**********************************************************
                         CONSTANTS
