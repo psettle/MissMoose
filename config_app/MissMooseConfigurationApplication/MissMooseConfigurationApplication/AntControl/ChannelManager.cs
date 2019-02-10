@@ -184,13 +184,20 @@ namespace MissMooseConfigurationApplication
 
         public void CloseChannel()
         {
-            if (channel.closeChannel(waitTime))
+            ANT_ChannelStatus status = channel.requestStatus(waitTime);
+
+            // Only attempt to close the channel if it is currently open (searching or tracking)
+            if (status.BasicStatus == ANT_ReferenceLibrary.BasicChannelStatusCode.SEARCHING_0x2
+                || status.BasicStatus == ANT_ReferenceLibrary.BasicChannelStatusCode.TRACKING_0x3)
             {
-                Console.WriteLine("Closed channel");
-            }
-            else
-            {
-                throw new Exception("Channel close operation failed.");
+                if (channel.closeChannel(waitTime))
+                {
+                    Console.WriteLine("Closed channel");
+                }
+                else
+                {
+                    throw new Exception("Channel close operation failed.");
+                }
             }
         }
 
