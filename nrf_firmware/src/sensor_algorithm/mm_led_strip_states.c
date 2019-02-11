@@ -216,6 +216,17 @@ void mm_led_signalling_states_on_second_elapsed(void)
 }
 
 /**
+ *  When node positions are updated refresh all of the output nodes in case their state is wrong.
+ */
+void mm_led_signalling_states_on_position_update(void)
+{
+    for(int8_t i = 0; i < MAX_GRID_SIZE_X; ++i)
+    {
+        set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
+    }
+}
+
+/**
     Updates the current_av_states based on the raw AV values
 */
 static void update_current_av_states(void)
