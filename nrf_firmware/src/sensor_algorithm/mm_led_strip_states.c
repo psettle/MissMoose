@@ -77,7 +77,7 @@ static void update_current_output_states(void);
 /**
     Sends an signalling state update to an LED node.
 */
-static void set_led_output_state(uint8_t x, uint8_t y, led_signalling_state_t state);
+static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t state);
 
 /**
     Determines if the activity variable located at (x, y)
@@ -240,7 +240,7 @@ static void update_current_av_states(void)
 */
 static void update_current_output_states(void)
 {
-    for (uint8_t i = 0; i < MAX_GRID_SIZE_X; i++)
+    for (int8_t i = 0; i < MAX_GRID_SIZE_X; i++)
     {
         if (led_signalling_state_records[i].current_av_state > led_signalling_state_records[i].current_output_state)
         {
@@ -251,7 +251,7 @@ static void update_current_output_states(void)
             led_signalling_state_records[i].current_output_state = led_signalling_state_records[i].current_av_state;
 
             /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
-            set_led_output_state(i, 1, led_signalling_state_records[i].current_output_state);
+            set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
         }
         else if (led_signalling_state_records[i].current_av_state == led_signalling_state_records[i].current_output_state)
         {
@@ -274,7 +274,7 @@ static void update_current_output_states(void)
                 led_signalling_state_records[i].current_output_state = led_signalling_state_records[i].current_av_state;
 
                 /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
-                set_led_output_state(i, 1, led_signalling_state_records[i].current_output_state);
+                set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
             }
             else
             {
@@ -288,7 +288,7 @@ static void update_current_output_states(void)
 /**
     Sends an signalling state update to an LED node.
 */
-static void set_led_output_state(uint8_t x, uint8_t y, led_signalling_state_t state)
+static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t state)
 {
     /* Get the position of the LED node. */
     mm_node_position_t const * node_position = get_node_for_position( x, y);
