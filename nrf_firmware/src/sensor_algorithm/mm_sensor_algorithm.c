@@ -269,7 +269,7 @@ static void update_node_positions(void)
     {
         /* Tell all users we are about to clear the flag: */
         mm_sensor_error_check_on_node_positions_update();
-
+        mm_led_signalling_states_on_position_update();
         /* Clear the flag: */
         clear_unread_node_positions();
     }
