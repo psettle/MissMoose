@@ -250,7 +250,7 @@ namespace MissMooseConfigurationApplication
                     NodeType = dataToSend.Value.nodeType,
                     NodeRotation = dataToSend.Value.nodeRotation,
                     xpos = dataToSend.Value.xpos,
-                    ypos = dataToSend.Value.xpos,
+                    ypos = dataToSend.Value.ypos,
                     xoffset = dataToSend.Value.xoffset,
                     yoffset = dataToSend.Value.yoffset
                 };
