@@ -34,4 +34,9 @@ void mm_led_strip_states_init(void);
 */
 void mm_led_signalling_states_on_second_elapsed(void);
 
+/**
+ * Updates LED signalling states for all output nodes in case their positions have changed.
+ */
+void mm_led_signalling_states_on_position_update(void);
+
 #endif /* MM_LED_STRIP_STATES_H */
