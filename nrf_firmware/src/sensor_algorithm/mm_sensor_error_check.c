@@ -120,6 +120,7 @@ void mm_sensor_error_record_sensor_activity(sensor_evt_t const * evt, uint32_t m
             memset(&new_record->activity_timestamps[0], 0, SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE * sizeof(uint16_t));
             new_record->activity_timestamps[0] = minute_count;
             new_record->activity_records_count = 1;
+			break; // Stop adding node entries after finding a spot for the new guy.
         }
     }     
 }

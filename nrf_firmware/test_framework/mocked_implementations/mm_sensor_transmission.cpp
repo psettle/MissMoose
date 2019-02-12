@@ -71,7 +71,7 @@ void test_send_lidar_data
     uint16_t distance_measured
 )
 {
-    //Create a sensor_event_t with SENSOR_TYPE_PIR
+    //Create a sensor_event_t with SENSOR_TYPE_LIDAR
     sensor_evt_t sensor_evt;
     memset(&sensor_evt, 0, sizeof(sensor_evt));
     
