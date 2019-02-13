@@ -72,6 +72,12 @@
     <ClCompile Include="test_framework\test_cases\test_basic_sensor_activity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_framework\util\sensor_evt_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_framework\test_cases\test_hyperactive_inactive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_framework\mocked_interfaces\app_error.h">
@@ -132,6 +138,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="test_framework\test_cases\test_constants.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test_framework\util\sensor_evt_utils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

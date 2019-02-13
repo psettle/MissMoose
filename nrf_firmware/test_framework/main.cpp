@@ -26,6 +26,7 @@ int main()
 
     test_demo_add_tests(tests, test_names);
     test_basic_sensor_activity_add_tests(tests, test_names);
+    test_hyperactive_inactive_add_tests(tests, test_names);
 
     test_runner_init(tests, test_names, "");
 

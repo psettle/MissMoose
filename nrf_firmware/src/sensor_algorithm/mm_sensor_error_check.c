@@ -275,7 +275,6 @@ static void force_exist_inactive_sensor_record(sensor_def_t const * sensor, uint
             empty_record == NULL)
         {
             empty_record = &sensor_inactivity_records[i];
-            break;
         }
     }
 
@@ -356,7 +355,7 @@ static sensor_hyperactivity_record_t* get_sensor_hyperactivity_record(sensor_evt
 }
 
 /**
-    Fetches or creates a sensor inactivity record.
+    Fetches a sensor inactivity record.
  */
 static sensor_inactivity_record_t* get_sensor_inactivity_record(sensor_evt_t const * evt)
 {
@@ -379,25 +378,6 @@ static sensor_inactivity_record_t* get_sensor_inactivity_record(sensor_evt_t con
         }
 
         return existing_record;
-    }
-
-    for (uint16_t i = 0; i < MAX_SENSOR_COUNT; i++)
-    {
-        sensor_inactivity_record_t* new_record = &sensor_inactivity_records[i];
-
-        /* Skip valid records. */
-        if (new_record->is_valid)
-        {
-            continue;
-        }
-
-        /* Initialize the new record. */
-        memset(new_record, 0, sizeof(sensor_inactivity_record_t));
-        memcpy(&new_record->sensor, &sensor, sizeof(sensor_def_t));
-        new_record->is_inactive = false;
-        new_record->is_valid = true;
-
-        return new_record;
     }
 
     /* Couldn't find or allocate record. */
