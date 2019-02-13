@@ -17,6 +17,7 @@ namespace MissMooseConfigurationApplication.UIPages
 
         private const int GridSize = 3;
         private const int OffsetScalePixels = 10;
+        private const int OffsetScaleCentimeters = 5;
 
         private Viewbox ActiveViewbox = null;
         #endregion
@@ -32,12 +33,6 @@ namespace MissMooseConfigurationApplication.UIPages
             InitializeComponent();
             InitializeViewboxes();
             InitializePulses();
-            ClockwiseButton.Button.Click += RotateClockwise_Click;
-            CounterClockwiseButton.Button.Click += RotateCounterClockwise_Click;
-            UpButton.Button.Click += DirectionClick;
-            DownButton.Button.Click += DirectionClick;
-            RightButton.Button.Click += DirectionClick;
-            LeftButton.Button.Click += DirectionClick;
 
             AntControl.Instance.AddConfigUI(this);
         }
@@ -151,6 +146,8 @@ namespace MissMooseConfigurationApplication.UIPages
             var node = ActiveViewbox.Child as SensorNode;
 
             NodeNameLabel.Content = "Node " + node.NodeID;
+            XOffsetText.NumberField.Content = node.xoffset * OffsetScaleCentimeters;
+            YOffsetText.NumberField.Content = node.yoffset * OffsetScaleCentimeters;
         }
 
         private void TransferNode(Viewbox source, Viewbox destination)
@@ -344,28 +341,28 @@ namespace MissMooseConfigurationApplication.UIPages
 
             AddViewboxOffset(ActiveViewbox, -node.xoffset, -node.yoffset);
 
-            if (sender == UpButton.Button)
+            if (sender == UpButton)
             {
                 if (node.yoffset < SensorNode.MaxOffset)
                 {
                     node.yoffset++;
                 }
             }
-            else if(sender == DownButton.Button)
+            else if(sender == DownButton)
             {
                 if (node.yoffset > -SensorNode.MaxOffset)
                 {
                     node.yoffset--;
                 }
             }
-            else if(sender == LeftButton.Button)
+            else if(sender == LeftButton)
             {
                 if (node.xoffset > -SensorNode.MaxOffset)
                 {
                     node.xoffset--;
                 }
             }
-            else if(sender == RightButton.Button)
+            else if(sender == RightButton)
             {
                 if (node.xoffset < SensorNode.MaxOffset)
                 {
@@ -384,6 +381,22 @@ namespace MissMooseConfigurationApplication.UIPages
             margin.Left += offsetx * OffsetScalePixels;
             margin.Right -= offsetx * OffsetScalePixels;
             viewbox.Margin = margin;
+
+            YOffsetText.NumberField.Content = (offsety * OffsetScaleCentimeters);
+            XOffsetText.NumberField.Content = (offsetx * OffsetScaleCentimeters);
+        }
+
+        private void ResetOffsetClick(object sender, RoutedEventArgs e)
+        {
+            if (ActiveViewbox == null || ActiveViewbox.Child == null || ActiveViewbox == NewSensorViewbox)
+            {
+                return;
+            }
+
+            var node = ActiveViewbox.Child as SensorNode;
+            AddViewboxOffset(ActiveViewbox, -node.xoffset, -node.yoffset);
+            node.yoffset = 0;
+            node.xoffset = 0;
         }
 
         #endregion
