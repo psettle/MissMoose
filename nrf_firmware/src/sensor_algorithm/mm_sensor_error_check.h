@@ -1,5 +1,5 @@
 /**
-file: mm_sensor_algorithm.h
+file: mm_sensor_error_check.h
 brief:
 notes:
 */
@@ -17,9 +17,14 @@ notes:
 **********************************************************/
 
 /**
+    Initialize sensor error checking.
+*/
+void mm_sensor_error_init(void);
+
+/**
     Record that a sensor has been active (has had a detection event).
 */
-void mm_record_sensor_activity(sensor_evt_t const * evt, uint16_t minute_count);
+void mm_sensor_error_record_sensor_activity(sensor_evt_t const * evt, uint32_t minute_count);
 
 /**
     Analyze collected data and update error states.

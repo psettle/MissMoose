@@ -9,7 +9,10 @@ notes:
 **********************************************************/
 
 #include <string.h>
+
 #include "app_error.h"
+
+#include "mm_sensor_error_check.h"
 #include "mm_sensor_algorithm_config.h"
 #include "mm_position_config.h"
 
@@ -113,7 +116,7 @@ void mm_sensor_error_init(void)
 /**
     Record that a sensor has been active (has had a detection event).
 */
-void mm_record_sensor_activity(sensor_evt_t const * evt, uint32_t minute_count)
+void mm_sensor_error_record_sensor_activity(sensor_evt_t const * evt, uint32_t minute_count)
 {
     on_sensor_evt_inactive_update(evt, minute_count);
     on_sensor_evt_hyperactive_update(evt, minute_count);

@@ -234,9 +234,9 @@ static void update_current_av_states(void)
     /* Clear previous states */
     clear_all_current_av_states();
 
-    for (uint16_t x = 0; x < (MAX_AV_SIZE_X); x++)
+    for (uint8_t x = 0; x < (MAX_AV_SIZE_X); x++)
     {
-        for (uint16_t y = 0; y < (MAX_AV_SIZE_Y); y++)
+        for (uint8_t y = 0; y < (MAX_AV_SIZE_Y); y++)
         {
             output_table_t const * output_table = get_output_table_for_av(x, y);
             output_set_t const * output_set = get_output_set_for_av(is_road_side_av(x, y), AV(x, y), output_table);
@@ -347,7 +347,7 @@ static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t stat
 */
 static bool is_road_side_av( uint16_t x, uint16_t y )
 {
-	return y == 0;
+    return y == 0;
 }
 
 /**

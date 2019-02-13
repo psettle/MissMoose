@@ -55,6 +55,12 @@ typedef union
 
 #define SCHEDULER_MAX_EVENT_COUNT			( 10 )	/* Main should run after every event, so it should be hard to queue up a lot of events. */
 
+
+/* Compiler assert on simulated time, we should never simulate time in production. */
+#ifdef MM_ALLOW_SIMULATED_TIME
+    #error Dont simulate time, this is the real deal!
+#endif
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/

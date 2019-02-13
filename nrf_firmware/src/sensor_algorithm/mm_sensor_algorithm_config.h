@@ -16,7 +16,7 @@ notes:
 #define MAX_SENSORS_PER_NODE                ( 2 )
 #define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )     
 
-#define MAX_NUMBER_NODES			        ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
+#define MAX_NUMBER_NODES                    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
 #define MAX_SENSORS_PER_NODE                ( 2 )
 #define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )  
 
@@ -41,7 +41,7 @@ notes:
 #define SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE  ( 120 )
 #define SENSOR_HYPERACTIVITY_FREQUENCY_THRES    ( 1.0 ) // events / SENSOR_HYPERACTIVITY_DETECTION_PERIOD
 
-#define ACTIVITY_VARIABLE_DECAY_FACTOR      ( 0.97f )
+#define ACTIVITY_VARIABLE_DECAY_FACTOR      ( 0.99f )
 #define ACTIVITY_DECAY_PERIOD_MS            ( ONE_SECOND_MS )
 
 /* Road-side (RS), non-road-side (NRS) */

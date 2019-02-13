@@ -98,9 +98,15 @@ static uint32_t hour_counter = 0;
 */
 void mm_sensor_algorithm_init(void)
 {
+    second_counter = 0;
+    minute_counter = 0;
+    hour_counter = 0;
+
     /* Initialize algorithm components. */
+    mm_sensor_error_init();
     mm_activity_variables_init();
     mm_activity_variable_growth_init();
+    mm_led_strip_states_init();
 
     /* Register for sensor data with sensor_transmission.h */
     mm_sensor_transmission_register_sensor_data(sensor_data_evt_handler);
@@ -114,6 +120,16 @@ void mm_sensor_algorithm_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+#ifdef MM_ALLOW_SIMULATED_TIME
+/**
+ * Simulate a second passing, only use for simulating time, not in production.
+ */
+void mm_sensor_algorithm_on_second_elapsed(void)
+{
+    on_second_elapsed(NULL, 0);
+}
+#endif
+
 /**
     Callback into sensor_transmission.h to receive sensor data from all nodes.
 */
@@ -126,7 +142,7 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt)
     send_monitoring_dispatch(evt);
 
     /* Now sensor data can be processed with respect to the algorithm. */
-    mm_record_sensor_activity(evt, get_minute_timestamp());
+    mm_sensor_error_record_sensor_activity(evt, get_minute_timestamp());
 
     /* if the sensor that triggered the current event is hyperactive do not process the event further */
     if ( mm_sensor_error_is_sensor_hyperactive(evt) )
@@ -195,11 +211,11 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
     }
 
     mm_activity_variable_growth_on_second_elapsed();
-	mm_apply_activity_variable_drain_factor();
-	mm_led_signalling_states_on_second_elapsed();
+    mm_apply_activity_variable_drain_factor();
+    mm_led_signalling_states_on_second_elapsed();
 
-	/* Space left to add other once-per-second updates if
-	 * necessary in the future. */
+    /* Space left to add other once-per-second updates if
+     * necessary in the future. */
 }
 
 /**
