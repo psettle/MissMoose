@@ -9,7 +9,13 @@ notes:
 **********************************************************/
 
 #include "tests.hpp"
-
+#include <stdexcept>
+#include <sstream>
+#include <iostream>
+extern "C" {
+#include "mm_sensor_error_check.h"
+#include "mm_sensor_algorithm_config.h"
+}
 
 /**********************************************************
                         CONSTANTS

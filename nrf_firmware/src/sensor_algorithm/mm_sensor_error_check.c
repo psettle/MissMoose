@@ -82,6 +82,11 @@ static void on_sensor_evt_hyperactive_update(sensor_evt_t const * evt, uint32_t 
 static sensor_hyperactivity_record_t* get_sensor_hyperactivity_record(sensor_evt_t const * evt);
 
 /**
+    Fetches or creates a sensor inactivity record.
+ */
+static sensor_inactivity_record_t* get_sensor_inactivity_record(sensor_evt_t const * evt);
+
+/**
     Check for and flag inactive sensors.
  */
 static void evaluate_sensor_inactivity(uint32_t minute_count);
@@ -142,6 +147,20 @@ bool mm_sensor_error_is_sensor_hyperactive(sensor_evt_t const * evt)
 }
 
 /**
+    Returns true if the sensor in the given event is marked as inactive
+*/
+bool mm_sensor_error_is_sensor_inactive(sensor_evt_t const * evt)
+{
+
+    sensor_inactivity_record_t const* record = get_sensor_inactivity_record(evt);
+
+    /* Records should always exist. */
+    APP_ERROR_CHECK(record == NULL);
+
+    return record->is_inactive;
+}
+
+/**
     Called before clearing node position changed flag.
 */
 void mm_sensor_error_on_node_positions_update(uint32_t minute_count)
@@ -187,7 +206,7 @@ static void create_sensor_record(sensor_evt_t const * evt, sensor_def_t * sensor
     Process a sensor event for possible inactivity.
 */
 static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t minute_count)
-{ 
+{
     /* Fetch a template to search for a sensor with. */
     sensor_def_t sensor;
     create_sensor_record(evt, &sensor);
@@ -206,7 +225,7 @@ static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t min
             return;
         }
     }
-    
+
     /* If we got here, there was no record for that sensor, but there should be a record for all sensors */
     APP_ERROR_CHECK(true);
 }
@@ -328,6 +347,37 @@ static sensor_hyperactivity_record_t* get_sensor_hyperactivity_record(sensor_evt
         new_record->is_valid = true;
 
         return new_record;
+    }
+
+    /* Couldn't find or allocate record. */
+    APP_ERROR_CHECK(true);
+    return NULL;
+}
+
+/**
+    Fetches a sensor inactivity record.
+ */
+static sensor_inactivity_record_t* get_sensor_inactivity_record(sensor_evt_t const * evt)
+{
+    /* Fetch a template to search for a sensor with. */
+    sensor_def_t sensor;
+    create_sensor_record(evt, &sensor);
+
+    /* check to see if this sensor has an existing inactivity record and if it does add to it */
+    for (uint16_t i = 0; i < MAX_SENSOR_COUNT; i++)
+    {
+        sensor_inactivity_record_t* existing_record = &sensor_inactivity_records[i];
+
+        /* Does this record match the event? */
+        if (sensor.node_id != existing_record->sensor.node_id ||
+            sensor.sensor_rotation != existing_record->sensor.sensor_rotation ||
+            !existing_record->is_valid)
+        {
+            /* No it doesn't */
+            continue;
+        }
+
+        return existing_record;
     }
 
     /* Couldn't find or allocate record. */

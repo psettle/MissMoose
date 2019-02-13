@@ -34,4 +34,7 @@ void test_demo_add_tests(std::vector<test_case_cb>& tests, std::vector<std::stri
 // Adds the 4 tests to be run to the test runner
 void test_basic_sensor_activity_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);
 
+// Adds the tests related to sensor hyperactiveness or inactiveness
+void test_hyperactive_inactive_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);
+
 #endif /* TESTS_HPP */
