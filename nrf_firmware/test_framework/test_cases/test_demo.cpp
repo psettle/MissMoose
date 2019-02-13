@@ -41,9 +41,9 @@ static void test_case_3_days_idle(void)
 
 static void test_case_test_sending_sensor_data(void)
 {
-    //Test sending PIR and lidar data
-    test_send_pir_data(2, SENSOR_ROTATION_180, true);
+    // Test sending PIR and lidar data
+    test_send_pir_data(2, SENSOR_ROTATION_180, PIR_DETECTION_START);
     test_send_lidar_data(3, SENSOR_ROTATION_0, 100);
-    //Simulate time passing
+    // Simulate time passing
     simulate_time(MINUTES(5));
 }
