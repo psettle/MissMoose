@@ -68,7 +68,7 @@ static void update_node_positions(void);
 
 /**
  * Tick events, second, minute, etc.
- * 
+ *
  * Invoked from main context.
  */
 static void on_second_elapsed(void* p_unused, uint16_t size_0);
@@ -149,7 +149,7 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt)
     {
         return;
     }
-    
+
     mm_activity_variable_growth_on_sensor_detection(evt);
 }
 
@@ -225,7 +225,7 @@ static void on_minute_elapsed(void)
 {
     minute_counter++;
     minute_counter %= MINUTES_PER_HOUR;
-    
+
     if (minute_counter == 0)
     {
         hour_counter++;

@@ -41,5 +41,10 @@ void mm_sensor_error_on_node_positions_update(uint32_t minute_count);
 */
 bool mm_sensor_error_is_sensor_hyperactive(sensor_evt_t const * evt);
 
+/**
+    Returns true if the sensor in the given event is marked as inactive
+*/
+bool mm_sensor_error_is_sensor_inactive(sensor_evt_t const * evt);
+
 
 #endif /* MM_SENSOR_ERROR_CHECK_H */
