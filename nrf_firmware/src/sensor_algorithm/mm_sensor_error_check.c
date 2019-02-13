@@ -56,22 +56,22 @@ static void create_sensor_record(sensor_evt_t const * evt, sensor_def_t * sensor
 /**
     Process a sensor event for possible inactivity.
 */
-static void on_sensor_evt_inactive_check(sensor_evt_t const * evt, uint32_t minute_count);
+static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t minute_count);
 
 /**
     Create inactive sensor records for the provided position where they do not exist.
 */
-static void create_inactive_sensor_records(mm_node_position_t const * position, uint32_t minute_count);
+static void force_exist_inactive_sensor_records(mm_node_position_t const * position, uint32_t minute_count);
 
 /**
     Create inactive sensor record for the provided sensor where it does not exist.
  */
-static void create_inactive_sensor_record(sensor_def_t const * sensor, uint32_t minute_count);
+static void force_exist_inactive_sensor_record(sensor_def_t const * sensor, uint32_t minute_count);
 
 /**
     Process a sensor event for possible hyperactivity.
  */
-static void on_sensor_evt_hyperactive_check(sensor_evt_t const * evt, uint32_t minute_count);
+static void on_sensor_evt_hyperactive_update(sensor_evt_t const * evt, uint32_t minute_count);
 
 /**
     Fetches or creates a sensor hyperactivity record.
@@ -97,7 +97,7 @@ static void evaluate_sensor_hyperactivity_record(sensor_hyperactivity_record_t *
                        VARIABLES
 **********************************************************/
 
-static sensor_inactivity_record_t       sensor_inactivity_records[ MAX_SENSOR_COUNT ];
+static sensor_inactivity_record_t       sensor_inactivity_records[MAX_SENSOR_COUNT];
 static sensor_hyperactivity_record_t    sensor_hyperactivity_records[MAX_SENSOR_COUNT];
 
 /**********************************************************
@@ -115,8 +115,8 @@ void mm_sensor_error_init(void)
 */
 void mm_record_sensor_activity(sensor_evt_t const * evt, uint32_t minute_count)
 {
-    on_sensor_evt_inactive_check(evt, minute_count);
-    on_sensor_evt_hyperactive_check(evt, minute_count);
+    on_sensor_evt_inactive_update(evt, minute_count);
+    on_sensor_evt_hyperactive_update(evt, minute_count);
 }
 
 void mm_sensor_error_on_minute_elapsed(uint32_t minute_count)
@@ -152,7 +152,7 @@ void mm_sensor_error_on_node_positions_update(uint32_t minute_count)
         mm_node_position_t const * position = &(get_node_positions()[i]);
 
         /* Emplace sensor records for each one. */
-        create_inactive_sensor_records(position, minute_count);
+        force_exist_inactive_sensor_records(position, minute_count);
     }
 }
 
@@ -183,7 +183,7 @@ static void create_sensor_record(sensor_evt_t const * evt, sensor_def_t * sensor
 /**
     Process a sensor event for possible inactivity.
 */
-static void on_sensor_evt_inactive_check(sensor_evt_t const * evt, uint32_t minute_count)
+static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t minute_count)
 { 
     /* Fetch a template to search for a sensor with. */
     sensor_def_t sensor;
@@ -211,7 +211,7 @@ static void on_sensor_evt_inactive_check(sensor_evt_t const * evt, uint32_t minu
 /**
     Create inactive sensor records for the provided position where they do not exist.
 */
-static void create_inactive_sensor_records(mm_node_position_t const * position, uint32_t minute_count)
+static void force_exist_inactive_sensor_records(mm_node_position_t const * position, uint32_t minute_count)
 {
     /* Which sensors does this node have? */
     sensor_rotation_t node_sensor_rotations[MAX_SENSORS_PER_NODE];
@@ -225,14 +225,14 @@ static void create_inactive_sensor_records(mm_node_position_t const * position, 
         sensor.node_id = position->node_id;
         sensor.sensor_rotation = node_sensor_rotations[i];
 
-        create_inactive_sensor_record(&sensor, minute_count);
+        force_exist_inactive_sensor_record(&sensor, minute_count);
     }
 }
 
 /**
     Create inactive sensor record for the provided sensor where it does not exist.
  */
-static void create_inactive_sensor_record(sensor_def_t const * sensor, uint32_t minute_count)
+static void force_exist_inactive_sensor_record(sensor_def_t const * sensor, uint32_t minute_count)
 {
     /* First check if the record exists already. */
     sensor_inactivity_record_t* empty_record = NULL;
@@ -257,7 +257,7 @@ static void create_inactive_sensor_record(sensor_def_t const * sensor, uint32_t 
     }
 
     memset(empty_record, 0, sizeof(sensor_inactivity_record_t));
-    memcpy(&empty_record->sensor, 0, sizeof(sensor_def_t));
+    memcpy(&empty_record->sensor, sensor, sizeof(sensor_def_t));
     empty_record->is_valid = true;
     empty_record->is_inactive = false;
     empty_record->t_last_detection = minute_count; /* Save the current timestamp so it is not immedietly hyperactive. */
@@ -266,7 +266,7 @@ static void create_inactive_sensor_record(sensor_def_t const * sensor, uint32_t 
 /**
     Process a sensor event for possible hyperactivity.
  */
-static void on_sensor_evt_hyperactive_check(sensor_evt_t const * evt, uint32_t minute_count)
+static void on_sensor_evt_hyperactive_update(sensor_evt_t const * evt, uint32_t minute_count)
 {
     /* Fetch the record to write to. */
     sensor_hyperactivity_record_t* record = get_sensor_hyperactivity_record(evt);
@@ -359,6 +359,7 @@ static void evaluate_sensor_inactivity(uint32_t minute_count)
         if (dt >= SENSOR_INACTIVITY_THRESHOLD_MIN)
         {
             record->is_inactive = true;
+            /* Note: will be set is_inactive = false when a sensor event occurs for that sensor. */
         }
     }
 }
