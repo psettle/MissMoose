@@ -14,6 +14,7 @@ notes:
 #include <iostream>
 extern "C" {
 #include "mm_sensor_error_check.h"
+#include "mm_sensor_algorithm_config.h"
 }
 
 /**********************************************************
@@ -34,6 +35,8 @@ static void test_case_test_sensor_normal_activity(void);
 static void test_case_test_sensor_hyperactivity(void);
 /* Make sure that hyperactive sensors wouldn't be called hyperactive anymore after a long cooldown period. */
 static void test_case_test_sensor_hyperactivity_cooldown(void);
+/* Test to see if the sensors are marked as inactive after an appropriately long time. */
+static void test_case_test_sensor_inactivity(void);
 /* Create big list of pir sensor events so that we can use a function to check if a sensor is hyperactive. */
 static void create_all_pir_sensor_evts(std::vector<sensor_evt_t>& evts, bool detection);
 /* Create big list of lidar sensor events so that we can use a function to check if a sensor is hyperactive. */
@@ -65,6 +68,7 @@ void test_demo_add_tests(std::vector<test_case_cb>& tests, std::vector<std::stri
     ADD_TEST(test_case_test_sensor_normal_activity);
     ADD_TEST(test_case_test_sensor_hyperactivity);
     ADD_TEST(test_case_test_sensor_hyperactivity_cooldown);
+    ADD_TEST(test_case_test_sensor_inactivity);
 }
 
 static void test_case_3_days_idle(void)
@@ -74,10 +78,10 @@ static void test_case_3_days_idle(void)
 
 static void test_case_test_sending_sensor_data(void)
 {
-    //Test sending PIR and lidar data
-    test_send_pir_data(2, SENSOR_ROTATION_90, true);
+    // Test sending PIR and lidar data
+    test_send_pir_data(2, SENSOR_ROTATION_90, PIR_DETECTION_START);
     test_send_lidar_data(3, SENSOR_ROTATION_0, 100);
-    //Simulate time passing
+    // Simulate time passing
     simulate_time(MINUTES(5));
 }
 
@@ -85,14 +89,14 @@ static void test_case_test_sensor_normal_activity(void)
 {
     std::vector<sensor_evt_t> pir_evts;
     std::vector<sensor_evt_t> lidar_evts;
-    create_all_pir_sensor_evts(pir_evts, true);
+    create_all_pir_sensor_evts(pir_evts, PIR_DETECTION_START);
     create_all_lidar_sensor_evts(lidar_evts, 100);
     // Test sending data at a reasonable frequency - one every 65 seconds
     for (int i = 0; i < 122; i++)
     {
         for (auto evt : pir_evts)
         {
-            test_send_pir_data(evt.pir_data.node_id, evt.pir_data.sensor_rotation, true);
+            test_send_pir_data(evt.pir_data.node_id, evt.pir_data.sensor_rotation, PIR_DETECTION_START);
         }
         for (auto evt : lidar_evts)
         {
@@ -126,14 +130,14 @@ static void test_case_test_sensor_hyperactivity(void)
 {
     std::vector<sensor_evt_t> pir_evts;
     std::vector<sensor_evt_t> lidar_evts;
-    create_all_pir_sensor_evts(pir_evts, true);
+    create_all_pir_sensor_evts(pir_evts, PIR_DETECTION_START);
     create_all_lidar_sensor_evts(lidar_evts, 100);
     // Test sending data at a high frequency - one every 55 seconds
     for (int i = 0; i < 122; i++)
     {
         for (auto evt : pir_evts)
         {
-            test_send_pir_data(evt.pir_data.node_id, evt.pir_data.sensor_rotation, true);
+            test_send_pir_data(evt.pir_data.node_id, evt.pir_data.sensor_rotation, PIR_DETECTION_START);
         }
         for (auto evt : lidar_evts)
         {
@@ -174,7 +178,7 @@ static void test_case_test_sensor_hyperactivity_cooldown(void)
     {
         for (auto evt : pir_evts)
         {
-            test_send_pir_data(evt.pir_data.node_id, evt.pir_data.sensor_rotation, true);
+            test_send_pir_data(evt.pir_data.node_id, evt.pir_data.sensor_rotation, PIR_DETECTION_START);
         }
         for (auto evt : lidar_evts)
         {
@@ -207,7 +211,7 @@ static void test_case_test_sensor_hyperactivity_cooldown(void)
     simulate_time(MINUTES(121));
     for (auto evt : pir_evts)
     {
-        test_send_pir_data(evt.pir_data.node_id, evt.pir_data.sensor_rotation, true);
+        test_send_pir_data(evt.pir_data.node_id, evt.pir_data.sensor_rotation, PIR_DETECTION_START);
     }
     for (auto evt : lidar_evts)
     {
@@ -231,6 +235,68 @@ static void test_case_test_sensor_hyperactivity_cooldown(void)
         {
             std::stringstream ss;
             ss << "LIDAR sensor on node ID " << evt.lidar_data.node_id << " at rotation " << evt.lidar_data.sensor_rotation << " is hyperactive when it shouldn't be.";
+            throw std::runtime_error(ss.str());
+        }
+    }
+}
+
+static void test_case_test_sensor_inactivity(void)
+{
+
+    std::vector<sensor_evt_t> pir_evts;
+    std::vector<sensor_evt_t> lidar_evts;
+    create_all_pir_sensor_evts(pir_evts, true);
+    create_all_lidar_sensor_evts(lidar_evts, 100);
+    // Start by sending some data to each of the sensors
+    for (auto evt : pir_evts)
+    {
+        test_send_pir_data(evt.pir_data.node_id, evt.pir_data.sensor_rotation, PIR_DETECTION_START);
+    }
+    for (auto evt : lidar_evts)
+    {
+        test_send_lidar_data(evt.lidar_data.node_id, evt.lidar_data.sensor_rotation, 100);
+    }
+    simulate_time(MINUTES(1));
+
+    /* Make sure that all the sensors are not marked as inactive */
+    for (auto evt : pir_evts)
+    {
+        if (mm_sensor_error_is_sensor_inactive(&evt))
+        {
+            std::stringstream ss;
+            ss << "PIR sensor on node ID " << evt.pir_data.node_id << " at rotation " << evt.pir_data.sensor_rotation << " is inactive when it shouldn't be.";
+            throw std::runtime_error(ss.str());
+        }
+    }
+    for (auto evt : lidar_evts)
+    {
+        if (mm_sensor_error_is_sensor_inactive(&evt))
+        {
+            std::stringstream ss;
+            ss << "LIDAR sensor on node ID " << evt.lidar_data.node_id << " at rotation " << evt.lidar_data.sensor_rotation << " is inactive when it shouldn't be.";
+            throw std::runtime_error(ss.str());
+        }
+    }
+
+    // Wait long enough to cause the sensors to be marked as inactive
+    simulate_time(MINUTES(SENSOR_INACTIVITY_THRESHOLD_MIN + 1));
+
+    // If any sensors are listed as not inactive, that's a fail.
+    for (auto evt : pir_evts)
+    {
+        if (!mm_sensor_error_is_sensor_inactive(&evt))
+        {
+            std::stringstream ss;
+            ss << "PIR sensor on node ID " << evt.pir_data.node_id << " at rotation " << evt.pir_data.sensor_rotation << " is not inactive when it should be.";
+            throw std::runtime_error(ss.str());
+        }
+    }
+    for (auto evt : lidar_evts)
+    {
+        if (!mm_sensor_error_is_sensor_inactive(&evt))
+        {
+            std::stringstream ss;
+            ss << "LIDAR sensor on node ID " << evt.lidar_data.node_id << " at rotation " << evt.lidar_data.sensor_rotation << " is not inactive when it should be.";
             throw std::runtime_error(ss.str());
         }
     }

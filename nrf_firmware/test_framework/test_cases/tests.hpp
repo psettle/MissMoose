@@ -12,6 +12,7 @@ notes:
 
 #include "test_runner.hpp"
 #include "mm_sensor_transmission.hpp"
+#include "test_constants.hpp"
 
 /**********************************************************
                           TYPES
@@ -29,6 +30,8 @@ typedef void(*test_case_cb)(void);
                        DECLARATIONS
 **********************************************************/
 
-void test_demo_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);
+void test_demo_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);\
+// Adds the 4 tests to be run to the test runner
+void test_basic_sensor_activity_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);
 
 #endif /* TESTS_HPP */
