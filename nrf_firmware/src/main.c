@@ -34,6 +34,7 @@ notes:
 #include "mm_hardware_test_pub.h"
 #include "mm_position_config.h"
 #include "mm_sensor_manager.h"
+#include "mm_av_transmission.h"
 
 /**********************************************************
                         CONSTANTS
@@ -107,6 +108,7 @@ int main(void)
 
     mm_monitoring_dispatch_init();
 	mm_position_config_init();
+    mm_av_transmission_init();
 
 	#endif
 
