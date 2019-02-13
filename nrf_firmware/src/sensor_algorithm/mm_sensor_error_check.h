@@ -27,23 +27,19 @@ void mm_sensor_error_init(void);
 void mm_sensor_error_record_sensor_activity(sensor_evt_t const * evt, uint32_t minute_count);
 
 /**
-    Checks to ensure all sensors have made at least 1 detection in the last 24 hours
-*/
-void mm_sensor_error_check_for_sensor_inactivity(void);
+    Analyze collected data and update error states.
+ */
+void mm_sensor_error_on_minute_elapsed(uint32_t minute_count);
 
 /**
-    Checks for any sensors which are hyperactive. Flags hyperactive sensors so their events will be ignored.
+    Called before clearing node position changed flag.
 */
-void mm_sensor_error_check_for_sensor_hyperactivity(void);
+void mm_sensor_error_on_node_positions_update(uint32_t minute_count);
 
 /**
     Returns true if the sensor in the given event is marked as hyperactive
 */
 bool mm_sensor_error_is_sensor_hyperactive(sensor_evt_t const * evt);
 
-/**
-    Called before clearing node position changed flag.
-*/
-void mm_sensor_error_on_node_positions_update(void);
 
 #endif /* MM_SENSOR_ERROR_CHECK_H */
