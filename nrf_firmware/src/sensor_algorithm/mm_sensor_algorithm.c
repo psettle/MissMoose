@@ -68,21 +68,11 @@ static void update_node_positions(void);
 
 /**
  * Tick events, second, minute, etc.
- * 
+ *
  * Invoked from main context.
  */
 static void on_second_elapsed(void* p_unused, uint16_t size_0);
 static void on_minute_elapsed(void);
-
-/**
-    Called every hour from main context.
-*/
-static void on_hour_elapsed(void);
-
-/**
-    Called every day from main context.
-*/
-static void on_day_elapsed(void);
 
 /**
     Gets a timestamp accurate to 1 minute. Rolls over to 0 ever 24 hours.
@@ -159,7 +149,7 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt)
     {
         return;
     }
-    
+
     mm_activity_variable_growth_on_sensor_detection(evt);
 }
 
@@ -212,13 +202,13 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
     /* Make sure everyone has valid node positions before processing the event. */
     update_node_positions();
 
+    second_counter++;
+    second_counter %= SECONDS_PER_MINUTE;
+
     if(second_counter == 0)
     {
         on_minute_elapsed();
     }
-
-    second_counter++;
-    second_counter %= SECONDS_PER_MINUTE;
 
     mm_activity_variable_growth_on_second_elapsed();
     mm_apply_activity_variable_drain_factor();
@@ -233,36 +223,15 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
 */
 static void on_minute_elapsed(void)
 {
-    if(minute_counter == 0)
-    {
-        on_hour_elapsed();
-    }
     minute_counter++;
     minute_counter %= MINUTES_PER_HOUR;
 
-    mm_sensor_error_check_for_sensor_hyperactivity();
-}
-
-/**
-    Called every hour from main context.
-*/
-static void on_hour_elapsed(void)
-{
-    if(hour_counter == 0)
+    if (minute_counter == 0)
     {
-        on_day_elapsed();
+        hour_counter++;
     }
 
-    hour_counter++;
-    hour_counter %= HOURS_PER_DAY;
-}
-
-/**
-    Called every day from main context.
-*/
-static void on_day_elapsed(void)
-{
-    mm_sensor_error_check_for_sensor_inactivity();
+    mm_sensor_error_on_minute_elapsed(get_minute_timestamp());
 }
 
 /**
@@ -284,7 +253,7 @@ static void update_node_positions(void)
     if(have_node_positions_changed())
     {
         /* Tell all users we are about to clear the flag: */
-        mm_sensor_error_on_node_positions_update();
+        mm_sensor_error_on_node_positions_update(get_minute_timestamp());
         mm_led_signalling_states_on_position_update();
         /* Clear the flag: */
         clear_unread_node_positions();

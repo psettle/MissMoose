@@ -75,7 +75,7 @@ static void test_case_3_days_idle(void)
 static void test_case_test_sending_sensor_data(void)
 {
     //Test sending PIR and lidar data
-    test_send_pir_data(2, SENSOR_ROTATION_180, true);
+    test_send_pir_data(2, SENSOR_ROTATION_90, true);
     test_send_lidar_data(3, SENSOR_ROTATION_0, 100);
     //Simulate time passing
     simulate_time(MINUTES(5));
@@ -88,7 +88,7 @@ static void test_case_test_sensor_normal_activity(void)
     create_all_pir_sensor_evts(pir_evts, true);
     create_all_lidar_sensor_evts(lidar_evts, 100);
     // Test sending data at a reasonable frequency - one every 65 seconds
-    for (int i = 0; i < 120; i++)
+    for (int i = 0; i < 122; i++)
     {
         for (auto evt : pir_evts)
         {
@@ -129,7 +129,7 @@ static void test_case_test_sensor_hyperactivity(void)
     create_all_pir_sensor_evts(pir_evts, true);
     create_all_lidar_sensor_evts(lidar_evts, 100);
     // Test sending data at a high frequency - one every 55 seconds
-    for (int i = 0; i < 120; i++)
+    for (int i = 0; i < 122; i++)
     {
         for (auto evt : pir_evts)
         {
@@ -170,7 +170,7 @@ static void test_case_test_sensor_hyperactivity_cooldown(void)
     create_all_pir_sensor_evts(pir_evts, true);
     create_all_lidar_sensor_evts(lidar_evts, 100);
     // Test sending data at a high frequency - one every 55 seconds
-    for (int i = 0; i < 120; i++)
+    for (int i = 0; i < 122; i++)
     {
         for (auto evt : pir_evts)
         {
