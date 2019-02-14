@@ -47,8 +47,9 @@
             </Polygon.RenderTransform>
         </Polygon>
 
+        <Ellipse Name="OuterRingBoder" Fill="Black" Height="310" Width="310"/>
         <Ellipse Name="OuterRing" Fill="Blue" Height="300" Width="300" />
-        <Ellipse Name="Border" Fill="DarkGray" Height="260" Width="260" />
+        <Ellipse Name="Border" Fill="Black" Height="260" Width="260" />
         <Ellipse Name="InnerRing" Fill="DarkGray" Height="250" Width="250" />
         <Ellipse Name="InnerCircle" Fill="DarkGray" Height="200" Width="200" />
 
