@@ -202,7 +202,7 @@ namespace MissMooseConfigurationApplication
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
                         if (!ConfigUI.NewNodeBoxFull)
                         {
-                            ConfigUI.AddNewNode(new SensorNode(deviceNum, dataPage.NodeType, dataPage.NodeId, true));
+                            ConfigUI.AddNewNode(new SensorNode(deviceNum, dataPage.NodeType, dataPage.NodeId, false));
                         }
                     });
                 }

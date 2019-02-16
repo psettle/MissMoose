@@ -36,7 +36,6 @@ namespace MissMooseConfigurationApplication
         private static readonly ushort nodeSearchDeviceNumber = 0; // wildcard for search
 
         private bool deviceRunning = false;
-        private bool reopenNodeSearchChannel = false;
 
         // Default wait time in milliseconds for ANT function calls
         private static readonly ushort waitTime = 500;
@@ -46,7 +45,6 @@ namespace MissMooseConfigurationApplication
             if (!deviceRunning)
             {
                 device = new ANT_Device();
-                device.deviceResponse += DeviceResponse;
 
                 // Check whether the connected ANT USB device supports the required capabilities
                 ANT_DeviceCapabilities capabilities = device.getDeviceCapabilities(waitTime);
@@ -133,41 +131,6 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public void ReOpenChannel()
-        {
-            // Unassign the channel
-            if (channel.unassignChannel(waitTime))
-            {
-                Console.WriteLine("Unassigned channel");
-            }
-            else
-            {
-                throw new Exception("Channel unassign operation failed.");
-            }
-
-            // Reassign and open the channel
-            SetupAndOpenChannel(channel);
-        }
-
-        public void CloseChannel()
-        {
-            ANT_ChannelStatus status = channel.requestStatus(waitTime);
-
-            // Only attempt to close the channel if it is currently open (searching or tracking)
-            if (status.BasicStatus == ANT_ReferenceLibrary.BasicChannelStatusCode.SEARCHING_0x2
-                || status.BasicStatus == ANT_ReferenceLibrary.BasicChannelStatusCode.TRACKING_0x3)
-            {
-                if (channel.closeChannel(waitTime))
-                {
-                    Console.WriteLine("Closed channel");
-                }
-                else
-                {
-                    throw new Exception("Channel close operation failed.");
-                }
-            }
-        }
-
         /*
          * Provides a channel to communicate with the node with the given device number
          */ 
@@ -186,6 +149,18 @@ namespace MissMooseConfigurationApplication
             {
                 channel = device.getChannel(nextChannelNum);
                 nextChannelNum = nextChannelNum < maxChannelNum ? (byte)(nextChannelNum + 1) : minChannelNum;
+
+                try
+                {
+                    channel.unassignChannel(waitTime);
+                }
+                catch
+                {
+                    // Do nothing.
+                    // If the unassign fails, the channel was likely not assigned.
+                    // If the unassign fails because something is wrong,
+                    // that will be shown by the following channel assign also failing.
+                }
 
                 if (channel.assignChannel(channelType, 0, waitTime))
                 {
@@ -208,29 +183,6 @@ namespace MissMooseConfigurationApplication
                 responseChannels.Add(deviceNumber, channel);
 
                 return channel;
-            }
-        }
-
-        /*
-         * Handles the ANT device response
-         */
-        public void DeviceResponse(ANT_Response response)
-        {
-            switch ((ANT_ReferenceLibrary.ANTMessageID)response.responseID)
-            {
-                case ANT_ReferenceLibrary.ANTMessageID.RX_EXT_MESGS_ENABLE_0x66:
-                    if (response.getChannelEventCode() == ANT_ReferenceLibrary.ANTEventID.INVALID_MESSAGE_0x28)
-                    {
-                        Console.WriteLine("Extended messages not supported in this ANT product");
-                        break;
-                    }
-                    else if (response.getChannelEventCode() != ANT_ReferenceLibrary.ANTEventID.RESPONSE_NO_ERROR_0x00)
-                    {
-                        Console.WriteLine(String.Format("Error {0} configuring {1}", response.getChannelEventCode(), response.getMessageID()));
-                        break;
-                    }
-                    Console.WriteLine("Extended messages enabled");
-                    break;
             }
         }
     }    
