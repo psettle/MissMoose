@@ -77,7 +77,7 @@ static void update_current_output_states(void);
 /**
     Sends an signalling state update to an LED node.
 */
-static void set_led_output_state(uint16_t x, uint16_t y, led_signalling_state_t state);
+static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t state);
 
 /**
     Determines if the activity variable located at (x, y)
@@ -216,6 +216,17 @@ void mm_led_signalling_states_on_second_elapsed(void)
 }
 
 /**
+ *  When node positions are updated refresh all of the output nodes in case their state is wrong.
+ */
+void mm_led_signalling_states_on_position_update(void)
+{
+    for(int8_t i = 0; i < MAX_GRID_SIZE_X; ++i)
+    {
+        set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
+    }
+}
+
+/**
     Updates the current_av_states based on the raw AV values
 */
 static void update_current_av_states(void)
@@ -223,9 +234,9 @@ static void update_current_av_states(void)
     /* Clear previous states */
     clear_all_current_av_states();
 
-    for (uint16_t x = 0; x < (MAX_AV_SIZE_X); x++)
+    for (uint8_t x = 0; x < (MAX_AV_SIZE_X); x++)
     {
-        for (uint16_t y = 0; y < (MAX_AV_SIZE_Y); y++)
+        for (uint8_t y = 0; y < (MAX_AV_SIZE_Y); y++)
         {
             output_table_t const * output_table = get_output_table_for_av(x, y);
             output_set_t const * output_set = get_output_set_for_av(is_road_side_av(x, y), AV(x, y), output_table);
@@ -240,7 +251,7 @@ static void update_current_av_states(void)
 */
 static void update_current_output_states(void)
 {
-    for (uint16_t i = 0; i < MAX_GRID_SIZE_X; i++)
+    for (int8_t i = 0; i < MAX_GRID_SIZE_X; i++)
     {
         if (led_signalling_state_records[i].current_av_state > led_signalling_state_records[i].current_output_state)
         {
@@ -251,7 +262,7 @@ static void update_current_output_states(void)
             led_signalling_state_records[i].current_output_state = led_signalling_state_records[i].current_av_state;
 
             /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
-            set_led_output_state(i, 1, led_signalling_state_records[i].current_output_state);
+            set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
         }
         else if (led_signalling_state_records[i].current_av_state == led_signalling_state_records[i].current_output_state)
         {
@@ -274,7 +285,7 @@ static void update_current_output_states(void)
                 led_signalling_state_records[i].current_output_state = led_signalling_state_records[i].current_av_state;
 
                 /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
-                set_led_output_state(i, 1, led_signalling_state_records[i].current_output_state);
+                set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
             }
             else
             {
@@ -288,7 +299,7 @@ static void update_current_output_states(void)
 /**
     Sends an signalling state update to an LED node.
 */
-static void set_led_output_state(uint16_t x, uint16_t y, led_signalling_state_t state)
+static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t state)
 {
     /* Get the position of the LED node. */
     mm_node_position_t const * node_position = get_node_for_position( x, y);
@@ -336,7 +347,7 @@ static void set_led_output_state(uint16_t x, uint16_t y, led_signalling_state_t 
 */
 static bool is_road_side_av( uint16_t x, uint16_t y )
 {
-	return y == 0;
+    return y == 0;
 }
 
 /**

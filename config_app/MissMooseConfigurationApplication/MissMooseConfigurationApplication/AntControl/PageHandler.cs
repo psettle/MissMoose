@@ -23,9 +23,6 @@ namespace MissMooseConfigurationApplication
         private static ushort nextNodeId = 1;
         private static readonly ushort networkId = 20000;
 
-        // All assigned node IDs, using device numbers as dictionary keys
-        private Dictionary<ushort, ushort> nodeIds;
-
         // Node configuration data waiting to be sent to a gateway node, using node ID as dictionary keys
         private Dictionary<ushort, NodeConfigurationData> nodeConfigList;
 
@@ -36,7 +33,6 @@ namespace MissMooseConfigurationApplication
         public PageHandler()
         {
             // Create node data lists
-            nodeIds = new Dictionary<ushort, ushort>();
             nodeConfigList = new Dictionary<ushort, NodeConfigurationData>();
         }
 
@@ -53,26 +49,19 @@ namespace MissMooseConfigurationApplication
         /*
          * Processes a received Node Status data page 
          */
-        public bool HandlePage(NodeStatusPage dataPage, ushort deviceID, PageSender responder)
+        public bool HandlePage(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
-            // If the node is missing a node ID or a network ID, send a Network Configuration Command page
-            if (dataPage.NodeId == 0 || dataPage.NetworkId == 0)
-            {
-                SendNetworkConfiguration(responder);
-
-            }
-
             if (dataPage.IsGatewayNode)
             {
-                return HandleNodeConfigPage_Gateway(dataPage, deviceID, responder);
+                return HandleNodeConfigPage_Gateway(dataPage, deviceNum, responder);
             }
             else
             {
-                return HandleNodeConfigPage_Node(dataPage, deviceID, responder);
+                return HandleNodeConfigPage_Node(dataPage, deviceNum, responder);
             }
         }
 
-        public bool HandlePage(LidarMonitoringPage dataPage, ushort deviceID, PageSender responder)
+        public bool HandlePage(LidarMonitoringPage dataPage, ushort deviceNum, PageSender responder)
         {
             SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
 
@@ -106,7 +95,7 @@ namespace MissMooseConfigurationApplication
             return true;
         }
 
-        public bool HandlePage(PirMonitoringPage dataPage, ushort deviceID, PageSender responder)
+        public bool HandlePage(PirMonitoringPage dataPage, ushort deviceNum, PageSender responder)
         {
             SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
 
@@ -146,20 +135,39 @@ namespace MissMooseConfigurationApplication
 
         #region Private Methods
 
-        private bool HandleNodeConfigPage_Gateway(NodeStatusPage dataPage, ushort deviceID, PageSender responder)
+        private bool HandleNodeConfigPage_Gateway(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
-            if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
+            // If the node is missing a network ID, send a Network Configuration Command page
+            if (dataPage.NetworkId == 0)
             {
-                if (!nodeIds.Keys.Contains(deviceID))
+                SensorNode node = ConfigUI.nodes.Where(x => x.DeviceNumber == deviceNum).FirstOrDefault();
+
+                // If we previously configured a node with this ANT device number,
+                // assign it the same node ID as last time.                
+                if (node != null)
+                {
+                    // We are reconfiguring the gateway node,
+                    // so it has probably lost all of its node position data.
+                    // Mark all node data as unsent so that the gateway gets it again.
+                    foreach (NodeConfigurationData data in nodeConfigList.Values)
+                    {
+                        data.isSent = false;
+                    }
+                }
+
+                // The gateway node has a hardcoded node ID, so we only need to send it a network ID.
+                // Send the node ID field in the network configuration page to 0.
+                SendNetworkConfiguration(0, responder);
+            }
+            else if (dataPage.NodeType != HardwareConfiguration.Unknown)
+            {
+                if (ConfigUI.nodes.Count(x => x.DeviceNumber == deviceNum) == 0)
                 {
                     // Add a new node to the UI for the user
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
 
-                        ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId, true));
+                        ConfigUI.AddNewNode(new SensorNode(deviceNum, dataPage.NodeType, dataPage.NodeId, true));
                     });
-
-                    // Save this node's device number
-                    nodeIds.Add(deviceID, dataPage.NodeId);
                 }
             }
 
@@ -169,20 +177,37 @@ namespace MissMooseConfigurationApplication
             return true;
         }
 
-        private bool HandleNodeConfigPage_Node(NodeStatusPage dataPage, ushort deviceID, PageSender responder)
+        private bool HandleNodeConfigPage_Node(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
-            if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
+            // If the node is missing a node ID or a network ID, send a Network Configuration Command page
+            if (dataPage.NodeId == 0 || dataPage.NetworkId == 0)
             {
-                if (!nodeIds.Keys.Contains(deviceID))
+                ushort nodeId;
+                SensorNode node = ConfigUI.nodes.Where(x => x.DeviceNumber == deviceNum).FirstOrDefault();
+
+                // If we previously configured a node with this ANT device number,
+                // assign it the same node ID as last time.                
+                if (node != null)
+                {
+                    nodeId = node.NodeID;
+                }
+                // Otherwise, give it a new node ID.
+                else
+                {
+                    nodeId = GetNextNodeId();
+                }
+
+                SendNetworkConfiguration(nodeId, responder);
+            }
+            else if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
+            {
+                if (ConfigUI.nodes.Count(x => x.DeviceNumber == deviceNum) == 0)
                 {
                     // Add a new node to the UI for the user
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
 
-                        ConfigUI.AddNewNode(new SensorNode(dataPage.NodeType, dataPage.NodeId, false));
+                        ConfigUI.AddNewNode(new SensorNode(deviceNum, dataPage.NodeType, dataPage.NodeId, false));
                     });
-
-                    // Save this node's device number
-                    nodeIds.Add(deviceID, dataPage.NodeId);
 
                     //close connection
                     return false;
@@ -193,11 +218,11 @@ namespace MissMooseConfigurationApplication
             return true;
         }
 
-        private void SendNetworkConfiguration(PageSender responder)
+        private void SendNetworkConfiguration(ushort nodeId, PageSender responder)
         {
             NetworkConfigurationCommandPage configPage = new NetworkConfigurationCommandPage
             {
-                NodeId = GetNextNodeId(),
+                NodeId = nodeId,
                 NetworkId = networkId
             };
 
@@ -221,7 +246,7 @@ namespace MissMooseConfigurationApplication
                     NodeType = dataToSend.Value.nodeType,
                     NodeRotation = dataToSend.Value.nodeRotation,
                     xpos = dataToSend.Value.xpos,
-                    ypos = dataToSend.Value.xpos,
+                    ypos = dataToSend.Value.ypos,
                     xoffset = dataToSend.Value.xoffset,
                     yoffset = dataToSend.Value.yoffset
                 };
@@ -280,7 +305,7 @@ namespace MissMooseConfigurationApplication
 
         private ushort GetNextNodeId()
         {
-            while (nodeIds.Values.Contains(nextNodeId))
+            while (ConfigUI.nodes.Count(x => x.NodeID == nextNodeId) != 0)
             {
                 nextNodeId++;
             }

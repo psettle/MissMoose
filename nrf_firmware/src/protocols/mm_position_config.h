@@ -11,7 +11,9 @@ notes:
                         INCLUDES
 **********************************************************/
 
-#include "nrf_soc.h"
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "mm_sensor_transmission.h"
 
 /**********************************************************
