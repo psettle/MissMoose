@@ -18,6 +18,7 @@
 #include "mm_activity_variables.h"
 #include "mm_led_control.h"
 #include "mm_position_config.h"
+#include "mm_av_transmission.h"
 
 /**********************************************************
                         CONSTANTS
@@ -123,7 +124,7 @@ static void clear_all_current_av_states(void);
 /**
     Gets the status for an AV based on the appropriate detection threshold value.
 */
-static void get_status_for_av(void);
+static uint8_t get_status_for_av(bool is_road_side, mm_activity_variable_t av);
 
 /**********************************************************
                        VARIABLES
@@ -251,7 +252,7 @@ static void update_current_av_states(void)
             uint8_t av_status = get_status_for_av(is_road_side_av(x, y), AV(x, y));
 
             /* Broadcast raw AV values to monitoring application over ANT. */
-            mm_av_transmission_send_av_update(x, y, AV(x, y), uint8_t av_status);
+            mm_av_transmission_send_av_update(x, y, AV(x, y), av_status);
         }
     }
 }
