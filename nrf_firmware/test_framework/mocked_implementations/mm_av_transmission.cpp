@@ -16,6 +16,7 @@ extern "C" {
  * Writes AV output information to the opened log file.
  * For example, the output would look like:
  * 
+ * [ AV OUPUT EVENT]
  * [Sun Feb 17 02:07:24 2019] AV Position X: 2
  * [Sun Feb 17 02:07:24 2019] AV Position Y: 2
  * [Sun Feb 17 02:07:24 2019] AV Value: 0

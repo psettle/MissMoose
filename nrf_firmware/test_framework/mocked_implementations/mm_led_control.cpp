@@ -15,7 +15,8 @@ extern "C" {
 /**
  * Writes LED output state information to the opened log file.
  * For example, the output would look like:
- * 
+ *
+ * [ AV OUPUT EVENT]
  * [Sun Feb 17 02:07:24 2019] Target Node ID: 1
  * [Sun Feb 17 02:07:24 2019] LED Function: 0
  * [Sun Feb 17 02:07:24 2019] LED Colour: 0
