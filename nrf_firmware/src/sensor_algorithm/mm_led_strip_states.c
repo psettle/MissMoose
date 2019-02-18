@@ -18,6 +18,7 @@
 #include "mm_activity_variables.h"
 #include "mm_led_control.h"
 #include "mm_position_config.h"
+#include "mm_av_transmission.h"
 
 /**********************************************************
                         CONSTANTS
@@ -119,6 +120,11 @@ static bool has_current_output_state_timed_out(led_signalling_state_record_t con
     Resets all current_av_states.
 */
 static void clear_all_current_av_states(void);
+
+/**
+    Gets the status for an AV based on the appropriate detection threshold value.
+*/
+static led_signalling_state_t get_status_for_av(bool is_road_side, mm_activity_variable_t av);
 
 /**********************************************************
                        VARIABLES
@@ -241,6 +247,12 @@ static void update_current_av_states(void)
             output_table_t const * output_table = get_output_table_for_av(x, y);
             output_set_t const * output_set = get_output_set_for_av(is_road_side_av(x, y), AV(x, y), output_table);
             escalate_set(led_signalling_state_records, output_set);
+
+            /* Get the region status for AV transmission... */
+            uint8_t av_status = get_status_for_av(is_road_side_av(x, y), AV(x, y));
+
+            /* Broadcast raw AV values to monitoring application over ANT. */
+            mm_av_transmission_send_av_update(x, y, AV(x, y), av_status);
         }
     }
 }
@@ -252,7 +264,7 @@ static void update_current_av_states(void)
 static void update_current_output_states(void)
 {
     for (int8_t i = 0; i < MAX_GRID_SIZE_X; i++)
-    {
+    {   
         if (led_signalling_state_records[i].current_av_state > led_signalling_state_records[i].current_output_state)
         {
             /* If the current_av_state is greater than the current_output_state,
@@ -471,5 +483,42 @@ static void clear_all_current_av_states(void)
     for (uint16_t i = 0; i < MAX_GRID_SIZE_X; i++)
     {
         led_signalling_state_records[i].current_av_state = IDLE;
+    }
+}
+
+/**
+    Gets the status for an AV based on the appropriate detection threshold value.
+*/
+static led_signalling_state_t get_status_for_av(bool is_road_side, mm_activity_variable_t av)
+{
+    if (is_av_below_detection_threshold(is_road_side, av))
+    {
+        /* No detection status. */
+        return IDLE;
+    }
+
+    if (is_road_side)
+    {
+        if (av > DETECTION_THRESHOLD_RS)
+        {
+            /* Detection status. */
+            return ALARM;
+        }
+        else
+        {
+            /* Possible detection status. */
+			return CONCERN;
+        }
+    }
+
+    if (av > DETECTION_THRESHOLD_NRS)
+    {
+        /* Detection status. */
+        return ALARM;
+    }
+    else
+    {
+        /* Possible detection status. */
+        return CONCERN;
     }
 }
