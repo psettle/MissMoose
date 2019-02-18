@@ -84,6 +84,7 @@
     <Compile Include="AntControl\ChannelManager.cs" />
     <Compile Include="AntControl\NodeConfigurationData.cs" />
     <Compile Include="AntControl\PageHandler.cs" />
+    <Compile Include="ANTDataPages\RegionActivityVariablePage.cs" />
     <Compile Include="ANTDataPages\LidarMonitoringPage.cs" />
     <Compile Include="ANTDataPages\MonitoringDataAckPage.cs" />
     <Compile Include="ANTDataPages\LedOutputStatusPage.cs" />

@@ -30,6 +30,7 @@ namespace MissMooseConfigurationApplication
         private List<List<Viewbox>> sensorViewboxes;
         private List<SensorNode> nodes = new List<SensorNode>();
         private List<List<Dictionary<LineDirection,Line>>> lineSegmentAssociations;
+        private List<List<Path>> shadedRegions;
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
         #endregion
@@ -40,6 +41,7 @@ namespace MissMooseConfigurationApplication
             InitializeComponent();
             InitializeViewboxes();
             InitializeLineSegments();
+            InitializeShadedRegions();
 
             AntControl.Instance.AddMonitoringUI(this);
         }
@@ -165,6 +167,27 @@ namespace MissMooseConfigurationApplication
             }
         }
 
+        public void SetRegionActivityVariable(byte xCoordinate, byte yCoordinate, RegionStatus regionStatus)
+        {
+            Brush colour;
+            switch (regionStatus)
+            {
+                case RegionStatus.NoDetection:
+                    colour = Brushes.Transparent;
+                    break;
+                case RegionStatus.ProbableDetection:
+                    colour = StatusColour.Yellow;
+                    break;
+                case RegionStatus.DefiniteDetection:
+                    colour = StatusColour.Red;
+                    break;
+                default:
+                    colour = Brushes.Transparent;
+                    break;
+            }
+            shadedRegions[xCoordinate][yCoordinate].Fill = colour;
+        }
+
         #endregion
 
         #region Private Methods
@@ -272,6 +295,23 @@ namespace MissMooseConfigurationApplication
                         { LineDirection.Up, MonitGrid.Line_2_2_Up },
                     },
                 }
+            };
+        }
+
+        private void InitializeShadedRegions()
+        {
+            shadedRegions = new List<List<Path>>
+            {
+                new List<Path>
+                {
+                    MonitGrid.Rectangle_0_0,
+                    MonitGrid.Rectangle_0_1,
+                },
+                new List<Path>
+                {
+                    MonitGrid.Rectangle_1_0,
+                    MonitGrid.Rectangle_1_1,
+                },
             };
         }
 

@@ -36,6 +36,7 @@ namespace MissMooseConfigurationApplication
             pageParser.AddDataPage(new LidarMonitoringPage());
             pageParser.AddDataPage(new PirMonitoringPage());
             pageParser.AddDataPage(new LedOutputStatusPage());
+            pageParser.AddDataPage(new RegionActivityVariablePage());
         }
 
         public void AddConfigUI(ConfigurationPage ConfigUI)

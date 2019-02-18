@@ -155,6 +155,23 @@ namespace MissMooseConfigurationApplication
             Console.Out.WriteLine("Sent Ack for LED Msg: " + ackPage.MessageId);
         }
 
+        public void HandlePage(RegionActivityVariablePage dataPage, ushort deviceNum, PageSender responder)
+        {
+            Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+            {
+                MonitoringUI.SetRegionActivityVariable(dataPage.XCoordinate, dataPage.YCoordinate, dataPage.RegionStatus);
+            });
+
+            // Send an acknowledgement page so the gateway knows this region AV data was received
+            MonitoringDataAckPage ackPage = new MonitoringDataAckPage
+            {
+                MessageId = dataPage.MessageId
+            };
+
+            responder.SendBroadcast(ackPage);
+            Console.Out.WriteLine("Sent Ack for Region AV Msg: " + ackPage.MessageId);
+        }
+
         #endregion
 
         #region Private Methods

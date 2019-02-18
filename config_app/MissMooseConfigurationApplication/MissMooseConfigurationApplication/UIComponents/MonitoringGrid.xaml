@@ -37,6 +37,30 @@
         <Line Name="Line_1_2_Right" X1="250" Y1="350" X2="350" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
         <Line Name="Line_2_2_Left"  X1="350" Y1="350" X2="450" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
 
+        <Path Name="Rectangle_0_0" Panel.ZIndex="-1" Opacity="0.35">
+            <Path.Data>
+                <RectangleGeometry Rect="50,50,200,150" />
+            </Path.Data>
+        </Path>
+
+        <Path Name="Rectangle_0_1" Panel.ZIndex="-1" Opacity="0.35">
+            <Path.Data>
+                <RectangleGeometry Rect="250,50,200,150" />
+            </Path.Data>
+        </Path>
+
+        <Path Name="Rectangle_1_0" Panel.ZIndex="-1" Opacity="0.35">
+            <Path.Data>
+                <RectangleGeometry Rect="50,200,200,150" />
+            </Path.Data>
+        </Path>
+
+        <Path Name="Rectangle_1_1" Panel.ZIndex="-1" Opacity="0.35">
+            <Path.Data>
+                <RectangleGeometry Rect="250,200,200,150" />
+            </Path.Data>
+        </Path>
+
         <Viewbox Name="SensorViewbox_0_0" Width="100" Height="100" Stretch="Fill" Margin="0,0,400,300">
             <Viewbox.RenderTransform>
                 <RotateTransform Angle="0" CenterX="50" CenterY="50"/>
