@@ -164,6 +164,7 @@ namespace MissMooseConfigurationApplication
                 nodeToSet.SetStatusColour(colour);
             }
         }
+
         #endregion
 
         #region Private Methods

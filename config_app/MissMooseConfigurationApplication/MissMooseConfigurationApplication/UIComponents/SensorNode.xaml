@@ -6,6 +6,16 @@
              xmlns:local="clr-namespace:MissMooseConfigurationApplication"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="450">
+    
+    <UserControl.Resources>
+        <Storyboard x:Key="Blink">
+            <DoubleAnimation Storyboard.TargetName="OuterRing"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0" To="1" Duration="0:0:0.5"
+                             AutoReverse="True" RepeatBehavior="Forever" />
+        </Storyboard>
+    </UserControl.Resources>
+    
     <Grid>
         <Ellipse
           Name="PIR_0_Deg" Width="200" Height="200"

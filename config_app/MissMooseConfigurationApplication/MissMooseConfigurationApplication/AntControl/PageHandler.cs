@@ -127,6 +127,34 @@ namespace MissMooseConfigurationApplication
             Console.Out.WriteLine("Sent Ack for PIR Msg: " + ackPage.MessageId);
         }
 
+        public void HandlePage(LedOutputStatusPage dataPage, ushort deviceNum, PageSender responder)
+        {
+            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+            if (node != null)
+            {
+                Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                {
+                    bool functionApplied = node.SetLedFunction(dataPage.LedFunction);
+                    bool colourApplied = node.SetLedColour(dataPage.LedColour);
+
+                    if (functionApplied || colourApplied)
+                    {
+                        MonitoringUI.UpdateNode(node);
+                    }                    
+                });
+            }
+
+            // Send an acknowledgement page so the gateway knows this LED data was received
+            MonitoringDataAckPage ackPage = new MonitoringDataAckPage
+            {
+                MessageId = dataPage.MessageId
+            };
+
+            responder.SendBroadcast(ackPage);
+            Console.Out.WriteLine("Sent Ack for LED Msg: " + ackPage.MessageId);
+        }
+
         #endregion
 
         #region Private Methods
