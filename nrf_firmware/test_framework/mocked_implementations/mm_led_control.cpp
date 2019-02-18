@@ -55,7 +55,7 @@ void mm_led_control_update_node_leds
  * Writes LED output state information to the opened log file.
  * For example, the output would look like:
  *
- * [ AV OUPUT EVENT]
+ * <timestamp>, LEDOUTPUT EVENT, 1, 0, 0
  * [001:02:07:24] Target Node ID: 1
  * [001:02:07:24] LED Function: 0
  * [001:02:07:24] LED Colour: 0
@@ -68,8 +68,5 @@ static void log_led_ouput
 )
 {
     /* Output would be like the above example. */
-	log_heading("LED OUTPUT EVENT");
-    log_message(std::string("Target Node ID: ") + std::to_string(target_node_id));
-    log_message(std::string("LED Function: ") + std::to_string(led_function));
-    log_message(std::string("LED Colour: ") + std::to_string(led_colour));
+    log_message("LED OUTPUT EVENT,node," + std::to_string(target_node_id) + ",func," + std::to_string(led_function) + ",colour," + std::to_string(led_colour));
 }

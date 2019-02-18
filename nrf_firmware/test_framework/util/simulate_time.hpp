@@ -34,6 +34,8 @@ extern "C" {
                        DECLARATIONS
 **********************************************************/
 
+void simulate_time_init(void);
+
 void simulate_time(uint32_t seconds);
 
 uint32_t get_simulated_time_elapsed();

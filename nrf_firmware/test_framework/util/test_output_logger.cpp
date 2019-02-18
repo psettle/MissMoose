@@ -21,7 +21,8 @@ notes:
                         CONSTANTS
 **********************************************************/
 
-#define LOG_FILE_NAME_EXTENSION         ( std::string(".txt") )
+#define LOG_FILE_FOLDER                 ( std::string("test_framework/logging/"))
+#define LOG_FILE_NAME_EXTENSION         ( std::string(".csv") )
 
 /**********************************************************
                         VARIABLES
@@ -45,7 +46,7 @@ static std::string format_time_elapsed(uint32_t time_elapsed);
  */
 void init_test_output_logger(std::string const & test_name)
 {
-    test_output_file.open(test_name + LOG_FILE_NAME_EXTENSION);
+    test_output_file.open(LOG_FILE_FOLDER + test_name + LOG_FILE_NAME_EXTENSION);
 
     /* Check that the log file was able to be succesfully opened. */
     if (!test_output_file.is_open())
@@ -60,6 +61,8 @@ void init_test_output_logger(std::string const & test_name)
  */
 void deinit_test_output_logger(void)
 {
+    log_message("END");
+
     /* If the file wasn't successfully opened, we don't need to close it. */
     if (test_output_file.is_open())
     {
@@ -84,7 +87,7 @@ void log_message(std::string const & message)
 		 * Where the timestamp is simulated time formatted
 		 * into DDD:HH:MM:SS.
          */
-        test_output_file << "[" << format_time_elapsed(get_simulated_time_elapsed()) << "] " << message << "\n";
+        test_output_file << get_simulated_time_elapsed() << "," << message << "\n";
     }
 }
 
