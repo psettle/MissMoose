@@ -17,9 +17,9 @@ extern "C" {
  * For example, the output would look like:
  *
  * [ AV OUPUT EVENT]
- * [Sun Feb 17 02:07:24 2019] Target Node ID: 1
- * [Sun Feb 17 02:07:24 2019] LED Function: 0
- * [Sun Feb 17 02:07:24 2019] LED Colour: 0
+ * [001:02:07:24] Target Node ID: 1
+ * [001:02:07:24] LED Function: 0
+ * [001:02:07:24] LED Colour: 0
  */
 static void log_led_ouput
 (
@@ -56,9 +56,9 @@ void mm_led_control_update_node_leds
  * For example, the output would look like:
  *
  * [ AV OUPUT EVENT]
- * [Sun Feb 17 02:07:24 2019] Target Node ID: 1
- * [Sun Feb 17 02:07:24 2019] LED Function: 0
- * [Sun Feb 17 02:07:24 2019] LED Colour: 0
+ * [001:02:07:24] Target Node ID: 1
+ * [001:02:07:24] LED Function: 0
+ * [001:02:07:24] LED Colour: 0
  */
 static void log_led_ouput
 (

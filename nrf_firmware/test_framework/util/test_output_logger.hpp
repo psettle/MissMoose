@@ -37,13 +37,13 @@ void deinit_test_output_logger(void);
  * appends newline to the end of the message. Doesn't do anything
  * if there is no currently open output stream.
  */
-void log_message(std::string message);
+void log_message(std::string const & message);
 
 /**
  * Writes message heading to opened log file. Naturally
  * appends newline to the end of the message. Doesn't do anything
  * if there is no currently open output stream.
  */
-void log_heading(std::string heading);
+void log_heading(std::string const & heading);
 
 #endif /* TEST_OUTPUT_LOGGER_HPP */

@@ -17,10 +17,10 @@ extern "C" {
  * For example, the output would look like:
  * 
  * [ AV OUPUT EVENT]
- * [Sun Feb 17 02:07:24 2019] AV Position X: 2
- * [Sun Feb 17 02:07:24 2019] AV Position Y: 2
- * [Sun Feb 17 02:07:24 2019] AV Value: 0
- * [Sun Feb 17 02:07:24 2019] AV Status X: 0
+ * [001:02:07:24] AV Position X: 2
+ * [001:02:07:24] AV Position Y: 2
+ * [001:02:07:24] AV Value: 0
+ * [001:02:07:24] AV Status X: 0
  */
 static void log_av_ouput
 (
@@ -59,10 +59,10 @@ void mm_av_transmission_send_av_update
  * For example, the output would look like:
  * 
  * [ AV OUPUT EVENT]
- * [Sun Feb 17 02:07:24 2019] AV Position X: 2
- * [Sun Feb 17 02:07:24 2019] AV Position Y: 2
- * [Sun Feb 17 02:07:24 2019] AV Value: 0
- * [Sun Feb 17 02:07:24 2019] AV Status X: 0
+ * [001:02:07:24] AV Position X: 2
+ * [001:02:07:24] AV Position Y: 2
+ * [001:02:07:24] AV Value: 0
+ * [001:02:07:24] AV Status X: 0
  */
 static void log_av_ouput
 (

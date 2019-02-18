@@ -9,10 +9,13 @@ notes:
 **********************************************************/
 
 #include <ctime>
+#include <time.h>
+#include <cstdio>
 #include <iostream>
 #include <fstream>
 
 #include "test_output_logger.hpp"
+#include "simulate_time.hpp"
 
 /**********************************************************
                         CONSTANTS
@@ -27,7 +30,13 @@ notes:
 std::ofstream test_output_file;
 
 /**********************************************************
-                       DECLARATIONS
+                       DEFINITIONS
+**********************************************************/
+
+static std::string format_time_elapsed(uint32_t time_elapsed);
+
+/**********************************************************
+					   DECLARATIONS
 **********************************************************/
 
 /**
@@ -63,22 +72,18 @@ void deinit_test_output_logger(void)
  * appends newline to the end of the message. Doesn't do anything
  * if there is no currently open output stream.
  */
-void log_message(std::string message)
+void log_message(std::string const & message)
 {
-    std::time_t current_time = std::time(nullptr);
-
-	/* There's a newline at the end of the string asctime returns. This removes it. */
-	char * current_time_chars = std::asctime(std::localtime(&current_time));
-	current_time_chars[strlen(current_time_chars) - 1] = 0;
-
     if (test_output_file.is_open())
     {
         /**
          * For example, the output would look like:
          * 
-         * [Sun Feb 17 02:07:24 2019] Hello World!
+         * [001:02:07:24] Hello World!
+		 *
+		 * Where the timestamp is simulated time formatted
          */
-        test_output_file << "[" << current_time_chars << "] " << message << "\n";
+        test_output_file << "[" << format_time_elapsed(get_simulated_time_elapsed()) << "] " << message << "\n";
     }
 }
 
@@ -87,7 +92,7 @@ void log_message(std::string message)
  * appends newline to the end of the message. Doesn't do anything
  * if there is no currently open output stream.
  */
-void log_heading(std::string heading)
+void log_heading(std::string const & heading)
 {
 	if (test_output_file.is_open())
 	{
@@ -98,4 +103,15 @@ void log_heading(std::string heading)
 		 */
 		test_output_file << "[" << heading << "]\n";
 	}
+}
+
+static std::string format_time_elapsed(uint32_t time_elapsed)
+{
+	char formatted_time [13];
+	std::time_t seconds(time_elapsed);
+	std::tm * organized_time = gmtime(&seconds);
+
+	std::sprintf(formatted_time, "%.3i:%.2i:%0.2i:%0.2i", organized_time->tm_yday, organized_time->tm_hour, organized_time->tm_min, organized_time->tm_sec);
+
+	return formatted_time;
 }

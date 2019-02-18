@@ -124,7 +124,7 @@ static void clear_all_current_av_states(void);
 /**
     Gets the status for an AV based on the appropriate detection threshold value.
 */
-static uint8_t get_status_for_av(bool is_road_side, mm_activity_variable_t av);
+static led_signalling_state_t get_status_for_av(bool is_road_side, mm_activity_variable_t av);
 
 /**********************************************************
                        VARIABLES
@@ -489,12 +489,12 @@ static void clear_all_current_av_states(void)
 /**
     Gets the status for an AV based on the appropriate detection threshold value.
 */
-static uint8_t get_status_for_av(bool is_road_side, mm_activity_variable_t av)
+static led_signalling_state_t get_status_for_av(bool is_road_side, mm_activity_variable_t av)
 {
     if (is_av_below_detection_threshold(is_road_side, av))
     {
         /* No detection status. */
-        return 0;
+        return IDLE;
     }
 
     if (is_road_side)
@@ -502,23 +502,23 @@ static uint8_t get_status_for_av(bool is_road_side, mm_activity_variable_t av)
         if (av > DETECTION_THRESHOLD_RS)
         {
             /* Detection status. */
-            return 2;
+            return ALARM;
         }
         else
         {
             /* Possible detection status. */
-            return 1;
+			return CONCERN;
         }
     }
 
     if (av > DETECTION_THRESHOLD_NRS)
     {
         /* Detection status. */
-        return 2;
+        return ALARM;
     }
     else
     {
         /* Possible detection status. */
-        return 1;
+        return CONCERN;
     }
 }
