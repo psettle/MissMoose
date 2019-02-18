@@ -82,6 +82,7 @@ void log_message(std::string const & message)
          * [001:02:07:24] Hello World!
 		 *
 		 * Where the timestamp is simulated time formatted
+		 * into DDD:HH:MM:SS.
          */
         test_output_file << "[" << format_time_elapsed(get_simulated_time_elapsed()) << "] " << message << "\n";
     }
