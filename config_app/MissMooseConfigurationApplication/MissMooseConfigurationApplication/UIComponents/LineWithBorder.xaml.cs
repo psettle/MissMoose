@@ -20,7 +20,6 @@ namespace MissMooseConfigurationApplication.UIComponents
     /// </summary>
     public partial class LineWithBorder : UserControl
     {
-        private bool lineIsVertical = false;
         public int X1
         {
             set
@@ -70,8 +69,7 @@ namespace MissMooseConfigurationApplication.UIComponents
         {
             set
             {
-                lineIsVertical = value;
-                if (isVertical)
+                if (value)
                 {
                     ColoredLine.Y1 -= 3;
                     ColoredLine.Y2 += 3;
@@ -83,10 +81,6 @@ namespace MissMooseConfigurationApplication.UIComponents
                     ColoredLine.X2 += 3;
                     ColoredLine.UpdateLayout();
                 }
-            }
-            get
-            {
-                return lineIsVertical;
             }
         }
 

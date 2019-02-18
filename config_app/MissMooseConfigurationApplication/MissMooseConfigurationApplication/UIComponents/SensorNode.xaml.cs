@@ -219,6 +219,10 @@ namespace MissMooseConfigurationApplication
                     PIR_90_Deg.Visibility = Visibility.Visible;
                     PIR_270_Deg.Visibility = Visibility.Hidden;
                     Lidar_0_Deg.Visibility = Visibility.Visible;
+                    if (configuration == HardwareConfiguration.PirLidarLed)
+                    {
+                        InnerRingBorder.Fill = Brushes.Black;
+                    }
                     break;
             }
 

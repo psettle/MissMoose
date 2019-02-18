@@ -41,14 +41,6 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public bool ClickEnabled
-        {
-            set
-            {
-                TitleButton.IsEnabled = value;
-            }
-        }
-
         public void SetWarningState(WarningStates state)
         {
             switch(state)
