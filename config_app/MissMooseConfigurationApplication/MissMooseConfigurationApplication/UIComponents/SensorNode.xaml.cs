@@ -25,6 +25,12 @@ namespace MissMooseConfigurationApplication
         PirLidarLed,
     }
 
+    public enum SensorType : byte
+    {
+        Pir,
+        Lidar,
+    }
+
     public enum LedFunction : byte
     {
         Off,
