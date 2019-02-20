@@ -25,7 +25,7 @@ notes:
 
 #define RGB_LED_RED    27 ///< J102.18
 #define RGB_LED_GREEN  13 ///< J102.17
-#define RGB_LED_BLUE   28 ///< J102.09
+#define RGB_LED_BLUE   11 ///< J101.19
 
 #define RGB_LED_RED_MASK    (1<<RGB_LED_RED)
 #define RGB_LED_GREEN_MASK  (1<<RGB_LED_GREEN)
@@ -38,13 +38,10 @@ notes:
 #define LED_DEFAULT_ON_DURATION  0      ///< In ms. In other words, off.
 #define LED_DEFAULT_OFF_DURATION 1000   ///< In ms. How long to set the LEDs to be off on startup.
 
-/* For two reasons it's helpful to run an LED test on startup!
-   The first is that setting all the LEDs to white for 5 seconds is an easy,
+/* It's helpful to run an LED test on startup!
+   Setting all the LEDs to white for 5 seconds is an easy,
    visual way to test the R, G, and B, components of each LED, brightness,
-   wiring, and the battery pack.
-   The second reason is that The battery pack is strange and likes to have a
-   high current draw on startup, before it lets itself be kept on with a much
-   smaller current draw. */
+   wiring, and the battery pack. */
 #if LED_STARTUP_TEST
     #define LED_STARTUP_DURATION 5000   ///< in ms
     #define LED_STARTUP_COLOUR   MM_RGB_COLOUR_WHITE
@@ -71,6 +68,8 @@ static void rgb_led_apply_colour_individual(uint8_t red_duty_cycle, uint8_t gree
 
 #if BUTTON_CONTROL
     static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+    static void on_control_pin_colour_event(void* evt_data, uint16_t evt_size);
+    static void on_control_pin_cycle_event(void* evt_data, uint16_t evt_size);
 #endif
 
 /**********************************************************
@@ -420,25 +419,39 @@ static void on_cycle_timer_event(void* evt_data, uint16_t evt_size)
      */
     static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
     {
+        uint32_t err_code;
+
+        /* Kick button event to main. */
         switch(pin)
         {
             case BSP_BUTTON_0:
-                // Just rotate through a set of predefined colours
-                #if(LED_DEBUG)
-                    bsp_board_led_invert(0);
-                #endif
-                colour_cycle_index = colour_cycle_index == 8 ? 0 : colour_cycle_index + 1;
-                mm_rgb_led_set_colour(colour_cycle[colour_cycle_index]);
+                err_code = app_sched_event_put(NULL, 0, on_control_pin_colour_event);
                 break;
             case BSP_BUTTON_2:
-                // Change how often the LED strip is actually on
-                #if(LED_DEBUG)
-                    bsp_board_led_invert(2);
-                #endif
-                on_off_cycle_index = on_off_cycle_index == 4 ? 0 : on_off_cycle_index + 1;
-                mm_rgb_set_on_off_cycle(on_cycles[on_off_cycle_index], off_cycles[on_off_cycle_index]);
+                err_code = app_sched_event_put(NULL, 0, on_control_pin_cycle_event);
                 break;
         }
+        APP_ERROR_CHECK(err_code);
+    }
+
+    static void on_control_pin_colour_event(void* evt_data, uint16_t evt_size)
+    {
+        // Just rotate through a set of predefined colours
+        #if(LED_DEBUG)
+            bsp_board_led_invert(0);
+        #endif
+        colour_cycle_index = colour_cycle_index == 8 ? 0 : colour_cycle_index + 1;
+        mm_rgb_led_set_colour(colour_cycle[colour_cycle_index]);
+    }
+
+    static void on_control_pin_cycle_event(void* evt_data, uint16_t evt_size)
+    {
+        // Change how often the LED strip is actually on
+        #if(LED_DEBUG)
+            bsp_board_led_invert(2);
+        #endif
+        on_off_cycle_index = on_off_cycle_index == 4 ? 0 : on_off_cycle_index + 1;
+        mm_rgb_set_on_off_cycle(on_cycles[on_off_cycle_index], off_cycles[on_off_cycle_index]);
     }
 #endif
 
