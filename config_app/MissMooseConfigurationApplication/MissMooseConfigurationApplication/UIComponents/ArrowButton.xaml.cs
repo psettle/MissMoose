@@ -18,7 +18,7 @@ namespace MissMooseConfigurationApplication
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class ArrowButton : UserControl
+    public partial class ArrowButton : Button
     {
         public ArrowButton()
         {
