@@ -18,6 +18,8 @@ notes:
 #include "mm_activity_variable_growth_prv.h"
 #include "mm_activity_variable_growth_sensor_records_prv.h"
 #include "mm_position_config.h"
+#include "mm_monitoring_dispatch.h"
+#include "mm_sensor_error_check.h"
 
 /**********************************************************
                         MACROS
@@ -26,16 +28,6 @@ notes:
 /**********************************************************
                           TYPES
 **********************************************************/
-
-typedef enum
-{
-    LIDAR_REGION_REGION_NONE, /* The lidar is currently 'detecting' something past the edge of the network */
-    
-    LIDAR_REGION_REGION_0,    /* The lidar is currently detecting something in the region in front of it */
-    LIDAR_REGION_REGION_1,    /* The lidar is currently detecting something in the region 1 past it */
-    
-    LIDAR_REGION_COUNT
-} lidar_region_t;
 
 typedef struct
 {
@@ -96,13 +88,31 @@ static void generate_trickle_constants(abstract_lidar_detection_t const * detect
 /**
  * Translates a lidar detection event into an abstract detection event.
  */
-void translate_lidar_detection(lidar_evt_data_t const * evt)
+void translate_lidar_detection(sensor_evt_t const * sensor_evt)
 {
+    lidar_evt_data_t const * evt = &sensor_evt->lidar_data;
+
     /* Translate into an abstract detection: */
     abstract_lidar_detection_t detection;
     if(!sensor_evt_to_lidar_detection(evt, &detection))
     {
         /* Invalid event. */
+        return;
+    }
+
+    /* Send monitoring dispatch */
+    mm_monitoring_dispatch_send_lidar_data
+        (
+        evt->node_id,
+        evt->sensor_rotation,
+        evt->distance_measured,
+        detection.region
+        );
+
+    /* Is the sensor hyperactive? */
+    if(mm_sensor_error_is_sensor_hyperactive(sensor_evt))
+    {
+        /* If so, don't process further. */
         return;
     }
 

@@ -23,7 +23,7 @@ notes:
 /**
  * Translates a lidar detection event into an abstract detection event.
  */
-void translate_lidar_detection(lidar_evt_data_t const * evt);
+void translate_lidar_detection(sensor_evt_t const * sensor_evt);
 
 /**
  * Translates an on second event into 0 or more abstract detection events.
