@@ -41,7 +41,7 @@ namespace MissMooseConfigurationApplication
         {
             pageHandler.AddConfigUI(ConfigUI);
 
-            // Open the ANT slave channel to search for a node
+            // Open the ANT slave channel to scan for nodes
             channelManager.StartConfigDevice();
             channelManager.channel.channelResponse += ChannelResponse;
         }
@@ -54,9 +54,9 @@ namespace MissMooseConfigurationApplication
         #endregion
 
         #region Private Methods
-   
+
         /*
-         * Handles the ANT channel response for the node search channel
+         * Handles the ANT channel response for the node scanning channel
          */
         private void ChannelResponse(ANT_Response response)
         {
@@ -66,27 +66,21 @@ namespace MissMooseConfigurationApplication
                 // Check if this is an extended message
                 if (response.isExtended())
                 {
-                    // Save device number of the connected master device
+                    // Get device number of the master device
                     ANT_ChannelID channelId = response.getDeviceIDfromExt();
-                    channelManager.masterDeviceNumber = channelId.deviceNumber;
-                }
 
-                byte[] rxBuffer = response.getDataPayload();
+                    byte[] rxBuffer = response.getDataPayload();
 
-                dynamic dataPage = pageParser.Parse(rxBuffer);
+                    dynamic dataPage = pageParser.Parse(rxBuffer);
 
-                if (dataPage != null)
-                {
-                    bool keepConnection = pageHandler.HandlePage(dataPage, channelManager.masterDeviceNumber, channelManager.pageSender);
-
-                    if(!keepConnection)
+                    if (dataPage != null)
                     {
-                        channelManager.CloseChannel();
+                        pageHandler.HandlePage(dataPage, channelId.deviceNumber, 
+                            new PageSender(channelManager.GetChannel(channelId.deviceNumber), channelId));
                     }
                 }
             }
         }
-
        
         #endregion
     }
