@@ -8,9 +8,6 @@ notes:
                         INCLUDES
 **********************************************************/
 
-#include <ctime>
-#include <time.h>
-#include <cstdio>
 #include <iostream>
 #include <fstream>
 
@@ -21,19 +18,14 @@ notes:
                         CONSTANTS
 **********************************************************/
 
-#define LOG_FILE_NAME_EXTENSION         ( std::string(".txt") )
+#define LOG_FILE_FOLDER                 ( std::string("test_framework/logging/"))
+#define LOG_FILE_NAME_EXTENSION         ( std::string(".csv") )
 
 /**********************************************************
                         VARIABLES
 **********************************************************/
 
 std::ofstream test_output_file;
-
-/**********************************************************
-                       DEFINITIONS
-**********************************************************/
-
-static std::string format_time_elapsed(uint32_t time_elapsed);
 
 /**********************************************************
 					   DECLARATIONS
@@ -45,7 +37,7 @@ static std::string format_time_elapsed(uint32_t time_elapsed);
  */
 void init_test_output_logger(std::string const & test_name)
 {
-    test_output_file.open(test_name + LOG_FILE_NAME_EXTENSION);
+    test_output_file.open(LOG_FILE_FOLDER + test_name + LOG_FILE_NAME_EXTENSION);
 
     /* Check that the log file was able to be succesfully opened. */
     if (!test_output_file.is_open())
@@ -60,6 +52,8 @@ void init_test_output_logger(std::string const & test_name)
  */
 void deinit_test_output_logger(void)
 {
+    log_message("END");
+
     /* If the file wasn't successfully opened, we don't need to close it. */
     if (test_output_file.is_open())
     {
@@ -76,43 +70,6 @@ void log_message(std::string const & message)
 {
     if (test_output_file.is_open())
     {
-        /**
-         * For example, the output would look like:
-         * 
-         * [001:02:07:24] Hello World!
-		 *
-		 * Where the timestamp is simulated time formatted
-		 * into DDD:HH:MM:SS.
-         */
-        test_output_file << "[" << format_time_elapsed(get_simulated_time_elapsed()) << "] " << message << "\n";
+        test_output_file << get_simulated_time_elapsed() << "," << message << "\n";
     }
-}
-
-/**
- * Writes message heading to opened log file. Naturally
- * appends newline to the end of the message. Doesn't do anything
- * if there is no currently open output stream.
- */
-void log_heading(std::string const & heading)
-{
-	if (test_output_file.is_open())
-	{
-		/**
-		 * For example, the output would look like:
-		 *
-		 * [AN EVENT HAS OCCURRED]
-		 */
-		test_output_file << "[" << heading << "]\n";
-	}
-}
-
-static std::string format_time_elapsed(uint32_t time_elapsed)
-{
-	char formatted_time [13];
-	std::time_t seconds(time_elapsed);
-	std::tm * organized_time = gmtime(&seconds);
-
-	std::sprintf(formatted_time, "%.3i:%.2i:%0.2i:%0.2i", organized_time->tm_yday, organized_time->tm_hour, organized_time->tm_min, organized_time->tm_sec);
-
-	return formatted_time;
 }
