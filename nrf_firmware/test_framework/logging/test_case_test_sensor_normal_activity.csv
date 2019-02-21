@@ -1,0 +1,10 @@
+0,LED OUTPUT EVENT,node,1,func,0,colour,1
+0,LED OUTPUT EVENT,node,2,func,0,colour,1
+0,LED OUTPUT EVENT,node,3,func,0,colour,1
+1,AV OUTPUT EVENT,x,0,y,0,val,11.880000,region,2
+1,AV OUTPUT EVENT,x,0,y,1,val,11.880000,region,2
+1,AV OUTPUT EVENT,x,1,y,0,val,11.880000,region,2
+1,AV OUTPUT EVENT,x,1,y,1,val,11.880000,region,2
+1,LED OUTPUT EVENT,node,1,func,1,colour,1
+1,LED OUTPUT EVENT,node,2,func,1,colour,1
+7930,END
