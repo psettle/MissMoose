@@ -18,6 +18,7 @@
 #include "mm_activity_variables.h"
 #include "mm_led_control.h"
 #include "mm_position_config.h"
+#include "mm_av_transmission.h"
 
 /**********************************************************
                         CONSTANTS
@@ -53,10 +54,10 @@ typedef struct
 
 typedef struct
 {
-    led_signalling_state_t  current_av_state;
-    led_signalling_state_t  current_output_state;
-    bool                    timeout_active;
-    uint16_t                second_counter;
+    led_signalling_state_t      current_av_state;
+    led_signalling_state_t      current_output_state;
+    bool                        timeout_active;
+    uint16_t                    second_counter;
 } led_signalling_state_record_t;
 
 /**********************************************************
@@ -80,12 +81,6 @@ static void update_current_output_states(void);
 static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t state);
 
 /**
-    Determines if the activity variable located at (x, y)
-    is road side or not.
-*/
-static bool is_road_side_av( uint16_t x, uint16_t y );
-
-/**
     Updates the LED signalling states based on an output set.
 */
 static void escalate_set(led_signalling_state_record_t * p_record, output_set_t const * escalate_to);
@@ -96,11 +91,6 @@ static void escalate_set(led_signalling_state_record_t * p_record, output_set_t 
 static void escalate_output(led_signalling_state_t* p_state, led_signalling_state_t escalate_to);
 
 /**
-    Determines if the AV is below the detection threshold.
-*/
-static bool is_av_below_detection_threshold(bool is_road_side, mm_activity_variable_t av);
-
-/**
     Gets an output table for an AV based on it's location.
 */
 static output_table_t const * get_output_table_for_av(uint16_t x, uint16_t y);
@@ -108,7 +98,7 @@ static output_table_t const * get_output_table_for_av(uint16_t x, uint16_t y);
 /**
     Gets the output set for an AV based on it's location and current value.
 */
-static output_set_t const * get_output_set_for_av(bool is_road_side, mm_activity_variable_t av, output_table_t const * output_table);
+static output_set_t const * get_output_set_for_av(mm_activity_variable_t const * av, output_table_t const * output_table);
 
 /**
     Determines if a current_output_state has timed out.
@@ -239,10 +229,12 @@ static void update_current_av_states(void)
         for (uint8_t y = 0; y < (MAX_AV_SIZE_Y); y++)
         {
             output_table_t const * output_table = get_output_table_for_av(x, y);
-            output_set_t const * output_set = get_output_set_for_av(is_road_side_av(x, y), AV(x, y), output_table);
+            output_set_t const * output_set = get_output_set_for_av(&AV(x, y), output_table);
             escalate_set(led_signalling_state_records, output_set);
         }
     }
+
+    mm_av_transmission_send_all_avs();
 }
 
 /**
@@ -252,7 +244,7 @@ static void update_current_av_states(void)
 static void update_current_output_states(void)
 {
     for (int8_t i = 0; i < MAX_GRID_SIZE_X; i++)
-    {
+    {   
         if (led_signalling_state_records[i].current_av_state > led_signalling_state_records[i].current_output_state)
         {
             /* If the current_av_state is greater than the current_output_state,
@@ -339,18 +331,6 @@ static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t stat
 }
 
 /**
-    Determines if the activity variable located at (x, y)
-    is road side or not.
-
-    Right now it only uses y to decide this but maybe it
-    would want to use both coordinates in the future?
-*/
-static bool is_road_side_av( uint16_t x, uint16_t y )
-{
-    return y == 0;
-}
-
-/**
     Updates the LED signalling states based on an output set.
 */
 static void escalate_set(led_signalling_state_record_t * p_record, output_set_t const * escalate_to)
@@ -374,17 +354,6 @@ static void escalate_output(led_signalling_state_t* p_state, led_signalling_stat
     {
         *p_state = escalate_to;
     }
-}
-
-/**
-    Determines if the AV is below the detection threshold.
-*/
-static bool is_av_below_detection_threshold(bool is_road_side, mm_activity_variable_t av)
-{
-    return (
-            (is_road_side && ( av < POSSIBLE_DETECTION_THRESHOLD_RS))) ||
-            (!is_road_side && ( av < POSSIBLE_DETECTION_THRESHOLD_NRS)
-           );
 }
 
 /**
@@ -420,32 +389,25 @@ static output_table_t const * get_output_table_for_av(uint16_t x, uint16_t y)
 /**
     Gets the output set for an AV based on it's location and current value.
 */
-static output_set_t const * get_output_set_for_av(bool is_road_side, mm_activity_variable_t av, output_table_t const * output_table)
+static output_set_t const * get_output_set_for_av(mm_activity_variable_t const * av, output_table_t const * output_table)
 {
-    if (is_av_below_detection_threshold(is_road_side, av))
+    activity_variable_state_t av_state = mm_get_status_for_av(av);
+
+    switch (av_state)
     {
+    case ACTIVITY_VARIABLE_STATE_IDLE:
         return &output_table->no_detection;
-    }
-
-    if (is_road_side)
-    {
-        if (av > DETECTION_THRESHOLD_RS)
-        {
-            return &output_table->detection;
-        }
-        else
-        {
-            return &output_table->possible_detection;
-        }
-    }
-
-    if (av > DETECTION_THRESHOLD_NRS)
-    {
-        return &output_table->detection;
-    }
-    else
-    {
+        break;
+    case ACTIVITY_VARIABLE_STATE_POSSIBLE_DETECTION:
         return &output_table->possible_detection;
+        break;
+    case ACTIVITY_VARIABLE_STATE_DETECTION:
+        return &output_table->detection;
+        break;
+    default:
+        /* Invalid AV state. */
+        APP_ERROR_CHECK(true);
+        return &output_table->no_detection;
     }
 }
 

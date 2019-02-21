@@ -11,6 +11,7 @@ notes:
 #include <iostream>
 
 #include "test_runner.hpp"
+#include "test_output_logger.hpp"
 
 extern "C" {
 #include "mm_sensor_algorithm.h"
@@ -18,6 +19,7 @@ extern "C" {
 #include "mm_monitoring_dispatch.h"
 #include "mm_position_config.h"
 #include "mm_led_control.h"
+#include "mm_av_transmission.h"
 }
 
 /**********************************************************
@@ -32,7 +34,7 @@ static void run_test_case(test_case_cb test, std::string const & test_name, std:
 /**
  * Prepare for test run by initializing all components and utilities.
  */
-static void init_test_case(void);
+static void init_test_case(std::string const & test_name);
 
 /**
  * Finalize test run by saving output and shutting down utilities.
@@ -53,7 +55,7 @@ void test_runner_init(std::vector<test_case_cb> const & tests, std::vector<std::
 
 static void run_test_case(test_case_cb test, std::string const & test_name, std::string const & output_destination)
 {
-    init_test_case();
+    init_test_case(test_name);
 
     try
     {
@@ -67,19 +69,22 @@ static void run_test_case(test_case_cb test, std::string const & test_name, std:
     deinit_test_case();
 }
 
-static void init_test_case(void)
+static void init_test_case(std::string const & test_name)
 {
-    
+    simulate_time_init();
     mm_position_config_init();
     mm_led_control_init();
     mm_monitoring_dispatch_init();
     mm_sensor_transmission_init();
     mm_sensor_algorithm_init();
+    mm_av_transmission_init();
 
-    //configure logging output location here
+    /* Initialize the logger for this test. */
+	init_test_output_logger(test_name);
 }
 
 static void deinit_test_case(void)
 {
-    //maybe cleanup log file? nothing to do yet.
+	/* Deinitialize the logger for the next test. */
+	deinit_test_output_logger();
 }

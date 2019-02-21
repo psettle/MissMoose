@@ -85,7 +85,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)/src/sensor_algorithm/activity_variable_growth;$(ProjectDir)test_framework/mocked_implementations;$(ProjectDir)test_framework/test_cases;$(ProjectDir)test_framework/util;$(ProjectDir)test_framework/test_runner;$(ProjectDir)test_framework/mocked_interfaces;$(ProjectDir)src/sensor_management;$(ProjectDir)src/protocols;$(ProjectDir)src/sensor_algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MM_BLAZE_GATEWAY;MM_ALLOW_SIMULATED_TIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MM_BLAZE_GATEWAY;MM_ALLOW_SIMULATED_TIME;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -111,7 +111,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)/src/sensor_algorithm/activity_variable_growth;$(ProjectDir)test_framework/mocked_implementations;$(ProjectDir)test_framework/test_cases;$(ProjectDir)test_framework/util;$(ProjectDir)test_framework/test_runner;$(ProjectDir)test_framework/mocked_interfaces;$(ProjectDir)src/sensor_management;$(ProjectDir)src/protocols;$(ProjectDir)src/sensor_algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MM_BLAZE_GATEWAY;MM_ALLOW_SIMULATED_TIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MM_BLAZE_GATEWAY;MM_ALLOW_SIMULATED_TIME;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -129,6 +129,7 @@
     <ClCompile Include="src\sensor_algorithm\mm_sensor_algorithm.c" />
     <ClCompile Include="src\sensor_algorithm\mm_sensor_error_check.c" />
     <ClCompile Include="test_framework\main.cpp" />
+    <ClCompile Include="test_framework\mocked_implementations\mm_av_transmission.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_led_control.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_monitoring_dispatch.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_position_config.cpp" />
@@ -140,6 +141,7 @@
     <ClCompile Include="test_framework\test_runner\test_runner.cpp" />
     <ClCompile Include="test_framework\util\sensor_evt_utils.cpp" />
     <ClCompile Include="test_framework\util\simulate_time.cpp" />
+    <ClCompile Include="test_framework\util\test_output_logger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth.h" />
@@ -163,6 +165,7 @@
     <ClInclude Include="test_framework\test_runner\test_runner.hpp" />
     <ClInclude Include="test_framework\util\sensor_evt_utils.hpp" />
     <ClInclude Include="test_framework\util\simulate_time.hpp" />
+    <ClInclude Include="test_framework\util\test_output_logger.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -20,6 +20,7 @@ notes:
 #include "mm_sensor_transmission.h"
 #include "mm_sensor_algorithm.h"
 #include "mm_led_control.h"
+#include "mm_av_transmission.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -208,6 +209,8 @@ static void external_init(void)
 #ifdef MM_BLAZE_GATEWAY
     /* Init sensor data processing now that data can be transmitted. */
     mm_sensor_algorithm_init();
+	/* Init AV output transmission over blaze now that the sensor algorithm is up and running. */
+	mm_av_transmission_init();
 #endif
 }
 

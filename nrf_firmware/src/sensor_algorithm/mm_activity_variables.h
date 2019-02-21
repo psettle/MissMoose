@@ -46,6 +46,15 @@ notes:
 
 typedef float mm_activity_variable_t;
 
+typedef enum
+{
+    ACTIVITY_VARIABLE_STATE_IDLE,
+    ACTIVITY_VARIABLE_STATE_POSSIBLE_DETECTION,
+    ACTIVITY_VARIABLE_STATE_DETECTION,
+
+    ACTIVITY_VARIABLE_STATE_COUNT
+} activity_variable_state_t;
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
@@ -59,5 +68,10 @@ void mm_activity_variables_init(void);
  * Access AV value.
  */
 mm_activity_variable_t* mm_av_access(uint8_t x, uint8_t y);
+
+/**
+ * Check which threshold an activity variable falls under.
+ */
+activity_variable_state_t mm_get_status_for_av(mm_activity_variable_t const * av);
 
 #endif /* MM_ACTIVITY_VARIABLES_H */
