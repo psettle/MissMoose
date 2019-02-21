@@ -24,6 +24,16 @@ namespace MissMooseConfigurationApplication.UIPages
 
         #region Public Members
         public List<SensorNode> nodes { get; private set; } = new List<SensorNode>();
+
+        // Indicates whether there is currently a node in the "new node" box
+        public bool NewNodeBoxFull
+        {
+            get
+            {
+                return this.IsInitialized && NewSensorViewbox.Child != null ? true : false;
+            }
+        }
+
         #endregion
 
         #region Public Methods

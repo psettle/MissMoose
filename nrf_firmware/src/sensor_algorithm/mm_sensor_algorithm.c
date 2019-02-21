@@ -49,11 +49,6 @@ notes:
 static void sensor_data_evt_handler(sensor_evt_t const * evt);
 
 /**
-    Send sensor events to the monitoring dispatch manager.
-*/
-static void send_monitoring_dispatch(sensor_evt_t const * evt);
-
-/**
     Timer handler to process second tick.
 */
 static void one_second_timer_handler(void * p_context);
@@ -68,21 +63,11 @@ static void update_node_positions(void);
 
 /**
  * Tick events, second, minute, etc.
- * 
+ *
  * Invoked from main context.
  */
 static void on_second_elapsed(void* p_unused, uint16_t size_0);
 static void on_minute_elapsed(void);
-
-/**
-    Called every hour from main context.
-*/
-static void on_hour_elapsed(void);
-
-/**
-    Called every day from main context.
-*/
-static void on_day_elapsed(void);
 
 /**
     Gets a timestamp accurate to 1 minute. Rolls over to 0 ever 24 hours.
@@ -108,9 +93,15 @@ static uint32_t hour_counter = 0;
 */
 void mm_sensor_algorithm_init(void)
 {
+    second_counter = 0;
+    minute_counter = 0;
+    hour_counter = 0;
+
     /* Initialize algorithm components. */
+    mm_sensor_error_init();
     mm_activity_variables_init();
     mm_activity_variable_growth_init();
+    mm_led_strip_states_init();
 
     /* Register for sensor data with sensor_transmission.h */
     mm_sensor_transmission_register_sensor_data(sensor_data_evt_handler);
@@ -124,6 +115,16 @@ void mm_sensor_algorithm_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+#ifdef MM_ALLOW_SIMULATED_TIME
+/**
+ * Simulate a second passing, only use for simulating time, not in production.
+ */
+void mm_sensor_algorithm_on_second_elapsed(void)
+{
+    on_second_elapsed(NULL, 0);
+}
+#endif
+
 /**
     Callback into sensor_transmission.h to receive sensor data from all nodes.
 */
@@ -132,50 +133,10 @@ static void sensor_data_evt_handler(sensor_evt_t const * evt)
     /* Make sure everyone has valid node positions before processing the event. */
     update_node_positions();
 
-    /* Always send sensor events to the monitoring dispatch. */
-    send_monitoring_dispatch(evt);
-
     /* Now sensor data can be processed with respect to the algorithm. */
-    mm_record_sensor_activity(evt, get_minute_timestamp());
+    mm_sensor_error_record_sensor_activity(evt, get_minute_timestamp());
 
-    /* if the sensor that triggered the current event is hyperactive do not process the event further */
-    if ( mm_is_sensor_hyperactive(evt) )
-    {
-        return;
-    }
-    
     mm_activity_variable_growth_on_sensor_detection(evt);
-}
-
-/**
-    Send sensor events to the monitoring dispatch manager.
-*/
-static void send_monitoring_dispatch(sensor_evt_t const * evt)
-{
-    /* Switch on sensor type and call the appropriate monitoring dispatch function. */
-    switch(evt->sensor_type)
-    {
-        case SENSOR_TYPE_PIR:
-            mm_monitoring_dispatch_send_pir_data
-                (
-                evt->pir_data.node_id,
-                evt->pir_data.sensor_rotation,
-                evt->pir_data.detection
-                );
-            break;
-        case SENSOR_TYPE_LIDAR:
-            mm_monitoring_dispatch_send_lidar_data
-                (
-                evt->lidar_data.node_id,
-                evt->lidar_data.sensor_rotation,
-                evt->lidar_data.distance_measured
-                );
-            break;
-        default:
-            /* App error, unknown sensor data type. */
-            APP_ERROR_CHECK(true);
-            break;
-    }
 }
 
 /**
@@ -196,20 +157,20 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
     /* Make sure everyone has valid node positions before processing the event. */
     update_node_positions();
 
+    second_counter++;
+    second_counter %= SECONDS_PER_MINUTE;
+
     if(second_counter == 0)
     {
         on_minute_elapsed();
     }
 
-    second_counter++;
-    second_counter %= SECONDS_PER_MINUTE;
-
     mm_activity_variable_growth_on_second_elapsed();
-	mm_apply_activity_variable_drain_factor();
-	mm_led_signalling_states_on_second_elapsed();
+    mm_apply_activity_variable_drain_factor();
+    mm_led_signalling_states_on_second_elapsed();
 
-	/* Space left to add other once-per-second updates if
-	 * necessary in the future. */
+    /* Space left to add other once-per-second updates if
+     * necessary in the future. */
 }
 
 /**
@@ -217,36 +178,15 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
 */
 static void on_minute_elapsed(void)
 {
-    if(minute_counter == 0)
-    {
-        on_hour_elapsed();
-    }
     minute_counter++;
     minute_counter %= MINUTES_PER_HOUR;
 
-    mm_check_for_sensor_hyperactivity();
-}
-
-/**
-    Called every hour from main context.
-*/
-static void on_hour_elapsed(void)
-{
-    if(hour_counter == 0)
+    if (minute_counter == 0)
     {
-        on_day_elapsed();
+        hour_counter++;
     }
 
-    hour_counter++;
-    hour_counter %= HOURS_PER_DAY;
-}
-
-/**
-    Called every day from main context.
-*/
-static void on_day_elapsed(void)
-{
-    mm_check_for_sensor_inactivity();
+    mm_sensor_error_on_minute_elapsed(get_minute_timestamp());
 }
 
 /**
@@ -268,8 +208,8 @@ static void update_node_positions(void)
     if(have_node_positions_changed())
     {
         /* Tell all users we are about to clear the flag: */
-        mm_sensor_error_check_on_node_positions_update();
-
+        mm_sensor_error_on_node_positions_update(get_minute_timestamp());
+        mm_led_signalling_states_on_position_update();
         /* Clear the flag: */
         clear_unread_node_positions();
     }

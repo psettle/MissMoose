@@ -18,6 +18,8 @@ notes:
 #include "mm_activity_variable_growth_prv.h"
 #include "mm_activity_variable_growth_sensor_records_prv.h"
 #include "mm_position_config.h"
+#include "mm_monitoring_dispatch.h"
+#include "mm_sensor_error_check.h"
 
 /**********************************************************
                         MACROS
@@ -26,16 +28,6 @@ notes:
 /**********************************************************
                           TYPES
 **********************************************************/
-
-typedef enum
-{
-    LIDAR_REGION_REGION_NONE, /* The lidar is currently 'detecting' something past the edge of the network */
-    
-    LIDAR_REGION_REGION_0,    /* The lidar is currently detecting something in the region in front of it */
-    LIDAR_REGION_REGION_1,    /* The lidar is currently detecting something in the region 1 past it */
-    
-    LIDAR_REGION_COUNT
-} lidar_region_t;
 
 typedef struct
 {
@@ -96,13 +88,31 @@ static void generate_trickle_constants(abstract_lidar_detection_t const * detect
 /**
  * Translates a lidar detection event into an abstract detection event.
  */
-void translate_lidar_detection(lidar_evt_data_t const * evt)
+void translate_lidar_detection(sensor_evt_t const * sensor_evt)
 {
+    lidar_evt_data_t const * evt = &sensor_evt->lidar_data;
+
     /* Translate into an abstract detection: */
     abstract_lidar_detection_t detection;
     if(!sensor_evt_to_lidar_detection(evt, &detection))
     {
         /* Invalid event. */
+        return;
+    }
+
+    /* Send monitoring dispatch */
+    mm_monitoring_dispatch_send_lidar_data
+        (
+        evt->node_id,
+        evt->sensor_rotation,
+        evt->distance_measured,
+        detection.region
+        );
+
+    /* Is the sensor hyperactive? */
+    if(mm_sensor_error_is_sensor_hyperactive(sensor_evt))
+    {
+        /* If so, don't process further. */
         return;
     }
 
@@ -173,6 +183,8 @@ static void lidar_on_second_evt(sensor_record_t const * record)
     abstract_detection.ypos = detection.ypos;
     abstract_detection.rotation = detection.direction;
     generate_trickle_constants(&detection, &abstract_detection.constants);
+
+    process_abstract_detection(&abstract_detection);
 }
 
 /**
@@ -180,7 +192,7 @@ static void lidar_on_second_evt(sensor_record_t const * record)
  */ 
 static bool sensor_evt_to_lidar_detection(lidar_evt_data_t const * evt, abstract_lidar_detection_t* detection)
 {
-    memset(&(detection), 0, sizeof(detection));
+    memset(detection, 0, sizeof(abstract_lidar_detection_t));
     /* The regions can shift around a lot due to the offset system, so we need 2 values:
             - distance to first node
             - distance to second node
@@ -253,7 +265,7 @@ static bool sensor_evt_to_lidar_detection(lidar_evt_data_t const * evt, abstract
  */
 static void sensor_record_to_lidar_detection(sensor_record_t const * record, abstract_lidar_detection_t* detection)
 {
-    memset(&detection, 0, sizeof(detection));
+    memset(detection, 0, sizeof(abstract_lidar_detection_t));
 
     detection->region = record->detection_status;
 
@@ -312,13 +324,13 @@ static void generate_growth_constants(abstract_lidar_detection_t const * detecti
 
     switch(detection->ypos)
     {
-        case -1:
+        case 1:
             constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_0;
             break;
         case 0:
             constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_1;
             break;
-        case 1:
+        case -1:
             constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_2;
             break;
         default:
@@ -337,13 +349,13 @@ static void generate_trickle_constants(abstract_lidar_detection_t const * detect
 
     switch(detection->ypos)
     {
-        case -1:
+        case 1:
             constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_0;
             break;
         case 0:
             constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_1;
             break;
-        case 1:
+        case -1:
             constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_2;
             break;
         default:

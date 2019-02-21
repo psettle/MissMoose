@@ -1,4 +1,5 @@
-﻿using MissMooseConfigurationApplication.UIPages;
+﻿using ANT_Managed_Library;
+using MissMooseConfigurationApplication.UIPages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,9 +27,6 @@ namespace MissMooseConfigurationApplication
         // Node configuration data waiting to be sent to a gateway node, using node ID as dictionary keys
         private Dictionary<ushort, NodeConfigurationData> nodeConfigList;
 
-        // Default distance between nodes in meters
-        private static readonly byte nodeSeparation = 8;
-
         #endregion
 
         #region Public Methods
@@ -52,19 +50,19 @@ namespace MissMooseConfigurationApplication
         /*
          * Processes a received Node Status data page 
          */
-        public bool HandlePage(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
+        public void HandlePage(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
             if (dataPage.IsGatewayNode)
             {
-                return HandleNodeConfigPage_Gateway(dataPage, deviceNum, responder);
+                HandleNodeConfigPage_Gateway(dataPage, deviceNum, responder);
             }
             else
             {
-                return HandleNodeConfigPage_Node(dataPage, deviceNum, responder);
+                HandleNodeConfigPage_Node(dataPage, deviceNum, responder);
             }
         }
 
-        public bool HandlePage(LidarMonitoringPage dataPage, ushort deviceNum, PageSender responder)
+        public void HandlePage(LidarMonitoringPage dataPage, ushort deviceNum, PageSender responder)
         {
             SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
 
@@ -73,10 +71,9 @@ namespace MissMooseConfigurationApplication
                 Rotation totalRotation = new Rotation(node.Rotation.Val);
                 totalRotation.Add(dataPage.SensorRotation);
 
-
                 if (GetLineDirection(totalRotation, out LineDirection direction))
                 {
-                    Brush colour = dataPage.Distance < (2 * nodeSeparation * 100) ? StatusColour.Red : StatusColour.Blue;
+                    Brush colour = dataPage.Region > LidarRegion.None ? StatusColour.Red : StatusColour.Blue;
 
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                     {
@@ -94,12 +91,9 @@ namespace MissMooseConfigurationApplication
 
             responder.SendBroadcast(ackPage);
             Console.Out.WriteLine("Sent Ack for Lidar Msg: " + ackPage.MessageId);
-
-            //keep connection alive
-            return true;
         }
 
-        public bool HandlePage(PirMonitoringPage dataPage, ushort deviceNum, PageSender responder)
+        public void HandlePage(PirMonitoringPage dataPage, ushort deviceNum, PageSender responder)
         {
             SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
 
@@ -107,7 +101,6 @@ namespace MissMooseConfigurationApplication
             {
                 Rotation totalRotation = new Rotation(node.Rotation.Val);
                 totalRotation.Add(dataPage.SensorRotation);
-
 
                 if (GetLineDirection(totalRotation, out LineDirection direction))
                 {
@@ -117,9 +110,7 @@ namespace MissMooseConfigurationApplication
                     {
                         MonitoringUI.MarkSensorDetection(node, direction, colour);
                     });
-                }
-
-                
+                }                
             }
 
             // Send an acknowledgement page so the gateway knows this sensor data was received
@@ -130,16 +121,13 @@ namespace MissMooseConfigurationApplication
 
             responder.SendBroadcast(ackPage);
             Console.Out.WriteLine("Sent Ack for PIR Msg: " + ackPage.MessageId);
-
-            //keep connection alive
-            return true;
         }
 
         #endregion
 
         #region Private Methods
 
-        private bool HandleNodeConfigPage_Gateway(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
+        private void HandleNodeConfigPage_Gateway(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
             // If the node is missing a network ID, send a Network Configuration Command page
             if (dataPage.NetworkId == 0)
@@ -169,19 +157,18 @@ namespace MissMooseConfigurationApplication
                 {
                     // Add a new node to the UI for the user
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
-
-                        ConfigUI.AddNewNode(new SensorNode(deviceNum, dataPage.NodeType, dataPage.NodeId, true));
+                        if (!ConfigUI.NewNodeBoxFull)
+                        {
+                            ConfigUI.AddNewNode(new SensorNode(deviceNum, dataPage.NodeType, dataPage.NodeId, true));
+                        }                        
                     });
                 }
             }
 
-            SendNodeConfigurationToGateway(responder);
-
-            //keep connection alive
-            return true;
+            SendNodeConfigurationToGateway(deviceNum, responder);
         }
 
-        private bool HandleNodeConfigPage_Node(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
+        private void HandleNodeConfigPage_Node(NodeStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
             // If the node is missing a node ID or a network ID, send a Network Configuration Command page
             if (dataPage.NodeId == 0 || dataPage.NetworkId == 0)
@@ -209,17 +196,13 @@ namespace MissMooseConfigurationApplication
                 {
                     // Add a new node to the UI for the user
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
-
-                        ConfigUI.AddNewNode(new SensorNode(deviceNum, dataPage.NodeType, dataPage.NodeId, false));
+                        if (!ConfigUI.NewNodeBoxFull)
+                        {
+                            ConfigUI.AddNewNode(new SensorNode(deviceNum, dataPage.NodeType, dataPage.NodeId, false));
+                        }
                     });
-
-                    //close connection
-                    return false;
                 }
             }
-
-            //keep connection alive
-            return true;
         }
 
         private void SendNetworkConfiguration(ushort nodeId, PageSender responder)
@@ -235,7 +218,7 @@ namespace MissMooseConfigurationApplication
             Console.Out.WriteLine("Device" +  configPage.NodeId  + "config started.");
         }
 
-        private void SendNodeConfigurationToGateway(PageSender responder)
+        private void SendNodeConfigurationToGateway(ushort deviceNum, PageSender responder)
         {
             // TODO: add a save button to the UI that triggers updating the node configuration data list.
             // For now, poll the configuration page's sensor node list for updates every time we send data to the gateway
@@ -250,7 +233,7 @@ namespace MissMooseConfigurationApplication
                     NodeType = dataToSend.Value.nodeType,
                     NodeRotation = dataToSend.Value.nodeRotation,
                     xpos = dataToSend.Value.xpos,
-                    ypos = dataToSend.Value.xpos,
+                    ypos = dataToSend.Value.ypos,
                     xoffset = dataToSend.Value.xoffset,
                     yoffset = dataToSend.Value.yoffset
                 };

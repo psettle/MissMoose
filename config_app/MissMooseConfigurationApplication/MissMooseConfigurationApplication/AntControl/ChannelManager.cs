@@ -9,32 +9,33 @@ namespace MissMooseConfigurationApplication
 {
     class ChannelManager
     {
-        // Slave channel to search for devices
+        // Slave channel to scan for devices
         public ANT_Channel channel;
 
-        // Device number of the connected master device
-        public ushort masterDeviceNumber = 0;
+        // Channels which act as data buffers for sending to nodes
+        // Dictionary keys are node device numbers
+        private Dictionary<ushort, ANT_Channel> responseChannels
+            = new Dictionary<ushort, ANT_Channel>();
 
-        // Handles sending data pages to nodes being configured
-        public PageSender pageSender;
+        // Keeps track of the next channel to try to assign
+        private byte nextChannelNum = 1;
+        private static byte minChannelNum = 1;
+        private static byte maxChannelNum = 7;
 
-        // ANT Device which opens slave channels to pair to node devices
+        // ANT Device which opens slave channel to scan for node devices
         private ANT_Device device;
-        
-        private static readonly int channelNum = 0;
 
-        // Properties for an ANT slave channel which can pair to node devices
+        // Properties for ANT slave channel to scan for node devices
+        private static readonly int channelNum = 0;             // Must be 0 for continuous scan
         private static readonly byte rfFrequency = 66;          // 2466 MHz
         private static readonly byte deviceType = 1;            // search for node master device (nodes have device type 1)
         private static readonly byte transmissionType = 0;      // wildcard for search
-        private static readonly ushort channelPeriod = 8192;    // same channel period as node master devices
         private static readonly ANT_ReferenceLibrary.ChannelType channelType = ANT_ReferenceLibrary.ChannelType.BASE_Slave_Receive_0x00;
 
         // Device number for node search ANT slave channel
         private static readonly ushort nodeSearchDeviceNumber = 0; // wildcard for search
 
         private bool deviceRunning = false;
-        private bool reopenNodeSearchChannel = false;
 
         // Default wait time in milliseconds for ANT function calls
         private static readonly ushort waitTime = 500;
@@ -44,16 +45,11 @@ namespace MissMooseConfigurationApplication
             if (!deviceRunning)
             {
                 device = new ANT_Device();
-                device.deviceResponse += DeviceResponse;
 
                 // Check whether the connected ANT USB device supports the required capabilities
                 ANT_DeviceCapabilities capabilities = device.getDeviceCapabilities(waitTime);
-                if (!capabilities.SearchList)
-                {
-                    Console.WriteLine("Connected ANT USB device does not support exclusion search list");
-                    ShutdownConfigDevice();
-                }
-                else if (!capabilities.ExtendedMessaging)
+
+                if (!capabilities.ExtendedMessaging)
                 {
                     Console.WriteLine("Connected ANT USB device does not support extended messages");
                     ShutdownConfigDevice();
@@ -67,12 +63,8 @@ namespace MissMooseConfigurationApplication
 
                         // Get an unused ANT channel from the device
                         channel = device.getChannel(channelNum);
-                        channel.channelResponse += new dChannelResponseHandler(ChannelResponse);
 
-                        SetupAndOpenChannel(channel, nodeSearchDeviceNumber, true);
-
-                        // Initialize a page sender with the channel
-                        pageSender = new PageSender(channel);
+                        SetupAndOpenChannel(channel);
                     }
                     catch (Exception e)
                     {
@@ -91,7 +83,7 @@ namespace MissMooseConfigurationApplication
             deviceRunning = false;
         }
 
-        public void SetupAndOpenChannel(ANT_Channel channel, ushort deviceNumber, bool useExclusionList)
+        public void SetupAndOpenChannel(ANT_Channel channel)
         {
             //We try-catch and forward exceptions to the calling function to handle and pass the errors to the user
             try
@@ -108,30 +100,13 @@ namespace MissMooseConfigurationApplication
                 }
 
                 // Set the channel ID
-                if (channel.setChannelID(deviceNumber, false, deviceType, transmissionType, waitTime))
+                if (channel.setChannelID(nodeSearchDeviceNumber, false, deviceType, transmissionType, waitTime))
                 {
-                    Console.WriteLine("Set channel ID to " + deviceNumber + ", " + deviceType + ", " + transmissionType);
+                    Console.WriteLine("Set channel ID to " + nodeSearchDeviceNumber + ", " + deviceType + ", " + transmissionType);
                 }
                 else
                 {
                     throw new Exception("Set channel ID operation failed.");
-                }
-
-                if (useExclusionList)
-                {
-                    if (masterDeviceNumber == 0)
-                    {
-                        // Configure exclusion list to be empty if we haven't yet paired to a node device
-                        channel.includeExcludeList_Configure(0, true);
-                    }
-                    else
-                    {
-                        // Put the previously paired node's device number in the exclusion list so that we don't just re-pair to it immediately
-                        channel.includeExcludeList_addChannel(masterDeviceNumber, 0, 0, 0);
-
-                        // Configure exclusion list to include 1 channel
-                        channel.includeExcludeList_Configure(1, true);
-                    }
                 }
 
                 // Set the RF frequency for the channel
@@ -140,16 +115,10 @@ namespace MissMooseConfigurationApplication
                     Console.WriteLine("RF frequency set to " + (rfFrequency + 2400));
                 }
 
-                // Set the channel period to match the rate at which the nodes broadcast
-                if (channel.setChannelPeriod(channelPeriod, waitTime))
-                {
-                    Console.WriteLine("Message rate set to 4Hz");
-                }
-
                 // Open the channel
-                if (channel.openChannel(waitTime))
+                if (device.openRxScanMode(waitTime))
                 {
-                    Console.WriteLine("Opened channel");
+                    Console.WriteLine("Opened channel in scan mode");
                 }
                 else
                 {
@@ -162,111 +131,59 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public void ReOpenChannel()
+        /*
+         * Provides a channel to communicate with the node with the given device number
+         */ 
+        public ANT_Channel GetChannel(ushort deviceNumber)
         {
-            // Clear exclusion list
-             channel.includeExcludeList_Configure(0, true);
+            ANT_Channel channel = null;
+            responseChannels.TryGetValue(deviceNumber, out channel);
 
-            // Unassign the channel
-            if (channel.unassignChannel(waitTime))
+            // If there is already a channel assigned with this device number, return it
+            if (channel != null)
             {
-                Console.WriteLine("Unassigned channel");
+                return channel;
             }
+            // Otherwise, assign a new channel with this device number
             else
             {
-                throw new Exception("Channel unassign operation failed.");
-            }
+                channel = device.getChannel(nextChannelNum);
+                nextChannelNum = nextChannelNum < maxChannelNum ? (byte)(nextChannelNum + 1) : minChannelNum;
 
-            // Reassign and open the channel, excluding the current master device number from the search
-            // so we don't just pair to it again
-            SetupAndOpenChannel(channel, nodeSearchDeviceNumber, true);
-        }
-
-        public void CloseChannel()
-        {
-            ANT_ChannelStatus status = channel.requestStatus(waitTime);
-
-            // Only attempt to close the channel if it is currently open (searching or tracking)
-            if (status.BasicStatus == ANT_ReferenceLibrary.BasicChannelStatusCode.SEARCHING_0x2
-                || status.BasicStatus == ANT_ReferenceLibrary.BasicChannelStatusCode.TRACKING_0x3)
-            {
-                if (channel.closeChannel(waitTime))
+                try
                 {
-                    Console.WriteLine("Closed channel");
+                    channel.unassignChannel(waitTime);
+                }
+                catch
+                {
+                    // Do nothing.
+                    // If the unassign fails, the channel was likely not assigned.
+                    // If the unassign fails because something is wrong,
+                    // that will be shown by the following channel assign also failing.
+                }
+
+                if (channel.assignChannel(channelType, 0, waitTime))
+                {
+                    Console.WriteLine("Response channel assigned");
                 }
                 else
                 {
-                    throw new Exception("Channel close operation failed.");
+                    throw new Exception("Response channel assignment operation failed.");
                 }
-            }
-        }
 
-        /*
-         * Handles the ANT device response
-         */
-        public void DeviceResponse(ANT_Response response)
-        {
-            switch ((ANT_ReferenceLibrary.ANTMessageID)response.responseID)
-            {
-                case ANT_ReferenceLibrary.ANTMessageID.RX_EXT_MESGS_ENABLE_0x66:
-                    if (response.getChannelEventCode() == ANT_ReferenceLibrary.ANTEventID.INVALID_MESSAGE_0x28)
-                    {
-                        Console.WriteLine("Extended messages not supported in this ANT product");
-                        break;
-                    }
-                    else if (response.getChannelEventCode() != ANT_ReferenceLibrary.ANTEventID.RESPONSE_NO_ERROR_0x00)
-                    {
-                        Console.WriteLine(String.Format("Error {0} configuring {1}", response.getChannelEventCode(), response.getMessageID()));
-                        break;
-                    }
-                    Console.WriteLine("Extended messages enabled");
-                    break;
-                case ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40:
-                    switch (response.getMessageID())
-                    {
-                        case ANT_ReferenceLibrary.ANTMessageID.CLOSE_CHANNEL_0x4C:
-
-                            // Clear exclusion list
-                            channel.includeExcludeList_Configure(0, true);
-
-                            // Unassign the channel
-                            if (channel.unassignChannel(waitTime))
-                            {
-                                Console.WriteLine("Unassigned channel");
-                            }
-                            else
-                            {
-                                throw new Exception("Channel unassign operation failed.");
-                            }
-
-                            // Reassign and open the channel, excluding the current master device number from the search
-                            // so we don't just pair to it again
-                            SetupAndOpenChannel(channel, nodeSearchDeviceNumber, true);
-
-                            break;
-                    }
-                    break;
-            }
-        }
-
-        private void ChannelResponse(ANT_Response response)
-        {
-            if (response.responseID == (byte)ANT_ReferenceLibrary.ANTMessageID.RESPONSE_EVENT_0x40)
-            {
-                switch (response.getChannelEventCode())
+                if (channel.setChannelID(deviceNumber, false, deviceType, transmissionType, waitTime))
                 {
-                    case ANT_ReferenceLibrary.ANTEventID.EVENT_RX_SEARCH_TIMEOUT_0x01:
-                        reopenNodeSearchChannel = true;
-                        break;
-                    case ANT_ReferenceLibrary.ANTEventID.EVENT_CHANNEL_CLOSED_0x07:
-                        if (reopenNodeSearchChannel)
-                        {
-                            reopenNodeSearchChannel = false;
-                            ReOpenChannel();
-                        }
-                        break;
+                    Console.WriteLine("Set response channel ID to " + deviceNumber + ", " + deviceType + ", " + transmissionType);
                 }
+                else
+                {
+                    throw new Exception("Set response channel ID operation failed.");
+                }
+
+                responseChannels.Add(deviceNumber, channel);
+
+                return channel;
             }
         }
-    }
+    }    
 }

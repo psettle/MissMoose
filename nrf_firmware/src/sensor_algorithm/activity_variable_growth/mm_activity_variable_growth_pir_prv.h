@@ -23,7 +23,7 @@ notes:
 /**
  * Translates a pir detection event into an abstract detection event.
  */
-void translate_pir_detection(pir_evt_data_t const * evt);
+void translate_pir_detection(sensor_evt_t const * sensor_evt);
 
 /**
  * Translates an on second event into 0 or more abstract detection events.
