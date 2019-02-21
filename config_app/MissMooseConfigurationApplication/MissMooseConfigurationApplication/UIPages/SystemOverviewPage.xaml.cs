@@ -44,7 +44,7 @@ namespace MissMooseConfigurationApplication
             InitializeShadedRegions();
 
             AntControl.Instance.AddMonitoringUI(this);
-        }
+        }        
 
         /// <summary>
         /// Add a node to be displayed on overview page
@@ -144,27 +144,6 @@ namespace MissMooseConfigurationApplication
         public void MarkSensorDetection(SensorNode node, LineDirection direction, Brush colour)
         {
             MarkSensorDetection(node.xpos, node.ypos, direction, colour);
-
-            if(colour.Equals(StatusColour.Blue))
-            {
-                /* Colour is being set to blue, check that no other line segemnts are active. */
-                foreach(var segment in lineSegmentAssociations[node.xpos][node.ypos])
-                {
-                    if(!segment.Value.Stroke.Equals(StatusColour.Blue))
-                    {
-                        /* Another segment is still active, so we can't turn the node off yet. */
-                        return;
-                    }
-                }
-            } /* Else, colour is being set to red or yellow, so there is no concern about setting it */
-
-            /* Which node to set? */ 
-            SensorNode nodeToSet = nodes.Where(x => x.NodeID == node.NodeID).FirstOrDefault();
-
-            if (nodeToSet != null)
-            {
-                nodeToSet.SetStatusColour(colour);
-            }
         }
 
         public void SetRegionActivityVariable(byte xCoordinate, byte yCoordinate, RegionStatus regionStatus)
@@ -188,9 +167,32 @@ namespace MissMooseConfigurationApplication
             shadedRegions[xCoordinate][yCoordinate].Fill = colour;
         }
 
+        public void LogSystemProblem(String logString)
+        {
+            SystemProblems.TextList.Items.Add(CreateLogItem(logString));
+            SystemProblems.UpdateScrollBar();
+        }
+
+        public void LogEvent(String logString)
+        {
+            EventLog.TextList.Items.Add(CreateLogItem(logString));
+            EventLog.UpdateScrollBar();
+        }
+
         #endregion
 
         #region Private Methods
+
+        private TextBox CreateLogItem(String logString)
+        {
+            TextBox textBox = new TextBox();
+            textBox.TextWrapping = TextWrapping.Wrap;
+            textBox.BorderThickness = new Thickness(0);
+            textBox.Text = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString() + ": " + logString;
+
+            return textBox;
+        }
+
         private void NodeClick(object sender, RoutedEventArgs e)
         {
             foreach(var node in nodes)

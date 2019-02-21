@@ -86,6 +86,7 @@
     <Compile Include="AntControl\PageHandler.cs" />
     <Compile Include="ANTDataPages\ErrorStatusAckPage.cs" />
     <Compile Include="ANTDataPages\HyperactivityErrorStatusPage.cs" />
+    <Compile Include="ANTDataPages\BaseErrorStatusPage.cs" />
     <Compile Include="ANTDataPages\InactiveSensorErrorStatusPage.cs" />
     <Compile Include="ANTDataPages\RegionActivityVariablePage.cs" />
     <Compile Include="ANTDataPages\LidarMonitoringPage.cs" />
