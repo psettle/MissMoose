@@ -173,6 +173,8 @@ static void lidar_on_second_evt(sensor_record_t const * record)
     abstract_detection.ypos = detection.ypos;
     abstract_detection.rotation = detection.direction;
     generate_trickle_constants(&detection, &abstract_detection.constants);
+
+    process_abstract_detection(&abstract_detection);
 }
 
 /**
@@ -180,7 +182,7 @@ static void lidar_on_second_evt(sensor_record_t const * record)
  */ 
 static bool sensor_evt_to_lidar_detection(lidar_evt_data_t const * evt, abstract_lidar_detection_t* detection)
 {
-    memset(&(detection), 0, sizeof(detection));
+    memset(detection, 0, sizeof(abstract_lidar_detection_t));
     /* The regions can shift around a lot due to the offset system, so we need 2 values:
             - distance to first node
             - distance to second node
@@ -253,7 +255,7 @@ static bool sensor_evt_to_lidar_detection(lidar_evt_data_t const * evt, abstract
  */
 static void sensor_record_to_lidar_detection(sensor_record_t const * record, abstract_lidar_detection_t* detection)
 {
-    memset(&detection, 0, sizeof(detection));
+    memset(detection, 0, sizeof(abstract_lidar_detection_t));
 
     detection->region = record->detection_status;
 
@@ -312,13 +314,13 @@ static void generate_growth_constants(abstract_lidar_detection_t const * detecti
 
     switch(detection->ypos)
     {
-        case -1:
+        case 1:
             constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_0;
             break;
         case 0:
             constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_1;
             break;
-        case 1:
+        case -1:
             constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_2;
             break;
         default:
@@ -337,13 +339,13 @@ static void generate_trickle_constants(abstract_lidar_detection_t const * detect
 
     switch(detection->ypos)
     {
-        case -1:
+        case 1:
             constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_0;
             break;
         case 0:
             constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_1;
             break;
-        case 1:
+        case -1:
             constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_2;
             break;
         default:
