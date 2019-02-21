@@ -22,20 +22,16 @@ static mm_activity_variable_t av_cache[MAX_AV_SIZE_X][MAX_AV_SIZE_Y];
 /**
  * Writes AV output information to the opened log file.
  * For example, the output would look like:
- * 
- * [ AV OUPUT EVENT]
- * [001:02:07:24] AV Position X: 2
- * [001:02:07:24] AV Position Y: 2
- * [001:02:07:24] AV Value: 0
- * [001:02:07:24] AV Status X: 0
+ *
+ * <timestamp>,AV OUTPUT EVENT,x,1,y,0,val,1.04,region,2
  */
 static void log_av_ouput
-(
+    (
     uint8_t av_position_x,
     uint8_t av_position_y,
     mm_activity_variable_t av_value,
     activity_variable_state_t av_status
-);
+    );
 
 /**********************************************************
                        DEFINITIONS
@@ -53,12 +49,12 @@ void mm_av_transmission_init(void)
  * Broadcast latest activity variable state over ANT.
  */
 void mm_av_transmission_send_av_update
-(
+    (
     uint8_t av_position_x,
     uint8_t av_position_y,
     mm_activity_variable_t av_value,
     activity_variable_state_t av_status
-) 
+    )
 {
     /* Log the event details. */
     log_av_ouput(av_position_x, av_position_y, av_value, av_status);
@@ -93,19 +89,15 @@ void mm_av_transmission_send_all_avs(void)
  * Writes AV output information to the opened log file.
  * For example, the output would look like:
  * 
- * [ AV OUPUT EVENT]
- * [001:02:07:24] AV Position X: 2
- * [001:02:07:24] AV Position Y: 2
- * [001:02:07:24] AV Value: 0
- * [001:02:07:24] AV Status X: 0
+ * <timestamp>,AV OUTPUT EVENT,x,1,y,0,val,1.04,region,2
  */
 static void log_av_ouput
-(
+    (
     uint8_t av_position_x,
     uint8_t av_position_y,
     mm_activity_variable_t av_value,
     activity_variable_state_t av_status
-)
+    )
 {
     /* Output would be like the above example. */
     log_message("AV OUTPUT EVENT,x," + std::to_string(av_position_x) + ",y," + std::to_string(av_position_y) + ",val," + std::to_string(av_value) + ",region," + std::to_string(av_status));
