@@ -1,6 +1,6 @@
 /*
 file: mm_av_transmission.h
-brief: Methods for controlling LEDs over blaze
+brief: Methods for transmitting activity variable data to the monitoring application over ANT
 notes:
 */
 #ifndef MM_AV_TRANSMISSION_H
