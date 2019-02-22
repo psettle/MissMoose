@@ -85,7 +85,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)/src/sensor_algorithm/activity_variable_growth;$(ProjectDir)test_framework/mocked_implementations;$(ProjectDir)test_framework/test_cases;$(ProjectDir)test_framework/util;$(ProjectDir)test_framework/test_runner;$(ProjectDir)test_framework/mocked_interfaces;$(ProjectDir)src/sensor_management;$(ProjectDir)src/protocols;$(ProjectDir)src/sensor_algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MM_BLAZE_GATEWAY;MM_ALLOW_SIMULATED_TIME;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MM_BLAZE_GATEWAY;MM_ALLOW_SIMULATED_TIME;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -111,7 +111,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)/src/sensor_algorithm/activity_variable_growth;$(ProjectDir)test_framework/mocked_implementations;$(ProjectDir)test_framework/test_cases;$(ProjectDir)test_framework/util;$(ProjectDir)test_framework/test_runner;$(ProjectDir)test_framework/mocked_interfaces;$(ProjectDir)src/sensor_management;$(ProjectDir)src/protocols;$(ProjectDir)src/sensor_algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MM_BLAZE_GATEWAY;MM_ALLOW_SIMULATED_TIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MM_BLAZE_GATEWAY;MM_ALLOW_SIMULATED_TIME;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

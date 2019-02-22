@@ -13,14 +13,16 @@ namespace MissMooseConfigurationApplication
         #region Private Members
 
         private ANT_Channel channel;
+        private ANT_ChannelID channelId;
 
         #endregion
 
         #region Public Methods
 
-        public PageSender(ANT_Channel channel)
+        public PageSender(ANT_Channel channel, ANT_ChannelID channelId)
         {
             this.channel = channel;
+            this.channelId = channelId;
         }        
 
         public void SendBroadcast(DataPage page)
@@ -33,7 +35,9 @@ namespace MissMooseConfigurationApplication
             {
                 byte[] txBuffer = new byte[8];
                 page.Encode(txBuffer);
-                channel.sendBroadcastData(txBuffer);
+                channel.sendExtBroadcastData(
+                    channelId.deviceNumber, channelId.deviceTypeID, channelId.transmissionTypeID, 
+                    txBuffer);
             }            
         }
 
@@ -55,7 +59,9 @@ namespace MissMooseConfigurationApplication
                 while (returnCode != ANT_ReferenceLibrary.MessagingReturnCode.Pass && retries > 0)
                 {
                     retries--;
-                    returnCode = channel.sendAcknowledgedData(txBuffer, 500);
+                    returnCode = channel.sendExtAcknowledgedData(
+                        channelId.deviceNumber, channelId.deviceTypeID, channelId.transmissionTypeID,
+                        txBuffer, 500);
                 }
 
                 // If the message transmission has passed, return true.

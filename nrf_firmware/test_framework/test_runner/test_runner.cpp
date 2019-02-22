@@ -19,6 +19,7 @@ extern "C" {
 #include "mm_monitoring_dispatch.h"
 #include "mm_position_config.h"
 #include "mm_led_control.h"
+#include "mm_av_transmission.h"
 }
 
 /**********************************************************
@@ -70,12 +71,13 @@ static void run_test_case(test_case_cb test, std::string const & test_name, std:
 
 static void init_test_case(std::string const & test_name)
 {
-    
+    simulate_time_init();
     mm_position_config_init();
     mm_led_control_init();
     mm_monitoring_dispatch_init();
     mm_sensor_transmission_init();
     mm_sensor_algorithm_init();
+    mm_av_transmission_init();
 
     /* Initialize the logger for this test. */
 	init_test_output_logger(test_name);
