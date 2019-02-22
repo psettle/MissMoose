@@ -33,6 +33,7 @@ notes:
 #define NODE_ID_INDEX                           ( 2 )
 #define SENSOR_ROTATION_INDEX                   ( 4 )
 #define LIDAR_DISTANCE_MEASURED_INDEX           ( 5 )
+#define LIDAR_REGION_DETECTED_INDEX             ( 7 )
 #define PIR_DETECTION_INDEX                     ( 5 )
 
 #define TEST_MODE                               ( false )
@@ -160,7 +161,8 @@ void mm_monitoring_dispatch_send_lidar_data
     (
     uint16_t node_id, 
     sensor_rotation_t sensor_rotation, 
-    uint16_t distance_measured
+    uint16_t distance_measured,
+    lidar_region_t region
     )
 {
     /* Encode payload */
@@ -174,7 +176,7 @@ void mm_monitoring_dispatch_send_lidar_data
     memcpy(&payload[NODE_ID_INDEX], &node_id, sizeof(uint16_t));
     payload[SENSOR_ROTATION_INDEX] = sensor_rotation;
     memcpy(&payload[LIDAR_DISTANCE_MEASURED_INDEX], &distance_measured, sizeof(uint16_t));
-
+    payload[LIDAR_REGION_DETECTED_INDEX] = region;
     message_id++;
 
     /* Push to message queue. */

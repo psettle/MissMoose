@@ -18,6 +18,8 @@ notes:
 #include "mm_activity_variable_growth_prv.h"
 #include "mm_activity_variable_growth_sensor_records_prv.h"
 #include "mm_position_config.h"
+#include "mm_sensor_error_check.h"
+#include "mm_monitoring_dispatch.h"
 
 /**********************************************************
                         MACROS
@@ -79,13 +81,30 @@ static void generate_trickle_constants(abstract_pir_detection_t const * detectio
 /**
  * Translates a pir detection event into an abstract detection event.
  */
-void translate_pir_detection(pir_evt_data_t const * evt)
+void translate_pir_detection(sensor_evt_t const * sensor_evt)
 {
+    pir_evt_data_t const * evt = &(sensor_evt->pir_data);
+
     /* Translate into an abstract detection: */
     abstract_pir_detection_t detection;
     if(!sensor_evt_to_pir_detection(evt, &detection))
     {
         /* Invalid event. */
+        return;
+    }
+
+    /* Send monitoring dispatch */
+    mm_monitoring_dispatch_send_pir_data
+        (
+        evt->node_id,
+        evt->sensor_rotation,
+        evt->detection
+        );
+
+    /* Is the sensor hyperactive? */
+    if(mm_sensor_error_is_sensor_hyperactive(sensor_evt))
+    {
+        /* If so, don't process further. */
         return;
     }
 
@@ -156,6 +175,8 @@ static void pir_on_second_evt(sensor_record_t const * record)
     abstract_detection.ypos = detection.ypos;
     abstract_detection.rotation = detection.direction;
     generate_trickle_constants(&detection, &abstract_detection.constants);
+
+    process_abstract_detection(&abstract_detection);
 }
 
 /**
@@ -163,7 +184,7 @@ static void pir_on_second_evt(sensor_record_t const * record)
  */ 
 static bool sensor_evt_to_pir_detection(pir_evt_data_t const * evt, abstract_pir_detection_t* detection)
 {
-    memset(&(detection), 0, sizeof(detection));
+    memset(detection, 0, sizeof(abstract_pir_detection_t));
 
     mm_node_position_t const * position = get_position_for_node(evt->node_id);
     
@@ -190,7 +211,7 @@ static bool sensor_evt_to_pir_detection(pir_evt_data_t const * evt, abstract_pir
  */
 static void sensor_record_to_pir_detection(sensor_record_t const * record, abstract_pir_detection_t* detection)
 {
-    memset(&detection, 0, sizeof(detection));
+    memset(detection, 0, sizeof(abstract_pir_detection_t));
 
     if(!record->detection_status)
     {
@@ -226,13 +247,13 @@ static void generate_growth_constants(abstract_pir_detection_t const * detection
 
     switch(detection->ypos)
     {
-        case -1:
+        case 1:
             constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_0;
             break;
         case 0:
             constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_1;
             break;
-        case 1:
+        case -1:
             constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_2;
             break;
         default:
@@ -251,13 +272,13 @@ static void generate_trickle_constants(abstract_pir_detection_t const * detectio
 
     switch(detection->ypos)
     {
-        case -1:
+        case 1:
             constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_0;
             break;
         case 0:
             constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_1;
             break;
-        case 1:
+        case -1:
             constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_2;
             break;
         default:

@@ -1,4 +1,5 @@
 ﻿using MissMooseConfigurationApplication.UIPages;
+using MissMooseConfigurationApplication.UIComponents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace MissMooseConfigurationApplication
         #region Private Members
         private List<List<Viewbox>> sensorViewboxes;
         private List<SensorNode> nodes = new List<SensorNode>();
-        private List<List<Dictionary<LineDirection,Line>>> lineSegmentAssociations;
+        private List<List<Dictionary<LineDirection, LineWithBorder>>> lineSegmentAssociations;
         private List<List<Path>> shadedRegions;
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
@@ -44,7 +45,7 @@ namespace MissMooseConfigurationApplication
             InitializeShadedRegions();
 
             AntControl.Instance.AddMonitoringUI(this);
-        }        
+        }
 
         /// <summary>
         /// Add a node to be displayed on overview page
@@ -68,11 +69,7 @@ namespace MissMooseConfigurationApplication
             AddViewboxOffset(viewbox, node.xoffset, node.yoffset);
 
             SetNodeRotation(viewbox, node.Rotation);
-
-            MarkSensorDetection(node, LineDirection.Up, StatusColour.Blue);
-            MarkSensorDetection(node, LineDirection.Right, StatusColour.Blue);
-            MarkSensorDetection(node, LineDirection.Down, StatusColour.Blue);
-            MarkSensorDetection(node, LineDirection.Left, StatusColour.Blue);
+            InitializeDetectionLines(node);
         }
 
         /// <summary>
@@ -132,7 +129,7 @@ namespace MissMooseConfigurationApplication
         {
             if (lineSegmentAssociations[xpos][ypos].ContainsKey(direction))
             {
-                lineSegmentAssociations[xpos][ypos][direction].Stroke = colour;
+                lineSegmentAssociations[xpos][ypos][direction].ColoredLine.Stroke = colour;
                 lineSegmentAssociations[xpos][ypos][direction].Visibility = Visibility.Visible;                
             }
             else
@@ -145,6 +142,7 @@ namespace MissMooseConfigurationApplication
         {
             MarkSensorDetection(node.xpos, node.ypos, direction, colour);
         }
+
 
         public void SetRegionActivityVariable(byte xCoordinate, byte yCoordinate, RegionStatus regionStatus)
         {
@@ -235,63 +233,63 @@ namespace MissMooseConfigurationApplication
 
         private void InitializeLineSegments()
         {
-            lineSegmentAssociations = new List<List<Dictionary<LineDirection, Line>>>
+            lineSegmentAssociations = new List<List<Dictionary<LineDirection, LineWithBorder>>>
             {
-                new List<Dictionary<LineDirection, Line>>
+                new List<Dictionary<LineDirection, LineWithBorder>>
                 {
-                    new Dictionary<LineDirection, Line>
+                    new Dictionary<LineDirection, LineWithBorder>
                     {
                         { LineDirection.Right, MonitGrid.Line_0_0_Right },
                         { LineDirection.Down, MonitGrid.Line_0_0_Down },
                     },
-                    new Dictionary<LineDirection, Line>
+                    new Dictionary<LineDirection, LineWithBorder>
                     {
                         { LineDirection.Right, MonitGrid.Line_0_1_Right },
                         { LineDirection.Down, MonitGrid.Line_0_1_Down },
                         { LineDirection.Up, MonitGrid.Line_0_1_Up },
                     },
-                    new Dictionary<LineDirection, Line>
+                    new Dictionary<LineDirection, LineWithBorder>
                     {
                         { LineDirection.Right, MonitGrid.Line_0_2_Right },
                         { LineDirection.Up, MonitGrid.Line_0_2_Up },
                     },
                 },
-                new List<Dictionary<LineDirection, Line>>
+                new List<Dictionary<LineDirection, LineWithBorder>>
                 {
-                    new Dictionary<LineDirection, Line>
+                    new Dictionary<LineDirection, LineWithBorder>
                     {
                         { LineDirection.Right, MonitGrid.Line_1_0_Right },
                         { LineDirection.Down, MonitGrid.Line_1_0_Down },
                         { LineDirection.Left, MonitGrid.Line_1_0_Left },
                     },
-                    new Dictionary<LineDirection, Line>
+                    new Dictionary<LineDirection, LineWithBorder>
                     {
                         { LineDirection.Right, MonitGrid.Line_1_1_Right },
                         { LineDirection.Down, MonitGrid.Line_1_1_Down },
                         { LineDirection.Up, MonitGrid.Line_1_1_Up },
                         { LineDirection.Left, MonitGrid.Line_1_1_Left },
                     },
-                    new Dictionary<LineDirection, Line>
+                    new Dictionary<LineDirection, LineWithBorder>
                     {
                         { LineDirection.Right, MonitGrid.Line_1_2_Right },
                         { LineDirection.Up, MonitGrid.Line_1_2_Up },
                         { LineDirection.Left, MonitGrid.Line_1_2_Left },
                     },
                 },
-                new List<Dictionary<LineDirection, Line>>
+                new List<Dictionary<LineDirection, LineWithBorder>>
                 {
-                    new Dictionary<LineDirection, Line>
+                    new Dictionary<LineDirection, LineWithBorder>
                     {
                         { LineDirection.Left, MonitGrid.Line_2_0_Left },
                         { LineDirection.Down, MonitGrid.Line_2_0_Down },
                     },
-                    new Dictionary<LineDirection, Line>
+                    new Dictionary<LineDirection, LineWithBorder>
                     {
                         { LineDirection.Left, MonitGrid.Line_2_1_Left },
                         { LineDirection.Down, MonitGrid.Line_2_1_Down },
                         { LineDirection.Up, MonitGrid.Line_2_1_Up },
                     },
-                    new Dictionary<LineDirection, Line>
+                    new Dictionary<LineDirection, LineWithBorder>
                     {
                         { LineDirection.Left, MonitGrid.Line_2_2_Left },
                         { LineDirection.Up, MonitGrid.Line_2_2_Up },
@@ -331,6 +329,76 @@ namespace MissMooseConfigurationApplication
         {
             var r = viewbox.RenderTransform as RotateTransform;
             r.Angle = rotation.Val;
+        }
+
+        private void InitializeDetectionLines(SensorNode node)
+        {
+            switch(node.configuration)
+            {
+                case HardwareConfiguration.Pir2:
+                    if(node.Rotation.Val == Rotation.R0)
+                    {
+                        MarkSensorDetection(node, LineDirection.Up, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Right, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Down, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Left, StatusColour.Blue);
+                    }
+                    if (node.Rotation.Val == Rotation.R90)
+                    {
+                        MarkSensorDetection(node, LineDirection.Up, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Right, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Down, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Left, StatusColour.Disabled);
+                    }
+                    if (node.Rotation.Val == Rotation.R180)
+                    {
+                        MarkSensorDetection(node, LineDirection.Up, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Right, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Down, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Left, StatusColour.Disabled);
+                    }
+                    if (node.Rotation.Val == Rotation.R270)
+                    {
+                        MarkSensorDetection(node, LineDirection.Up, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Right, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Down, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Left, StatusColour.Blue);
+                    }
+                    break;
+                case HardwareConfiguration.PirLidar:
+                case HardwareConfiguration.PirLidarLed:
+                    if (node.Rotation.Val == Rotation.R0)
+                    {
+                        MarkSensorDetection(node, LineDirection.Up, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Right, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Down, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Left, StatusColour.Disabled);
+                    }
+                    if (node.Rotation.Val == Rotation.R90)
+                    {
+                        MarkSensorDetection(node, LineDirection.Up, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Right, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Down, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Left, StatusColour.Disabled);
+                    }
+                    if (node.Rotation.Val == Rotation.R180)
+                    {
+                        MarkSensorDetection(node, LineDirection.Up, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Right, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Down, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Left, StatusColour.Blue);
+                    }
+                    if (node.Rotation.Val == Rotation.R270)
+                    {
+                        MarkSensorDetection(node, LineDirection.Up, StatusColour.Blue);
+                        MarkSensorDetection(node, LineDirection.Right, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Down, StatusColour.Disabled);
+                        MarkSensorDetection(node, LineDirection.Left, StatusColour.Blue);
+                    }
+                    break;
+                case HardwareConfiguration.Unknown:
+                    break;
+            }
         }
         #endregion
     }

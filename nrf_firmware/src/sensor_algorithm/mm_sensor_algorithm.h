@@ -25,4 +25,11 @@ notes:
  */
 void mm_sensor_algorithm_init(void);
 
+#ifdef MM_ALLOW_SIMULATED_TIME
+    /**
+     * Simulate a second passing, only use for simulating time, not in production.
+     */
+    void mm_sensor_algorithm_on_second_elapsed(void);
+#endif
+
 #endif /* MM_SENSOR_ALGORITHM_H */

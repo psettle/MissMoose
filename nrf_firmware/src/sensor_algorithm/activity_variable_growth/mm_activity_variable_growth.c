@@ -23,6 +23,8 @@ notes:
 #include "mm_activity_variable_growth_lidar_prv.h"
 #include "mm_activity_variable_growth_sensor_records_prv.h"
 
+#include "mm_av_transmission.h"
+
 /**********************************************************
                         CONSTANTS
 **********************************************************/
@@ -89,10 +91,10 @@ void mm_activity_variable_growth_on_sensor_detection(sensor_evt_t const * evt)
     switch(evt->sensor_type)
     {
     case SENSOR_TYPE_PIR:
-        translate_pir_detection(&evt->pir_data);
+        translate_pir_detection(evt);
         break;
     case SENSOR_TYPE_LIDAR:
-        translate_lidar_detection(&evt->lidar_data);
+        translate_lidar_detection(evt);
         break;
     default:
         APP_ERROR_CHECK(true);
@@ -126,19 +128,23 @@ void get_grid_direction(total_rotation_t rotation, int8_t* dx, int8_t* dy)
     {
         case TOTAL_ROTATION_0:
             /* Next node is in +y direction. */
+            *dx = 0;
             *dy = 1;
             break;
         case TOTAL_ROTATION_90:
             /* Next node is in +x direction. */
-            *dx = 1;   
+            *dx = 1;
+            *dy = 0;
             break;
         case TOTAL_ROTATION_180:
             /* Next node is in -y direction. */
+            *dx = 0;
             *dy = -1;
             break;
         case TOTAL_ROTATION_270:
             /* Next node is in -x direction. */
             *dx = -1;
+            *dy = 1;
             break;
         default:
             /* Current design does not support intermediate angles. */

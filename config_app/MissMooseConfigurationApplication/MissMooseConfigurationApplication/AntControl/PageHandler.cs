@@ -27,9 +27,6 @@ namespace MissMooseConfigurationApplication
         // Node configuration data waiting to be sent to a gateway node, using node ID as dictionary keys
         private Dictionary<ushort, NodeConfigurationData> nodeConfigList;
 
-        // Default distance between nodes in meters
-        private static readonly byte nodeSeparation = 8;
-
         #endregion
 
         #region Public Methods
@@ -74,10 +71,9 @@ namespace MissMooseConfigurationApplication
                 Rotation totalRotation = new Rotation(node.Rotation.Val);
                 totalRotation.Add(dataPage.SensorRotation);
 
-
                 if (GetLineDirection(totalRotation, out LineDirection direction))
                 {
-                    Brush colour = dataPage.Distance < (2 * nodeSeparation * 100) ? StatusColour.Red : StatusColour.Blue;
+                    Brush colour = dataPage.Region > LidarRegion.None ? StatusColour.Red : StatusColour.Blue;
 
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                     {
@@ -370,7 +366,7 @@ namespace MissMooseConfigurationApplication
                     NodeType = dataToSend.Value.nodeType,
                     NodeRotation = dataToSend.Value.nodeRotation,
                     xpos = dataToSend.Value.xpos,
-                    ypos = dataToSend.Value.xpos,
+                    ypos = dataToSend.Value.ypos,
                     xoffset = dataToSend.Value.xoffset,
                     yoffset = dataToSend.Value.yoffset
                 };
