@@ -6,6 +6,16 @@ using System.Threading.Tasks;
 
 namespace MissMooseConfigurationApplication
 {
+    public enum LidarRegion
+    {
+        None,
+
+        Region1,
+        Region2,
+
+        Count
+    }
+
     public class LidarMonitoringPage : DataPage
     {
         #region Private Members
@@ -15,6 +25,7 @@ namespace MissMooseConfigurationApplication
         private UInt16 nodeId;
         private Rotation sensorRotation = new Rotation(0);
         private UInt16 distance;
+        private LidarRegion region;
 
         #endregion
 
@@ -49,6 +60,12 @@ namespace MissMooseConfigurationApplication
             set { distance = value; OnPropertyChanged("Distance"); }
         }
 
+        public LidarRegion Region
+        {
+            get { return region; }
+            set { region = value; OnPropertyChanged("Region"); }
+        }
+
         #endregion
 
         #region Public Methods
@@ -68,7 +85,7 @@ namespace MissMooseConfigurationApplication
             txBuffer[5] = BitManipulation.GetByte0(Distance);
             txBuffer[6] = BitManipulation.GetByte1(Distance);
 
-            txBuffer[7] = BitManipulation.ReservedOnes;
+            txBuffer[7] = (byte)Region;
         }
 
         /* Decodes the given rxBuffer into this page's data fields */
@@ -83,6 +100,8 @@ namespace MissMooseConfigurationApplication
 
             BitManipulation.SetByte0(ref distance, rxBuffer[5]);
             BitManipulation.SetByte1(ref distance, rxBuffer[6]);
+
+            Region = (LidarRegion)rxBuffer[7];
         }
 
         #endregion        

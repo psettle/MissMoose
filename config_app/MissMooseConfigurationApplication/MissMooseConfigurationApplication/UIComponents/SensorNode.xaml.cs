@@ -29,6 +29,7 @@ namespace MissMooseConfigurationApplication
         public static readonly Brush Red = Brushes.Red;
         public static readonly Brush Yellow = Brushes.Yellow;
         public static readonly Brush Green = Brushes.Green;
+        public static readonly Brush Disabled = Brushes.Gray;
     }
 
     public class StatusColour
@@ -36,6 +37,7 @@ namespace MissMooseConfigurationApplication
         public static readonly Brush Red = Brushes.Red;
         public static readonly Brush Yellow = Brushes.Yellow;
         public static readonly Brush Blue = Brushes.Blue;
+        public static readonly Brush Disabled = Brushes.Gray;
     }
 
     public class Rotation
@@ -217,6 +219,10 @@ namespace MissMooseConfigurationApplication
                     PIR_90_Deg.Visibility = Visibility.Visible;
                     PIR_270_Deg.Visibility = Visibility.Hidden;
                     Lidar_0_Deg.Visibility = Visibility.Visible;
+                    if (configuration == HardwareConfiguration.PirLidarLed)
+                    {
+                        InnerRingBorder.Fill = Brushes.Black;
+                    }
                     break;
             }
 
