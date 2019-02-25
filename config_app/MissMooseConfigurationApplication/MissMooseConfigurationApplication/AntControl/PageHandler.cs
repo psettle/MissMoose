@@ -27,6 +27,12 @@ namespace MissMooseConfigurationApplication
         // Node configuration data waiting to be sent to a gateway node, using node ID as dictionary keys
         private Dictionary<ushort, NodeConfigurationData> nodeConfigList;
 
+        // The most recently received monitoring data message ID
+        private byte? monitoringMessageId = null;
+
+        // The most recently received error data message ID
+        private byte? errorMessageId = null;
+
         #endregion
 
         #region Public Methods
@@ -64,23 +70,57 @@ namespace MissMooseConfigurationApplication
 
         public void HandlePage(LidarMonitoringPage dataPage, ushort deviceNum, PageSender responder)
         {
-            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
-
-            if (node != null)
+            // Only handle the data page if its message ID is different
+            // than the most recently received monitoring data page.
+            // This prevents unnecessary UI updates and duplicate logs.
+            if (dataPage.MessageId != monitoringMessageId)
             {
-                Rotation totalRotation = new Rotation(node.Rotation.Val);
-                totalRotation.Add(dataPage.SensorRotation);
+                // Save the data page's message ID so we can ignore duplicates
+                monitoringMessageId = dataPage.MessageId;
 
-                if (GetLineDirection(totalRotation, out LineDirection direction))
+                SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+                if (node != null)
                 {
-                    Brush colour = dataPage.Region > LidarRegion.None ? StatusColour.Red : StatusColour.Blue;
+                    Rotation totalRotation = new Rotation(node.Rotation.Val);
+                    totalRotation.Add(dataPage.SensorRotation);
+
+                    if (GetLineDirection(totalRotation, out LineDirection direction))
+                    {
+                        Brush colour = dataPage.Region > LidarRegion.None ? StatusColour.Red : StatusColour.Blue;
+
+                        Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                        {
+                            MonitoringUI.MarkSensorDetection(node, direction, colour);
+                        });
+                    }
+
+                    String logString = GetStringFromRotation(totalRotation)
+                        + " LIDAR sensor on node " + dataPage.NodeId;
+
+                    switch (dataPage.Region)
+                    {
+                        case LidarRegion.None:
+                            logString += " is not detecting an object within the network";
+                            break;
+                        case LidarRegion.Region1:
+                            logString += " is detecting an object at " + dataPage.Distance / 100.0 + " m"
+                                + ", which is in the closest network region.";
+                            break;
+                        case LidarRegion.Region2:
+                            logString += " is detecting an object at " + dataPage.Distance / 100.0 + " m"
+                                + ", which is in the adjacent network region.";
+                            break;
+                        default:
+                            // Do nothing (shouldn't get here)
+                            break;
+                    }
 
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                     {
-                        MonitoringUI.MarkSensorDetection(node, direction, colour);
+                        MonitoringUI.LogEvent(logString);
                     });
                 }
- 
             }
 
             // Send an acknowledgement page so the gateway knows this sensor data was received
@@ -95,22 +135,48 @@ namespace MissMooseConfigurationApplication
 
         public void HandlePage(PirMonitoringPage dataPage, ushort deviceNum, PageSender responder)
         {
-            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
-
-            if (node != null)
+            // Only handle the data page if its message ID is different
+            // than the most recently received monitoring data page.
+            // This prevents unnecessary UI updates and duplicate logs.
+            if (dataPage.MessageId != monitoringMessageId)
             {
-                Rotation totalRotation = new Rotation(node.Rotation.Val);
-                totalRotation.Add(dataPage.SensorRotation);
+                // Save the data page's message ID so we can ignore duplicates
+                monitoringMessageId = dataPage.MessageId;
 
-                if (GetLineDirection(totalRotation, out LineDirection direction))
+                SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+                if (node != null)
                 {
-                    Brush colour = dataPage.Detection ? StatusColour.Red : StatusColour.Blue;
+                    Rotation totalRotation = new Rotation(node.Rotation.Val);
+                    totalRotation.Add(dataPage.SensorRotation);
+
+                    if (GetLineDirection(totalRotation, out LineDirection direction))
+                    {
+                        Brush colour = dataPage.Detection ? StatusColour.Red : StatusColour.Blue;
+
+                        Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                        {
+                            MonitoringUI.MarkSensorDetection(node, direction, colour);
+                        });
+                    }
+
+                    String logString = GetStringFromRotation(totalRotation)
+                        + " PIR sensor on node " + dataPage.NodeId;
+
+                    if (dataPage.Detection)
+                    {
+                        logString += " started detecting";
+                    }
+                    else
+                    {
+                        logString += " stopped detecting";
+                    }
 
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                     {
-                        MonitoringUI.MarkSensorDetection(node, direction, colour);
+                        MonitoringUI.LogEvent(logString);
                     });
-                }                
+                }
             }
 
             // Send an acknowledgement page so the gateway knows this sensor data was received
@@ -125,19 +191,41 @@ namespace MissMooseConfigurationApplication
 
         public void HandlePage(LedOutputStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
-            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
-
-            if (node != null)
+            // Only handle the data page if its message ID is different
+            // than the most recently received monitoring data page.
+            // This prevents unnecessary UI updates and duplicate logs.
+            if (dataPage.MessageId == 0)
             {
+                // Save the data page's message ID so we can ignore duplicates
+                monitoringMessageId = dataPage.MessageId;
+
+                SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+                if (node != null)
+                {
+                    Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                    {
+                        bool functionApplied = node.SetLedFunction(dataPage.LedFunction);
+                        bool colourApplied = node.SetLedColour(dataPage.LedColour);
+
+                        if (functionApplied || colourApplied)
+                        {
+                            MonitoringUI.UpdateNode(node);
+                        }
+                    });
+                }
+
                 Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                 {
-                    bool functionApplied = node.SetLedFunction(dataPage.LedFunction);
-                    bool colourApplied = node.SetLedColour(dataPage.LedColour);
-
-                    if (functionApplied || colourApplied)
+                    if (dataPage.LedFunction == LedFunction.Off)
                     {
-                        MonitoringUI.UpdateNode(node);
-                    }                    
+                        MonitoringUI.LogEvent("LED turned off on node " + dataPage.NodeId);
+                    }
+                    else
+                    {
+                        MonitoringUI.LogEvent("LED changed to " + dataPage.LedColour + " and " + dataPage.LedFunction
+                        + " on node " + dataPage.NodeId);
+                    }
                 });
             }
 
@@ -153,10 +241,47 @@ namespace MissMooseConfigurationApplication
 
         public void HandlePage(RegionActivityVariablePage dataPage, ushort deviceNum, PageSender responder)
         {
-            Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+            // Only handle the data page if its message ID is different
+            // than the most recently received monitoring data page.
+            // This prevents unnecessary UI updates and duplicate logs.
+            if (dataPage.MessageId != monitoringMessageId)
             {
-                MonitoringUI.SetRegionActivityVariable(dataPage.XCoordinate, dataPage.YCoordinate, dataPage.RegionStatus);
-            });
+                // Save the data page's message ID so we can ignore duplicates
+                monitoringMessageId = dataPage.MessageId;
+
+                Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                {
+                    MonitoringUI.SetRegionActivityVariable(dataPage.XCoordinate, dataPage.YCoordinate, dataPage.RegionStatus);
+                });
+
+                String regionString = "x = " + dataPage.XCoordinate + ", y = " + dataPage.YCoordinate;
+
+                String logString = "";
+
+                Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                {
+                    switch (dataPage.RegionStatus)
+                    {
+                        case RegionStatus.NoDetection:
+                            logString += "System is no longer detecting wildlife";
+                            break;
+                        case RegionStatus.ProbableDetection:
+                            logString += "System is detecting probable wildlife";
+                            break;
+                        case RegionStatus.DefiniteDetection:
+                            logString += "System is detecting wildlife";
+                            MonitoringUI.IncrementDetectionCount();
+                            break;
+                        default:
+                            // Do nothing (shouldn't get here)
+                            break;
+                    }
+
+                    logString += " in region " + regionString + " with Activity Variable " + dataPage.ActivityVariable;
+
+                    MonitoringUI.LogEvent(logString);
+                });
+            }
 
             // Send an acknowledgement page so the gateway knows this region AV data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
@@ -170,36 +295,45 @@ namespace MissMooseConfigurationApplication
 
         public void HandlePage(HyperactivityErrorStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
-            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
-
-            if (node != null)
+            // Only handle the data page if its message ID is different
+            // than the most recently received error status page.
+            // This prevents unnecessary UI updates and duplicate logs.
+            if (dataPage.MessageId != errorMessageId)
             {
-                Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                // Save the data page's message ID so we can ignore duplicates
+                errorMessageId = dataPage.MessageId;
+
+                SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+                if (node != null)
                 {
-                    Rotation totalRotation = new Rotation(node.Rotation.Val);
-                    totalRotation.Add(dataPage.SensorRotation);
-
-                    String logString = GetStringFromRotation(totalRotation) + "-facing "
-                        + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + dataPage.NodeId;
-
-                    if (dataPage.ErrorOccurring)
+                    Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                     {
-                        logString += " is hyperactive, and may be malfunctioning";
-                        MonitoringUI.LogSystemProblem(logString);
+                        Rotation totalRotation = new Rotation(node.Rotation.Val);
+                        totalRotation.Add(dataPage.SensorRotation);
 
-                        node.SetStatusColour(StatusColour.Red);
-                        MonitoringUI.UpdateNode(node);
-                    }
-                    else
-                    {
-                        logString += " is no longer hyperactive";
+                        String logString = GetStringFromRotation(totalRotation)
+                            + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + dataPage.NodeId;
 
-                        node.SetStatusColour(StatusColour.Blue);
-                        MonitoringUI.UpdateNode(node);
-                    }
+                        if (dataPage.ErrorOccurring)
+                        {
+                            logString += " is hyperactive, and may be malfunctioning";
+                            MonitoringUI.LogSystemProblem(logString);
 
-                    MonitoringUI.LogEvent(logString);
-                });
+                            node.SetStatusColour(StatusColour.Red);
+                            MonitoringUI.UpdateNode(node);
+                        }
+                        else
+                        {
+                            logString += " is no longer hyperactive";
+
+                            node.SetStatusColour(StatusColour.Blue);
+                            MonitoringUI.UpdateNode(node);
+                        }
+
+                        MonitoringUI.LogEvent(logString);
+                    });
+                }
             }
 
             // Send an acknowledgement page so the gateway knows this error data was received
@@ -214,36 +348,45 @@ namespace MissMooseConfigurationApplication
 
         public void HandlePage(InactiveSensorErrorStatusPage dataPage, ushort deviceNum, PageSender responder)
         {
-            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+            // Only handle the data page if its message ID is different
+            // than the most recently received error status page.
+            // This prevents unnecessary UI updates and duplicate logs.
+            if (dataPage.MessageId != errorMessageId)
+            {
+                // Save the data page's message ID so we can ignore duplicates
+                errorMessageId = dataPage.MessageId;
 
-            if (node != null)
-            {                
-                Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+                if (node != null)
                 {
-                    Rotation totalRotation = new Rotation(node.Rotation.Val);
-                    totalRotation.Add(dataPage.SensorRotation);
-
-                    String logString = GetStringFromRotation(totalRotation) + "-facing "
-                        + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + dataPage.NodeId;
-
-                    if (dataPage.ErrorOccurring)
+                    Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                     {
-                        logString += " is inactive, and may be malfunctioning";
-                        MonitoringUI.LogSystemProblem(logString);
+                        Rotation totalRotation = new Rotation(node.Rotation.Val);
+                        totalRotation.Add(dataPage.SensorRotation);
 
-                        node.SetStatusColour(StatusColour.Red);
-                        MonitoringUI.UpdateNode(node);
-                    }
-                    else
-                    {
-                        logString += " is no longer inactive";
+                        String logString = GetStringFromRotation(totalRotation)
+                            + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + dataPage.NodeId;
 
-                        node.SetStatusColour(StatusColour.Blue);
-                        MonitoringUI.UpdateNode(node);
-                    }
+                        if (dataPage.ErrorOccurring)
+                        {
+                            logString += " is inactive, and may be malfunctioning";
+                            MonitoringUI.LogSystemProblem(logString);
 
-                    MonitoringUI.LogEvent(logString);                    
-                });
+                            node.SetStatusColour(StatusColour.Red);
+                            MonitoringUI.UpdateNode(node);
+                        }
+                        else
+                        {
+                            logString += " is no longer inactive";
+
+                            node.SetStatusColour(StatusColour.Blue);
+                            MonitoringUI.UpdateNode(node);
+                        }
+
+                        MonitoringUI.LogEvent(logString);
+                    });
+                }
             }
 
             // Send an acknowledgement page so the gateway knows this error data was received

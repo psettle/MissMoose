@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -19,11 +21,16 @@ namespace MissMooseConfigurationApplication
     public partial class PageSwitcherTextbox
     {
         private String title;
+        private ScrollViewer scrollViewer;
+
+        #region Public Methods
 
         public PageSwitcherTextbox()
         {
             InitializeComponent();
-        }
+
+            this.Loaded += OnLoaded;
+        }        
 
         public String Title
         {
@@ -32,6 +39,19 @@ namespace MissMooseConfigurationApplication
                 TitleButton.Content = value;
                 title = value;
             }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Border border = (Border)VisualTreeHelper.GetChild(TextList, 0);
+            scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild(border, 0);
+            scrollViewer.ScrollToBottom();
+
+            ((INotifyCollectionChanged)TextList.Items).CollectionChanged += OnTextListChanged;
         }
 
         private void PageSwitchClick(object sender, EventArgs e)
@@ -43,14 +63,20 @@ namespace MissMooseConfigurationApplication
             parentWindow.PageSwitchClick(falseSender);
         }
 
-        public void UpdateScrollBar()
+        private void OnTextListChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (VisualTreeHelper.GetChildrenCount(TextList) > 0)
+            if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                Border border = (Border)VisualTreeHelper.GetChild(TextList, 0);
-                ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild(border, 0);
-                scrollViewer.ScrollToBottom();
+                double visibleItemsStartIndex = scrollViewer.VerticalOffset;
+                double numVisibleItems = scrollViewer.ViewportHeight;
+
+                if ((visibleItemsStartIndex + numVisibleItems) >= (TextList.Items.Count - 1))
+                {
+                    scrollViewer.ScrollToBottom();
+                }
             }
         }
+
+        #endregion
     }
 }
