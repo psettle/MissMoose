@@ -29,6 +29,7 @@ namespace MissMooseConfigurationApplication
         public static readonly Brush Red = Brushes.Red;
         public static readonly Brush Yellow = Brushes.Yellow;
         public static readonly Brush Green = Brushes.Green;
+        public static readonly Brush Blue = Brushes.Blue;
         public static readonly Brush Disabled = Brushes.Gray;
     }
 
@@ -227,7 +228,7 @@ namespace MissMooseConfigurationApplication
             }
 
             SetStatusColour(StatusColour.Blue);
-            SetLedColour(LedColour.Green);
+            SetLedColour(LedColour.Blue);
         }
 
         public void SetLedColour(Brush colour)

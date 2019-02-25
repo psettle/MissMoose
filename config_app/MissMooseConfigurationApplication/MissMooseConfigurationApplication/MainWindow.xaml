@@ -6,36 +6,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MissMooseConfigurationApplication"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="800" Closing="SaveConfiguration">
+        Title="MissMoose" Height="650" Width="800" Closing="SaveConfiguration">
     <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="5*"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="6*"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Grid.Column="0" Background="Gray">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Label Content="Miss Moose" Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="20" FontWeight="Bold"/>
-            <Border Grid.Row="0" Grid.Column="1" CornerRadius="8" BorderThickness="4" BorderBrush="LightSkyBlue" Margin="8">
-                <Label BorderThickness="0" BorderBrush="LightSkyBlue" Name="label_SystemStatusBar" Content="System Status: Uninitialized" Background="LightSkyBlue" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="16" FontWeight="Bold"/>
-            </Border>
+            <local:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="3" x:Name="ConfigPageButton" Margin="2,20,2,20" >Configure Nodes</local:PageSwitcherButton>
+            <local:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="4" x:Name="SystemOverviewPageButton"  Margin="2,20,2,20" >System Overview</local:PageSwitcherButton>
+
         </Grid>
         <Frame Grid.Row="1" Grid.Column="0" Name="PageFrame" Source="UIPages/ConfigurationPage.xaml" Background="LightGray" NavigationUIVisibility="Hidden"></Frame>
-        <Grid Grid.Row="2" Grid.Column="0" Background="Gray">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <local:PageSwitcherButton Grid.Row="0" Grid.Column="0" x:Name="ConfigPageButton">Configure Nodes</local:PageSwitcherButton>
-            <local:PageSwitcherButton Grid.Row="0" Grid.Column="1" x:Name="EventLogPageButton">Event Log</local:PageSwitcherButton>
-            <local:PageSwitcherButton Grid.Row="0" Grid.Column="2" x:Name="SystemProblemsPageButton">System Problems</local:PageSwitcherButton>
-            <local:PageSwitcherButton Grid.Row="0" Grid.Column="3" x:Name="SystemOverviewPageButton">System Overview</local:PageSwitcherButton>
-        </Grid>
     </Grid>
-    
+
 </Window>
