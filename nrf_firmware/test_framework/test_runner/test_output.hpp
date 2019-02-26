@@ -43,6 +43,17 @@ public:
     void logLedUpdate(LedUpdate const & update);
 
     /**
+     * Log an led update at the current simulated time for the node in position (x, y)
+     */
+    void logLedUpdate
+        (
+            int8_t x,
+            int8_t y,
+            led_function_t  ledFunctionM,
+            led_colours_t   ledColourM = LED_COLOURS_RED
+        );
+
+    /**
      * Calculate to what degree result matches oracle (0 to 1 score)
      */
     static float getMatchScore(TestOutput const & result, TestOutput const & oracle);

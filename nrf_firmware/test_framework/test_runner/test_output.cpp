@@ -9,6 +9,7 @@ notes:
 **********************************************************/
 
 #include "test_output.hpp"
+#include "simulate_time.hpp"
 
 #include <map>
 
@@ -46,6 +47,24 @@ void TestOutput::initOracle(std::vector<mm_node_position_t const *>& outputNodes
             );
         }
     }
+}
+
+void TestOutput::logLedUpdate
+(
+    int8_t x,
+    int8_t y,
+    led_function_t  ledFunctionM,
+    led_colours_t   ledColourM
+)
+{
+    logLedUpdate(
+        LedUpdate{
+            get_simulated_time_elapsed(),
+            get_node_for_position(x, y)->node_id,
+            ledFunctionM,
+            ledColourM
+        }
+    );
 }
 
 void TestOutput::logLedUpdate(LedUpdate const & update)
