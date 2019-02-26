@@ -10,7 +10,6 @@ notes:
 
 #include <string.h>
 
-#include "app_error.h"
 #include "app_scheduler.h"
 
 #include "mm_ant_control.h"
@@ -169,23 +168,7 @@ static av_page_broadcast_t* get_av_broadcast(uint8_t av_position_x, uint8_t av_p
     x_y_coord  <<= 4;
     x_y_coord  |= av_position_x;
 
-    for(unit8_t i = 0; i < ACTIVITY_VARIABLES_NUM; i++)
-    {
-        //Check if the broadcast is unassigned. If we reach this point, then there was no previous broadcast. Return this value.
-        if(av_page_broadcasts[i].broadcast_state == NO_ELEMENT_ASSIGNED){
-            return &av_page_broadcasts[i];
-        }
-        //If not unassigned, check for the input x_y_coord. If found, return that.
-        else if(av_page_broadcasts[i].activity_variable_page_payload.data[X_Y_COORD_INDEX] == x_y_coord)
-        {
-            return &av_page_broadcasts[i];
-            break;
-        }
-    }
-
-    //If neither of the above is true, throw an error - There should be space for the new broadcast to be stored
-    APP_ERROR_CHECK(true);
-    return NULL;
+    return &av_page_broadcasts[MAX_AV_SIZE_X * av_position_y + av_position_x];
 }
 
 
@@ -246,7 +229,7 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size)
     if(payload[ACKED_PAGE_NUM_INDEX] == REGION_ACTIVITY_VARIABLE_PAGE_NUM)
     {
         // Get the message ID and search for the relevant broadcast.
-        for(unit8_t i = 0; i < ACTIVITY_VARIABLES_NUM; i++){
+        for(uint8_t i = 0; i < ACTIVITY_VARIABLES_NUM; i++){
             uint8_t payload_msg_id = payload[MESSAGE_ID_INDEX];
             uint8_t broadcast_msg_id = av_page_broadcasts[i].activity_variable_page_payload.data[MESSAGE_ID_INDEX];
             if(payload_msg_id == broadcast_msg_id)

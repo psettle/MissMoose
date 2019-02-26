@@ -150,7 +150,7 @@ void mm_led_transmission_send_led_update
 
 static led_output_page_broadcast_t* get_led_broadcast(uint16_t node_id)
 {
-    for(unit8_t i = 0; i < MAX_NUM_LED_NODES; i++)
+    for(uint8_t i = 0; i < MAX_NUM_LED_NODES; i++)
     {
         //Check if the broadcast is unassigned. If we reach this point, then there was no previous broadcast. Return this value.
         if(led_output_page_broadcasts[i].broadcast_state == NO_ELEMENT_ASSIGNED){
@@ -184,7 +184,7 @@ static void broadcast_led_output_pages(void)
     mm_ant_page_manager_remove_all_pages(LED_OUTPUT_STATUS_PAGE_NUM);
 
     //Broadcast all pages where broadcast_state == BROADCASTING
-    for(unit8_t i = 0; i < MAX_NUM_LED_NODES; i++)
+    for(uint8_t i = 0; i < MAX_NUM_LED_NODES; i++)
     {
         if(led_output_page_broadcasts[i].broadcast_state == BROADCASTING)
         {
@@ -234,7 +234,7 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size)
     if(payload[ACKED_PAGE_NUM_INDEX] == MESSAGE_ACKNOWLEDGEMENT_PAGE_NUM)
     {
         // Get the message ID and search for the relevant broadcast.
-        for(unit8_t i = 0; i < MAX_NUM_LED_NODES; i++){
+        for(uint8_t i = 0; i < MAX_NUM_LED_NODES; i++){
             uint8_t payload_msg_id = payload[MESSAGE_ID_INDEX];
             uint8_t broadcast_msg_id = led_output_page_broadcasts[i].led_output_page_payload.data[MESSAGE_ID_INDEX];
             if(payload_msg_id == broadcast_msg_id)
