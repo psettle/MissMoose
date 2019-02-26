@@ -26,8 +26,7 @@ notes:
 #define MAX_NUM_ACTIVITY_VARIABLES              ( 4 )
 #define MESSAGE_ACKNOWLEDGEMENT_PAGE_NUM        ( 0x20 )
 #define REGION_ACTIVITY_VARIABLE_PAGE_NUM       ( 0x23 )
-//Taken from mm_monitoring_dispatch.c - Wasn't sure what the priority for this type of message should be
-#define CONCURRENT_PAGE_COUNT                   ( 2 ) 
+#define CONCURRENT_PAGE_COUNT                   ( 1 ) 
 
 #define PAGE_NUM_INDEX                          ( 0 )
 #define MESSAGE_ID_INDEX                        ( 1 )
@@ -43,20 +42,31 @@ notes:
 
 typedef enum
 {
-    NO_AV_ASSIGNED,     // The not assigned to represent anything yet
-    BROADCASTING,       // This data should be getting broadcast
-    NOT_BROADCASTING    // This data should not be getting broadcast 
+    NO_ELEMENT_ASSIGNED,    // Not assigned to represent anything yet
+    BROADCASTING,           // This data should be getting broadcast
+    NOT_BROADCASTING        // This data should not be getting broadcast 
 } current_broadcast_state_t;
+
+/**********************************************************
+                       TYPES
+**********************************************************/
+
+// If no AV has been assigned to the av_page_broadcast_t, then  broadcast_state is NO_ELEMENT_ASSIGNED
+// When not broadcasting, state NOT_BROADCASTING. When broadcasting, state BROADCASTING
+typedef struct {
+    mm_ant_payload_t activity_variable_page_payload; // The payload data
+    current_broadcast_state_t broadcast_state; //If this page is being broadcast
+} av_page_broadcast_t;
 
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
 
 /**
- * Updates the av_page_broadcasts struct to start broadcasting the input ant_payload, 
- * either starting a new broadcast or updating an existing one based on which AV coordinate is used.
+ * Gets an av_page_broadcast_t element used to store information about an activity variable broadcast,
+ * based on the x and y positions of that activity variable
  */
-static void update_broadcast_list(mm_ant_payload_t const * ant_payload);
+static av_page_broadcast_t* get_av_broadcast(uint8_t av_position_x, uint8_t av_position_y);
 
 /**
  * Clear all av_page_broadcasts, start av_page_broadcasts where broadcast_state set to BROADCAST
@@ -74,19 +84,6 @@ static void process_ant_evt(ant_evt_t * evt);
  */
 static void on_message_acknowledge(void* evt_data, uint16_t evt_size);
 
-
-/**********************************************************
-                       TYPES
-**********************************************************/
-
-// If no AV has been assigned to the av_page_broadcast_t, then  broadcast_state is NO_AV_ASSIGNED
-// When not broadcasting, state NOT_BROADCASTING. When broadcasting, state BROADCASTING
-typedef struct {
-    mm_ant_payload_t activity_variable_page_payload; // The payload data
-    current_broadcast_state_t broadcast_state; //If this page is being broadcast
-} av_page_broadcast_t;
-
-
 /**********************************************************
                        VARIABLES
 **********************************************************/
@@ -103,18 +100,11 @@ static uint8_t message_id = 0;
 */
 void mm_av_transmission_init(void) 
 {
-
     //Initialize av_page_broadcasts array. This sets all elements of the struct to 0,
-    //Including broadcast_state, where 0 represents NO_AV_ASSIGNED
+    //Including broadcast_state, where 0 represents NO_ELEMENT_ASSIGNED
     memset(&av_page_broadcasts[0], 0, sizeof(av_page_broadcasts));
-    //Initialize av_page_broadcasts
-    for(int i = 0; i < MAX_NUM_ACTIVITY_VARIABLES; i++)
-    {
-        
-        av_page_broadcasts[i].broadcast_state = NO_AV_ASSIGNED;
-    }
 
-        /* Register to receive ANT events */
+    // Register to receive ANT events
     mm_ant_evt_handler_set(process_ant_evt);
 }
 
@@ -147,60 +137,56 @@ void mm_av_transmission_send_av_update
     activity_variable_state_t av_status
     ) 
 {
-    mm_ant_payload_t activity_variable_page_payload;
-    uint8_t* payload = &activity_variable_page_payload.data[0];
+    //Get a pointer to the relevant activity variable broadcast struct
+    av_page_broadcast_t * activity_variable_broadcast = get_av_broadcast(av_position_x, av_position_x); 
+    uint8_t* payload = &(activity_variable_broadcast->activity_variable_page_payload.data[0]);
 
-    memset(&activity_variable_page_payload, 0, sizeof(mm_ant_payload_t));
+    memset(&(activity_variable_broadcast->activity_variable_page_payload), 0, sizeof(mm_ant_payload_t));
 
     payload[PAGE_NUM_INDEX] = REGION_ACTIVITY_VARIABLE_PAGE_NUM;
     payload[MESSAGE_ID_INDEX] = message_id;
     //next - X and Y coordinates. 1 byte, x coordinate is the first half, y coordinate is the second half
     //Start with the y coordinate, then bitshift it 4 points to the left, then OR in the x coordinate.
-    uint8_t x_y_coord = av_position_y;
-    x_y_coord <<= 4;
-    x_y_coord |= av_position_x;
-    payload[X_Y_COORD_INDEX] = x_y_coord;
+    payload[X_Y_COORD_INDEX] = av_position_y;
+    payload[X_Y_COORD_INDEX]  <<= 4;
+    payload[X_Y_COORD_INDEX]  |= av_position_x;
     //Copy AV into payload
-    //TODO - Check that this is in the correct IEEE float format?
-    memcpy(&payload[ACTIVITY_VARIABLE_INDEX], &av_value, sizeof(float));
+    memcpy(&payload[ACTIVITY_VARIABLE_INDEX], &av_value, sizeof(mm_activity_variable_t));
     payload[AV_STATUS_INDEX] = av_status;
-
 
     message_id++;
 
-    //Add page to broadcast:
-    update_broadcast_list(&activity_variable_page_payload);
-
+    //Set page to be broadcast
+    activity_variable_broadcast->broadcast_state = BROADCASTING;
+    //Update pages being broadcast
+    broadcast_av_pages();
 }
 
-static void update_broadcast_list(mm_ant_payload_t const * ant_payload)
+static av_page_broadcast_t* get_av_broadcast(uint8_t av_position_x, uint8_t av_position_y)
 {
+    uint8_t x_y_coord = av_position_y;
+    x_y_coord  <<= 4;
+    x_y_coord  |= av_position_x;
+
     for(int i = 0; i < MAX_NUM_ACTIVITY_VARIABLES; i++)
     {
-        //Check if the AV is unassigned. If we reach this point, then the AV hasn't been found. Assign it.
-        if(av_page_broadcasts[i].broadcast_state == NO_AV_ASSIGNED){
-            memcpy(&av_page_broadcasts[i].activity_variable_page_payload, ant_payload, sizeof(mm_ant_payload_t));
-            av_page_broadcasts[i].broadcast_state = BROADCASTING;
-            break;
+        //Check if the broadcast is unassigned. If we reach this point, then there was no previous broadcast. Return this value.
+        if(av_page_broadcasts[i].broadcast_state == NO_ELEMENT_ASSIGNED){
+            return &av_page_broadcasts[i];
         }
-        //If not unassigned, check if the AV matches the one input, by comparing the x_y_coord.
-        //If it does, then update the payload for this av_page_broadcast to be ant_payload.
-        //It doesn't matter if it was broadcasting previously or not, it should be now.
-        else if(av_page_broadcasts[i].activity_variable_page_payload.data[X_Y_COORD_INDEX] == ant_payload->data[X_Y_COORD_INDEX])
+        //If not unassigned, check for the input x_y_coord. If found, return that.
+        else if(av_page_broadcasts[i].activity_variable_page_payload.data[X_Y_COORD_INDEX] == x_y_coord)
         {
-            memcpy(&av_page_broadcasts[i].activity_variable_page_payload, ant_payload, sizeof(mm_ant_payload_t));
-            av_page_broadcasts[i].broadcast_state = BROADCASTING;
+            return &av_page_broadcasts[i];
             break;
-        }
-        else
-        {
-            //If neither of the above is true, throw an error - There should be space for the activity variable to be stored
-            APP_ERROR_CHECK(true);
         }
     }
 
-    broadcast_av_pages();
+    //If neither of the above is true, throw an error - There should be space for the new broadcast to be stored
+    APP_ERROR_CHECK(true);
+    return NULL;
 }
+
 
 static void broadcast_av_pages(void)
 {
