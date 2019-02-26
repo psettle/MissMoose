@@ -71,7 +71,7 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensor_algorithm/activity_variable_growth/mm_activity_variable_growth_sensor_records.c \
   $(PROJ_DIR)/src/protocols/mm_monitoring_dispatch.c \
   $(PROJ_DIR)/src/protocols/mm_position_config.c \
-  $(PROJ_DIR)/src/protocols/mm_av_transmission.c
+  $(PROJ_DIR)/src/protocols/mm_av_transmission.c \
   $(PROJ_DIR)/src/protocols/mm_led_transmission.c
 endif
 

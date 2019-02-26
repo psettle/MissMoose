@@ -145,7 +145,7 @@ void mm_led_transmission_send_led_update
     //Set page to be broadcast
     led_output_broadcast->broadcast_state = BROADCASTING;
     //Update pages being broadcast
-    broadcast_led_pages();
+    broadcast_led_output_pages();
 
 }
 
