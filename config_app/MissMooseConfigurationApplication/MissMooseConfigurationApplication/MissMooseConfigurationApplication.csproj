@@ -84,8 +84,14 @@
     <Compile Include="AntControl\ChannelManager.cs" />
     <Compile Include="AntControl\NodeConfigurationData.cs" />
     <Compile Include="AntControl\PageHandler.cs" />
+    <Compile Include="ANTDataPages\ErrorStatusAckPage.cs" />
+    <Compile Include="ANTDataPages\HyperactivityErrorStatusPage.cs" />
+    <Compile Include="ANTDataPages\BaseErrorStatusPage.cs" />
+    <Compile Include="ANTDataPages\InactiveSensorErrorStatusPage.cs" />
+    <Compile Include="ANTDataPages\RegionActivityVariablePage.cs" />
     <Compile Include="ANTDataPages\LidarMonitoringPage.cs" />
     <Compile Include="ANTDataPages\MonitoringDataAckPage.cs" />
+    <Compile Include="ANTDataPages\LedOutputStatusPage.cs" />
     <Compile Include="ANTDataPages\PirMonitoringPage.cs" />
     <Compile Include="ANTDataPages\PositionConfigurationCommandPage.cs" />
     <Compile Include="AntControl\PageSender.cs" />
