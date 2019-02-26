@@ -463,21 +463,13 @@ namespace MissMooseConfigurationApplication
             switch (rotation.ToEnum())
             {
                 case 0:
-                    return "up";
-                case 1:
-                    return "up-right";
+                    return "road facing";
                 case 2:
-                    return "right";
-                case 3:
-                    return "down-right";
+                    return "right of road facing";
                 case 4:
-                    return "down";
-                case 5:
-                    return "down-left";
+                    return "anti-road facing";
                 case 6:
-                    return "left";
-                case 7:
-                    return "up-left";
+                    return "left of road facing";
                 default:
                     // Should never get here
                     return "unknown rotation";
