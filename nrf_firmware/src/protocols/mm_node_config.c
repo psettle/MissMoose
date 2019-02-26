@@ -21,6 +21,7 @@ notes:
 #include "mm_sensor_algorithm.h"
 #include "mm_led_control.h"
 #include "mm_av_transmission.h"
+#include "mm_led_transmission.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
