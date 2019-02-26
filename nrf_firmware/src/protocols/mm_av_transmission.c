@@ -11,19 +11,19 @@ notes:
 #include <string.h>
 
 #include "app_error.h"
+#include "app_scheduler.h"
+
 #include "mm_ant_control.h"
 #include "mm_ant_page_manager.h"
-#include "app_scheduler.h"
-#include "app_timer.h"
-
-#include "mm_av_transmission.h"
+#include "mm_activity_variables.h"
 #include "mm_sensor_algorithm_config.h"
+#include "mm_av_transmission.h"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
 
-#define MAX_NUM_ACTIVITY_VARIABLES              ( 4 )
+//Get number of activity variables, ACTIVITY_VARIABLES_NUM, from "mm_activity_variables.h"
 #define MESSAGE_ACKNOWLEDGEMENT_PAGE_NUM        ( 0x20 )
 #define REGION_ACTIVITY_VARIABLE_PAGE_NUM       ( 0x23 )
 #define CONCURRENT_PAGE_COUNT                   ( 1 ) 
@@ -88,7 +88,7 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size);
                        VARIABLES
 **********************************************************/
 
-static av_page_broadcast_t av_page_broadcasts[MAX_NUM_ACTIVITY_VARIABLES];
+static av_page_broadcast_t av_page_broadcasts[ACTIVITY_VARIABLES_NUM];
 static uint8_t message_id = 0;
 
 /**********************************************************
@@ -138,7 +138,7 @@ void mm_av_transmission_send_av_update
     ) 
 {
     //Get a pointer to the relevant activity variable broadcast struct
-    av_page_broadcast_t * activity_variable_broadcast = get_av_broadcast(av_position_x, av_position_x); 
+    av_page_broadcast_t * activity_variable_broadcast = get_av_broadcast(av_position_x, av_position_y); 
     uint8_t* payload = &(activity_variable_broadcast->activity_variable_page_payload.data[0]);
 
     memset(&(activity_variable_broadcast->activity_variable_page_payload), 0, sizeof(mm_ant_payload_t));
@@ -148,8 +148,8 @@ void mm_av_transmission_send_av_update
     //next - X and Y coordinates. 1 byte, x coordinate is the first half, y coordinate is the second half
     //Start with the y coordinate, then bitshift it 4 points to the left, then OR in the x coordinate.
     payload[X_Y_COORD_INDEX] = av_position_y;
-    payload[X_Y_COORD_INDEX]  <<= 4;
-    payload[X_Y_COORD_INDEX]  |= av_position_x;
+    payload[X_Y_COORD_INDEX] <<= 4;
+    payload[X_Y_COORD_INDEX] |= av_position_x;
     //Copy AV into payload
     memcpy(&payload[ACTIVITY_VARIABLE_INDEX], &av_value, sizeof(mm_activity_variable_t));
     payload[AV_STATUS_INDEX] = av_status;
@@ -169,7 +169,7 @@ static av_page_broadcast_t* get_av_broadcast(uint8_t av_position_x, uint8_t av_p
     x_y_coord  <<= 4;
     x_y_coord  |= av_position_x;
 
-    for(int i = 0; i < MAX_NUM_ACTIVITY_VARIABLES; i++)
+    for(unit8_t i = 0; i < ACTIVITY_VARIABLES_NUM; i++)
     {
         //Check if the broadcast is unassigned. If we reach this point, then there was no previous broadcast. Return this value.
         if(av_page_broadcasts[i].broadcast_state == NO_ELEMENT_ASSIGNED){
@@ -195,7 +195,7 @@ static void broadcast_av_pages(void)
     mm_ant_page_manager_remove_all_pages(REGION_ACTIVITY_VARIABLE_PAGE_NUM);
 
     //Broadcast all pages where broadcast_state == BROADCASTING
-    for(int i = 0; i < MAX_NUM_ACTIVITY_VARIABLES; i++)
+    for(int i = 0; i < ACTIVITY_VARIABLES_NUM; i++)
     {
         if(av_page_broadcasts[i].broadcast_state == BROADCASTING)
         {
@@ -246,7 +246,7 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size)
     if(payload[ACKED_PAGE_NUM_INDEX] == REGION_ACTIVITY_VARIABLE_PAGE_NUM)
     {
         // Get the message ID and search for the relevant broadcast.
-        for(int i = 0; i < MAX_NUM_ACTIVITY_VARIABLES; i++){
+        for(unit8_t i = 0; i < ACTIVITY_VARIABLES_NUM; i++){
             uint8_t payload_msg_id = payload[MESSAGE_ID_INDEX];
             uint8_t broadcast_msg_id = av_page_broadcasts[i].activity_variable_page_payload.data[MESSAGE_ID_INDEX];
             if(payload_msg_id == broadcast_msg_id)

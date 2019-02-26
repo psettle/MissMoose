@@ -13,11 +13,10 @@ Author: Elijah Pennoyer
 #include <string.h>
 
 #include "app_error.h"
+#include "app_scheduler.h"
+
 #include "mm_ant_control.h"
 #include "mm_ant_page_manager.h"
-#include "app_scheduler.h"
-#include "app_timer.h"
-
 #include "mm_led_transmission.h"
 
 /**********************************************************
@@ -56,8 +55,8 @@ typedef enum
                        TYPES
 **********************************************************/
 
-// If no LED has been assigned to the led_page_broadcast_t, then  broadcast_state is NO_ELEMENT_ASSIGNED
-// When not broadcasting, state NOT_BROADCASTING. When broadcasting, state BROADCASTING
+// If no LED has been assigned to the led_page_broadcast_t, then broadcast_state is NO_ELEMENT_ASSIGNED
+// When not broadcasting, state NOT_BROADCASTING. When broadcasting, state is BROADCASTING
 typedef struct {
     mm_ant_payload_t led_output_page_payload; // The payload data
     current_broadcast_state_t broadcast_state; //If this page is being broadcast
@@ -151,7 +150,7 @@ void mm_led_transmission_send_led_update
 
 static led_output_page_broadcast_t* get_led_broadcast(uint16_t node_id)
 {
-    for(int i = 0; i < MAX_NUM_LED_NODES; i++)
+    for(unit8_t i = 0; i < MAX_NUM_LED_NODES; i++)
     {
         //Check if the broadcast is unassigned. If we reach this point, then there was no previous broadcast. Return this value.
         if(led_output_page_broadcasts[i].broadcast_state == NO_ELEMENT_ASSIGNED){
@@ -185,7 +184,7 @@ static void broadcast_led_output_pages(void)
     mm_ant_page_manager_remove_all_pages(LED_OUTPUT_STATUS_PAGE_NUM);
 
     //Broadcast all pages where broadcast_state == BROADCASTING
-    for(int i = 0; i < MAX_NUM_LED_NODES; i++)
+    for(unit8_t i = 0; i < MAX_NUM_LED_NODES; i++)
     {
         if(led_output_page_broadcasts[i].broadcast_state == BROADCASTING)
         {
@@ -235,7 +234,7 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size)
     if(payload[ACKED_PAGE_NUM_INDEX] == MESSAGE_ACKNOWLEDGEMENT_PAGE_NUM)
     {
         // Get the message ID and search for the relevant broadcast.
-        for(int i = 0; i < MAX_NUM_LED_NODES; i++){
+        for(unit8_t i = 0; i < MAX_NUM_LED_NODES; i++){
             uint8_t payload_msg_id = payload[MESSAGE_ID_INDEX];
             uint8_t broadcast_msg_id = led_output_page_broadcasts[i].led_output_page_payload.data[MESSAGE_ID_INDEX];
             if(payload_msg_id == broadcast_msg_id)
