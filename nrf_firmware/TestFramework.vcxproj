@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -142,6 +142,7 @@
     <ClCompile Include="test_framework\util\sensor_evt_utils.cpp" />
     <ClCompile Include="test_framework\util\simulate_time.cpp" />
     <ClCompile Include="test_framework\util\test_output_logger.cpp" />
+    <ClCompile Include="test_framework\util\test_parameters_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\sensor_algorithm\activity_variable_growth\mm_activity_variable_growth.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="test_framework\util\sensor_evt_utils.hpp" />
     <ClInclude Include="test_framework\util\simulate_time.hpp" />
     <ClInclude Include="test_framework\util\test_output_logger.hpp" />
+    <ClInclude Include="test_framework\util\test_parameters_utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

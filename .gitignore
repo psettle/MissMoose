@@ -11,3 +11,4 @@ nrf_firmware/.vs
 /config_app/MissMooseConfigurationApplication/MissMooseConfigurationApplication/bin
 /config_app/MissMooseConfigurationApplication/MissMooseConfigurationApplication/obj
 /nrf_firmware/.vscode/settings.json
+nrf_firmware/genetic_algo/output/
