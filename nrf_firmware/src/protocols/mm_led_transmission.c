@@ -17,13 +17,14 @@ Author: Elijah Pennoyer
 
 #include "mm_ant_control.h"
 #include "mm_ant_page_manager.h"
+#include "mm_sensor_algorithm_config.h"
 #include "mm_led_transmission.h"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
 
-#define MAX_NUM_LED_NODES                       ( 3 )
+#define MAX_NUM_LED_NODES                       ( MAX_GRID_SIZE_X )
 #define MESSAGE_ACKNOWLEDGEMENT_PAGE_NUM        ( 0x20 )
 #define LED_OUTPUT_STATUS_PAGE_NUM              ( 0x24 )
 #define CONCURRENT_PAGE_COUNT                   ( 1 ) 
@@ -60,6 +61,8 @@ typedef enum
 typedef struct {
     mm_ant_payload_t led_output_page_payload; // The payload data
     current_broadcast_state_t broadcast_state; //If this page is being broadcast
+    //TODO
+    uint16_t node_id;
 } led_output_page_broadcast_t;
 
 /**********************************************************
@@ -126,6 +129,7 @@ void mm_led_transmission_send_led_update
 {
     //Get a pointer to the relevant activity variable broadcast struct
     led_output_page_broadcast_t * led_output_broadcast = get_led_broadcast(node_id); 
+    led_output_broadcast->node_id = node_id;
     uint8_t* payload = &(led_output_broadcast->led_output_page_payload.data[0]);
 
     memset(&(led_output_broadcast->led_output_page_payload), 0, sizeof(mm_ant_payload_t));
@@ -157,25 +161,15 @@ static led_output_page_broadcast_t* get_led_broadcast(uint16_t node_id)
             return &led_output_page_broadcasts[i];
         }
         //If not unassigned, check for the input node_id. If found, return that.
-        //Need to get the uint16_t for the node_id - Use memcpy to get two bytes out of the array
-        uint16_t broadcast_node_id = 0; 
-        memcpy
-            (
-                &broadcast_node_id,
-                &(led_output_page_broadcasts[i].led_output_page_payload.data[NODE_ID_INDEX]),
-                sizeof(uint16_t)
-            );
-        if(broadcast_node_id == node_id) //Check if the node_id matches. If it does, return the page.
+        if(led_output_page_broadcasts[i].node_id == node_id) //Check if the node_id matches. If it does, return the page.
         {
             return &led_output_page_broadcasts[i];
-            break;
         }
     }
 
-    //If neither of the above is true, throw an error - There should be space for the new broadcast to be stored
+    //Bad state - There should be space for the new broadcast to be stored
     APP_ERROR_CHECK(true);
     return NULL;
-
 }
 
 static void broadcast_led_output_pages(void)
@@ -234,7 +228,8 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size)
     if(payload[ACKED_PAGE_NUM_INDEX] == MESSAGE_ACKNOWLEDGEMENT_PAGE_NUM)
     {
         // Get the message ID and search for the relevant broadcast.
-        for(uint8_t i = 0; i < MAX_NUM_LED_NODES; i++){
+        for(uint8_t i = 0; i < MAX_NUM_LED_NODES; i++)
+        {
             uint8_t payload_msg_id = payload[MESSAGE_ID_INDEX];
             uint8_t broadcast_msg_id = led_output_page_broadcasts[i].led_output_page_payload.data[MESSAGE_ID_INDEX];
             if(payload_msg_id == broadcast_msg_id)
@@ -249,5 +244,4 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size)
     }
 
     // If it's an ACK for a different type of message, do nothing.
-    return;
 }

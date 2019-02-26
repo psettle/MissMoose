@@ -165,8 +165,8 @@ static av_page_broadcast_t* get_av_broadcast(uint8_t av_position_x, uint8_t av_p
 {
     //Create the relevant x_y_coord value
     uint8_t x_y_coord = av_position_y;
-    x_y_coord  <<= 4;
-    x_y_coord  |= av_position_x;
+    x_y_coord <<= 4;
+    x_y_coord |= av_position_x;
 
     return &av_page_broadcasts[MAX_AV_SIZE_X * av_position_y + av_position_x];
 }
@@ -178,7 +178,7 @@ static void broadcast_av_pages(void)
     mm_ant_page_manager_remove_all_pages(REGION_ACTIVITY_VARIABLE_PAGE_NUM);
 
     //Broadcast all pages where broadcast_state == BROADCASTING
-    for(int i = 0; i < ACTIVITY_VARIABLES_NUM; i++)
+    for(uint8_t i = 0; i < ACTIVITY_VARIABLES_NUM; i++)
     {
         if(av_page_broadcasts[i].broadcast_state == BROADCASTING)
         {

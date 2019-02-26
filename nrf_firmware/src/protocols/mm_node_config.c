@@ -207,9 +207,11 @@ static void external_init(void)
     /* Init LED control transmission over blaze. Placed before algorithm init so it can use LED control. */
     mm_led_control_init();
 #ifdef MM_BLAZE_GATEWAY
+    /* Init LED output transmission over ant. */
+    mm_led_transmission_init();
     /* Init sensor data processing now that data can be transmitted. */
     mm_sensor_algorithm_init();
-	/* Init AV output transmission over blaze now that the sensor algorithm is up and running. */
+	/* Init AV output transmission over ant now that the sensor algorithm is up and running. */
 	mm_av_transmission_init();
 #endif
 }
