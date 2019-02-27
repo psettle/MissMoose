@@ -23,6 +23,10 @@ namespace MissMooseConfigurationApplication.UIComponents
         #region Private Members
         private Color firstHalfColor;
         private Color secondHalfColor;
+        private int X1_offset = 0;
+        private int X2_offset = 0;
+        private int Y1_offset = 0;
+        private int Y2_offset = 0;
         #endregion
 
         #region Public Members
@@ -35,12 +39,32 @@ namespace MissMooseConfigurationApplication.UIComponents
             }
         }
 
+        public int X1_Offset
+        {
+            set
+            {
+                X1 = -X1_offset;
+                X1 = value;
+                X1_offset = value;
+            }
+        }
+
         public int X2
         {
             set
             {
                 BorderLine.X2 += value;
                 ColoredLine.X2 += value;
+            }
+        }
+
+        public int X2_Offset
+        {
+            set
+            {
+                X2 = -X2_offset;
+                X2 = value;
+                X2_offset = value;
             }
         }
 
@@ -53,12 +77,32 @@ namespace MissMooseConfigurationApplication.UIComponents
             }
         }
 
+        public int Y1_Offset
+        {
+            set
+            {
+                Y1 = -Y1_offset;
+                Y1 = value;
+                Y1_offset = value;
+            }
+        }
+
         public int Y2
         {
             set
             {
                 BorderLine.Y2 += value;
                 ColoredLine.Y2 += value;
+            }
+        }
+
+        public int Y2_Offset
+        {
+            set
+            {
+                Y2 = -Y2_offset;
+                Y2 = value;
+                Y2_offset = value;
             }
         }
 

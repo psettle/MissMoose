@@ -369,26 +369,26 @@ namespace MissMooseConfigurationApplication
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Up))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Up];
-                linesegment.line.X2 = node.xoffset * OffsetScalePixels;
-                linesegment.line.Y2 = -node.yoffset * OffsetScalePixels;
+                linesegment.line.X2_Offset = node.xoffset * OffsetScalePixels;
+                linesegment.line.Y2_Offset = -node.yoffset * OffsetScalePixels;
             }
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Right))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Right];
-                linesegment.line.X1 = node.xoffset * OffsetScalePixels;
-                linesegment.line.Y1 = -node.yoffset * OffsetScalePixels;
+                linesegment.line.X1_Offset = node.xoffset * OffsetScalePixels;
+                linesegment.line.Y1_Offset = -node.yoffset * OffsetScalePixels;
             }
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Down))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Down];
-                linesegment.line.X1 = node.xoffset * OffsetScalePixels;
-                linesegment.line.Y1 = -node.yoffset * OffsetScalePixels;
+                linesegment.line.X1_Offset = node.xoffset * OffsetScalePixels;
+                linesegment.line.Y1_Offset = -node.yoffset * OffsetScalePixels;
             }
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Left))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Left];
-                linesegment.line.X2 = node.xoffset * OffsetScalePixels;
-                linesegment.line.Y2 = -node.yoffset * OffsetScalePixels;
+                linesegment.line.X2_Offset = node.xoffset * OffsetScalePixels;
+                linesegment.line.Y2_Offset = -node.yoffset * OffsetScalePixels;
             }
             switch (node.configuration)
             {
