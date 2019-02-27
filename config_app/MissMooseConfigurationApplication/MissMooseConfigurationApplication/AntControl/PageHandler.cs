@@ -123,6 +123,139 @@ namespace MissMooseConfigurationApplication
             Console.Out.WriteLine("Sent Ack for PIR Msg: " + ackPage.MessageId);
         }
 
+        public void HandlePage(LedOutputStatusPage dataPage, ushort deviceNum, PageSender responder)
+        {
+            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+            if (node != null)
+            {
+                Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                {
+                    bool functionApplied = node.SetLedFunction(dataPage.LedFunction);
+                    bool colourApplied = node.SetLedColour(dataPage.LedColour);
+
+                    if (functionApplied || colourApplied)
+                    {
+                        MonitoringUI.UpdateNode(node);
+                    }                    
+                });
+            }
+
+            // Send an acknowledgement page so the gateway knows this LED data was received
+            MonitoringDataAckPage ackPage = new MonitoringDataAckPage
+            {
+                MessageId = dataPage.MessageId
+            };
+
+            responder.SendBroadcast(ackPage);
+            Console.Out.WriteLine("Sent Ack for LED Msg: " + ackPage.MessageId);
+        }
+
+        public void HandlePage(RegionActivityVariablePage dataPage, ushort deviceNum, PageSender responder)
+        {
+            Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+            {
+                MonitoringUI.SetRegionActivityVariable(dataPage.XCoordinate, dataPage.YCoordinate, dataPage.RegionStatus);
+            });
+
+            // Send an acknowledgement page so the gateway knows this region AV data was received
+            MonitoringDataAckPage ackPage = new MonitoringDataAckPage
+            {
+                MessageId = dataPage.MessageId
+            };
+
+            responder.SendBroadcast(ackPage);
+            Console.Out.WriteLine("Sent Ack for Region AV Msg: " + ackPage.MessageId);
+        }
+
+        public void HandlePage(HyperactivityErrorStatusPage dataPage, ushort deviceNum, PageSender responder)
+        {
+            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+            if (node != null)
+            {
+                Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                {
+                    Rotation totalRotation = new Rotation(node.Rotation.Val);
+                    totalRotation.Add(dataPage.SensorRotation);
+
+                    String logString = GetStringFromRotation(totalRotation) + "-facing "
+                        + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + dataPage.NodeId;
+
+                    if (dataPage.ErrorOccurring)
+                    {
+                        logString += " is hyperactive, and may be malfunctioning";
+                        MonitoringUI.LogSystemProblem(logString);
+
+                        node.SetStatusColour(StatusColour.Red);
+                        MonitoringUI.UpdateNode(node);
+                    }
+                    else
+                    {
+                        logString += " is no longer hyperactive";
+
+                        node.SetStatusColour(StatusColour.Blue);
+                        MonitoringUI.UpdateNode(node);
+                    }
+
+                    MonitoringUI.LogEvent(logString);
+                });
+            }
+
+            // Send an acknowledgement page so the gateway knows this error data was received
+            MonitoringDataAckPage ackPage = new MonitoringDataAckPage
+            {
+                MessageId = dataPage.MessageId
+            };
+
+            responder.SendBroadcast(ackPage);
+            Console.Out.WriteLine("Sent Ack for Hyperactivity Error Msg: " + ackPage.MessageId);
+        }
+
+        public void HandlePage(InactiveSensorErrorStatusPage dataPage, ushort deviceNum, PageSender responder)
+        {
+            SensorNode node = ConfigUI.nodes.Where(x => x.NodeID == dataPage.NodeId).FirstOrDefault();
+
+            if (node != null)
+            {                
+                Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
+                {
+                    Rotation totalRotation = new Rotation(node.Rotation.Val);
+                    totalRotation.Add(dataPage.SensorRotation);
+
+                    String logString = GetStringFromRotation(totalRotation) + "-facing "
+                        + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + dataPage.NodeId;
+
+                    if (dataPage.ErrorOccurring)
+                    {
+                        logString += " is inactive, and may be malfunctioning";
+                        MonitoringUI.LogSystemProblem(logString);
+
+                        node.SetStatusColour(StatusColour.Red);
+                        MonitoringUI.UpdateNode(node);
+                    }
+                    else
+                    {
+                        logString += " is no longer inactive";
+
+                        node.SetStatusColour(StatusColour.Blue);
+                        MonitoringUI.UpdateNode(node);
+                    }
+
+                    MonitoringUI.LogEvent(logString);                    
+                });
+            }
+
+            // Send an acknowledgement page so the gateway knows this error data was received
+            MonitoringDataAckPage ackPage = new MonitoringDataAckPage
+            {
+                MessageId = dataPage.MessageId
+            };
+
+            responder.SendBroadcast(ackPage);
+            Console.Out.WriteLine("Sent Ack for Inactive Sensor Error Msg: " + ackPage.MessageId);
+        }
+
         #endregion
 
         #region Private Methods
@@ -322,6 +455,24 @@ namespace MissMooseConfigurationApplication
                     direction = LineDirection.Up;
                     // Return false for in-between angles like 45 degrees (we don't have coloured lines for those angles)
                     return false;
+            }
+        }
+
+        private String GetStringFromRotation(Rotation rotation)
+        {
+            switch (rotation.ToEnum())
+            {
+                case 0:
+                    return "road facing";
+                case 2:
+                    return "right of road facing";
+                case 4:
+                    return "anti-road facing";
+                case 6:
+                    return "left of road facing";
+                default:
+                    // Should never get here
+                    return "unknown rotation";
             }
         }
 

@@ -16,6 +16,8 @@ notes:
 #include "app_error.h"
 #include "app_timer.h"
 #include "app_scheduler.h"
+#include "boards.h"
+#include "nrf_delay.h"
 
 /**********************************************************
                         PROJECT INCLUDES
@@ -142,3 +144,22 @@ int main(void)
  {
 	 APP_SCHED_INIT(SCHEDULER_MAX_EVENT_SIZE, SCHEDULER_MAX_EVENT_COUNT);
  }
+
+/**@brief Function for handling an error. Blinks an LED.
+ *
+ * @param[in] id    Fault identifier. See @ref NRF_FAULT_IDS.
+ * @param[in] pc    The program counter of the instruction that triggered the fault, or 0 if
+ *                  unavailable.
+ * @param[in] info  Optional additional information regarding the fault. Refer to each fault
+ *                  identifier for details.
+ */
+void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info)
+{
+    bsp_board_leds_off();
+
+    for (;;)
+    {
+        nrf_delay_ms(500);
+        bsp_board_led_invert(BSP_BOARD_LED_0);
+    }
+}
