@@ -68,7 +68,6 @@ namespace MissMooseConfigurationApplication.UIComponents
         public ActivityRegion()
         {
             InitializeComponent();
-            Region.Fill = Brushes.Red;
         }
 
         public void UpdateActivityRegion(Point coordinatePoint, int xoffset, int yoffset)
