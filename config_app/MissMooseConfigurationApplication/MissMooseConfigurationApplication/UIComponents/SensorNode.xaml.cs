@@ -46,18 +46,18 @@ namespace MissMooseConfigurationApplication
 
     public class LedColour
     {
-        public static readonly Brush Red = Brushes.Red;
-        public static readonly Brush Yellow = Brushes.Yellow;
-        public static readonly Brush Green = Brushes.Green;
-        public static readonly Brush Disabled = Brushes.Gray;
+        public static readonly SolidColorBrush Red = Brushes.Red;
+        public static readonly SolidColorBrush Yellow = Brushes.Yellow;
+        public static readonly SolidColorBrush Green = Brushes.Green;
+        public static readonly SolidColorBrush Disabled = Brushes.Gray;
     }
 
     public class StatusColour
     {
-        public static readonly Brush Red = Brushes.Red;
-        public static readonly Brush Yellow = Brushes.Yellow;
-        public static readonly Brush Blue = Brushes.Blue;
-        public static readonly Brush Disabled = Brushes.Gray;
+        public static readonly SolidColorBrush Red = Brushes.Red;
+        public static readonly SolidColorBrush Yellow = Brushes.Yellow;
+        public static readonly SolidColorBrush Blue = Brushes.Blue;
+        public static readonly SolidColorBrush Disabled = Brushes.Gray;
     }
 
     public class Rotation

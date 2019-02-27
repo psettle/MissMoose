@@ -73,7 +73,7 @@ namespace MissMooseConfigurationApplication
 
                 if (GetLineDirection(totalRotation, out LineDirection direction))
                 {
-                    Brush colour = dataPage.Region > LidarRegion.None ? StatusColour.Red : StatusColour.Blue;
+                    SolidColorBrush colour = dataPage.Region > LidarRegion.None ? StatusColour.Red : StatusColour.Blue;
 
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                     {
@@ -104,7 +104,7 @@ namespace MissMooseConfigurationApplication
 
                 if (GetLineDirection(totalRotation, out LineDirection direction))
                 {
-                    Brush colour = dataPage.Detection ? StatusColour.Red : StatusColour.Blue;
+                    SolidColorBrush colour = dataPage.Detection ? StatusColour.Red : StatusColour.Blue;
 
                     Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                     {

@@ -30,8 +30,8 @@ namespace MissMooseConfigurationApplication
         #region Private Members
         private List<List<Viewbox>> sensorViewboxes;
         private List<SensorNode> nodes = new List<SensorNode>();
-        private List<List<Dictionary<LineDirection, LineWithBorder>>> lineSegmentAssociations;
-        private List<List<Path>> shadedRegions;
+        private List<List<Dictionary<LineDirection, LineWithBorder.LineSegment>>> lineSegmentAssociations;
+        private List<List<ActivityRegion>> shadedRegions;
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
         #endregion
@@ -70,6 +70,7 @@ namespace MissMooseConfigurationApplication
 
             SetNodeRotation(viewbox, node.Rotation);
             InitializeDetectionLines(node);
+            UpdateShadedRegion(node);
         }
 
         /// <summary>
@@ -106,31 +107,36 @@ namespace MissMooseConfigurationApplication
 
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Up))
             {
-                lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Up].Visibility = Visibility.Hidden;
+                LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Up];
+                linesegment.line.SetVisibility(linesegment.half, false);
             }
 
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Right))
             {
-                lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Right].Visibility = Visibility.Hidden;
+                LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Right];
+                linesegment.line.SetVisibility(linesegment.half, false);
             }
 
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Down))
             {
-                lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Down].Visibility = Visibility.Hidden;
+                LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Down];
+                linesegment.line.SetVisibility(linesegment.half, false);
             }
 
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Left))
             {
-                lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Left].Visibility = Visibility.Hidden;
+                LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Left];
+                linesegment.line.SetVisibility(linesegment.half, false);
             }
         }
 
-        public void MarkSensorDetection(int xpos, int ypos, LineDirection direction, Brush colour)
+        public void MarkSensorDetection(int xpos, int ypos, LineDirection direction, SolidColorBrush colour)
         {
             if (lineSegmentAssociations[xpos][ypos].ContainsKey(direction))
             {
-                lineSegmentAssociations[xpos][ypos][direction].ColoredLine.Stroke = colour;
-                lineSegmentAssociations[xpos][ypos][direction].Visibility = Visibility.Visible;                
+                LineWithBorder.LineSegment linesegment = lineSegmentAssociations[xpos][ypos][direction];
+                linesegment.line.SetVisibility(linesegment.half, true);
+                linesegment.line.SetColour(linesegment.half, colour.Color);             
             }
             else
             {
@@ -138,7 +144,7 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public void MarkSensorDetection(SensorNode node, LineDirection direction, Brush colour)
+        public void MarkSensorDetection(SensorNode node, LineDirection direction, SolidColorBrush colour)
         {
             MarkSensorDetection(node.xpos, node.ypos, direction, colour);
         }
@@ -162,7 +168,7 @@ namespace MissMooseConfigurationApplication
                     colour = Brushes.Transparent;
                     break;
             }
-            shadedRegions[xCoordinate][yCoordinate].Fill = colour;
+            shadedRegions[xCoordinate][yCoordinate].Region.Fill = colour;
         }
 
         public void LogSystemProblem(String logString)
@@ -233,66 +239,78 @@ namespace MissMooseConfigurationApplication
 
         private void InitializeLineSegments()
         {
-            lineSegmentAssociations = new List<List<Dictionary<LineDirection, LineWithBorder>>>
+            lineSegmentAssociations = new List<List<Dictionary<LineDirection, LineWithBorder.LineSegment>>>
             {
-                new List<Dictionary<LineDirection, LineWithBorder>>
+                // lines starting from logical x = 0
+                new List<Dictionary<LineDirection, LineWithBorder.LineSegment>>
                 {
-                    new Dictionary<LineDirection, LineWithBorder>
+                    // lines touching node 0,0
+                    new Dictionary<LineDirection, LineWithBorder.LineSegment>
                     {
-                        { LineDirection.Right, MonitGrid.Line_0_0_Right },
-                        { LineDirection.Down, MonitGrid.Line_0_0_Down },
+                        { LineDirection.Right, new LineWithBorder.LineSegment(MonitGrid.Line_00_10, LineWithBorder.LineHalves.FirstHalf) },
+                        { LineDirection.Down, new LineWithBorder.LineSegment(MonitGrid.Line_00_01, LineWithBorder.LineHalves.FirstHalf) },
                     },
-                    new Dictionary<LineDirection, LineWithBorder>
+                    // lines touching node 0,1
+                    new Dictionary<LineDirection, LineWithBorder.LineSegment>
                     {
-                        { LineDirection.Right, MonitGrid.Line_0_1_Right },
-                        { LineDirection.Down, MonitGrid.Line_0_1_Down },
-                        { LineDirection.Up, MonitGrid.Line_0_1_Up },
+                        { LineDirection.Right, new LineWithBorder.LineSegment(MonitGrid.Line_01_11, LineWithBorder.LineHalves.FirstHalf) },
+                        { LineDirection.Down, new LineWithBorder.LineSegment(MonitGrid.Line_01_02, LineWithBorder.LineHalves.FirstHalf) },
+                        { LineDirection.Up, new LineWithBorder.LineSegment(MonitGrid.Line_00_01, LineWithBorder.LineHalves.SecondHalf) },
                     },
-                    new Dictionary<LineDirection, LineWithBorder>
+                    // lines touching node 0,2
+                    new Dictionary<LineDirection, LineWithBorder.LineSegment>
                     {
-                        { LineDirection.Right, MonitGrid.Line_0_2_Right },
-                        { LineDirection.Up, MonitGrid.Line_0_2_Up },
+                        { LineDirection.Right, new LineWithBorder.LineSegment(MonitGrid.Line_02_12, LineWithBorder.LineHalves.FirstHalf) },
+                        { LineDirection.Up, new LineWithBorder.LineSegment(MonitGrid.Line_01_02, LineWithBorder.LineHalves.SecondHalf) },
                     },
                 },
-                new List<Dictionary<LineDirection, LineWithBorder>>
+                // lines starting from logical x = 1
+                new List<Dictionary<LineDirection, LineWithBorder.LineSegment>>
                 {
-                    new Dictionary<LineDirection, LineWithBorder>
+                    // lines touching node 1,0
+                    new Dictionary<LineDirection, LineWithBorder.LineSegment>
                     {
-                        { LineDirection.Right, MonitGrid.Line_1_0_Right },
-                        { LineDirection.Down, MonitGrid.Line_1_0_Down },
-                        { LineDirection.Left, MonitGrid.Line_1_0_Left },
+                        { LineDirection.Right, new LineWithBorder.LineSegment(MonitGrid.Line_10_20, LineWithBorder.LineHalves.FirstHalf) },
+                        { LineDirection.Down, new LineWithBorder.LineSegment(MonitGrid.Line_10_11, LineWithBorder.LineHalves.FirstHalf) },
+                        { LineDirection.Left, new LineWithBorder.LineSegment(MonitGrid.Line_00_10, LineWithBorder.LineHalves.SecondHalf) },
                     },
-                    new Dictionary<LineDirection, LineWithBorder>
+                    // lines touching node 1,1
+                    new Dictionary<LineDirection, LineWithBorder.LineSegment>
                     {
-                        { LineDirection.Right, MonitGrid.Line_1_1_Right },
-                        { LineDirection.Down, MonitGrid.Line_1_1_Down },
-                        { LineDirection.Up, MonitGrid.Line_1_1_Up },
-                        { LineDirection.Left, MonitGrid.Line_1_1_Left },
+                        { LineDirection.Right, new LineWithBorder.LineSegment(MonitGrid.Line_11_21, LineWithBorder.LineHalves.FirstHalf) },
+                        { LineDirection.Down, new LineWithBorder.LineSegment(MonitGrid.Line_11_12, LineWithBorder.LineHalves.FirstHalf) },
+                        { LineDirection.Up, new LineWithBorder.LineSegment(MonitGrid.Line_10_11, LineWithBorder.LineHalves.SecondHalf) },
+                        { LineDirection.Left, new LineWithBorder.LineSegment(MonitGrid.Line_01_11, LineWithBorder.LineHalves.SecondHalf) },
                     },
-                    new Dictionary<LineDirection, LineWithBorder>
+                    // lines touching node 1,2
+                    new Dictionary<LineDirection, LineWithBorder.LineSegment>
                     {
-                        { LineDirection.Right, MonitGrid.Line_1_2_Right },
-                        { LineDirection.Up, MonitGrid.Line_1_2_Up },
-                        { LineDirection.Left, MonitGrid.Line_1_2_Left },
+                        { LineDirection.Right, new LineWithBorder.LineSegment(MonitGrid.Line_12_22, LineWithBorder.LineHalves.FirstHalf) },
+                        { LineDirection.Up, new LineWithBorder.LineSegment(MonitGrid.Line_11_12, LineWithBorder.LineHalves.SecondHalf) },
+                        { LineDirection.Left, new LineWithBorder.LineSegment(MonitGrid.Line_02_12, LineWithBorder.LineHalves.SecondHalf) },
                     },
                 },
-                new List<Dictionary<LineDirection, LineWithBorder>>
+                // lines starting from logical x = 2
+                new List<Dictionary<LineDirection, LineWithBorder.LineSegment>>
                 {
-                    new Dictionary<LineDirection, LineWithBorder>
+                    // lines touching node 2,0
+                    new Dictionary<LineDirection, LineWithBorder.LineSegment>
                     {
-                        { LineDirection.Left, MonitGrid.Line_2_0_Left },
-                        { LineDirection.Down, MonitGrid.Line_2_0_Down },
+                        { LineDirection.Left, new LineWithBorder.LineSegment(MonitGrid.Line_10_20, LineWithBorder.LineHalves.SecondHalf) },
+                        { LineDirection.Down, new LineWithBorder.LineSegment(MonitGrid.Line_20_21, LineWithBorder.LineHalves.FirstHalf) },
                     },
-                    new Dictionary<LineDirection, LineWithBorder>
+                    // lines touching node 2,1
+                    new Dictionary<LineDirection, LineWithBorder.LineSegment>
                     {
-                        { LineDirection.Left, MonitGrid.Line_2_1_Left },
-                        { LineDirection.Down, MonitGrid.Line_2_1_Down },
-                        { LineDirection.Up, MonitGrid.Line_2_1_Up },
+                        { LineDirection.Left, new LineWithBorder.LineSegment(MonitGrid.Line_11_21, LineWithBorder.LineHalves.SecondHalf) },
+                        { LineDirection.Down, new LineWithBorder.LineSegment(MonitGrid.Line_21_22, LineWithBorder.LineHalves.FirstHalf) },
+                        { LineDirection.Up, new LineWithBorder.LineSegment(MonitGrid.Line_20_21, LineWithBorder.LineHalves.SecondHalf) },
                     },
-                    new Dictionary<LineDirection, LineWithBorder>
+                    // lines touching node 2,2
+                    new Dictionary<LineDirection, LineWithBorder.LineSegment>
                     {
-                        { LineDirection.Left, MonitGrid.Line_2_2_Left },
-                        { LineDirection.Up, MonitGrid.Line_2_2_Up },
+                        { LineDirection.Left, new LineWithBorder.LineSegment(MonitGrid.Line_12_22, LineWithBorder.LineHalves.SecondHalf) },
+                        { LineDirection.Up, new LineWithBorder.LineSegment(MonitGrid.Line_21_22, LineWithBorder.LineHalves.SecondHalf) },
                     },
                 }
             };
@@ -300,19 +318,34 @@ namespace MissMooseConfigurationApplication
 
         private void InitializeShadedRegions()
         {
-            shadedRegions = new List<List<Path>>
+            shadedRegions = new List<List<ActivityRegion>>
             {
-                new List<Path>
+                new List<ActivityRegion>
                 {
                     MonitGrid.Rectangle_0_0,
                     MonitGrid.Rectangle_0_1,
                 },
-                new List<Path>
+                new List<ActivityRegion>
                 {
                     MonitGrid.Rectangle_1_0,
                     MonitGrid.Rectangle_1_1,
                 },
             };
+        }
+
+        private void UpdateShadedRegion(SensorNode node)
+        {
+            Point nodePoint = new Point() { X = node.xpos, Y = node.ypos };
+            for (int i = 0; i < shadedRegions.Count; i++)
+            {
+                for (int j = 0; j < shadedRegions[i].Count; j++)
+                {
+                    if (shadedRegions[i][j].PointCoordinates.Contains(nodePoint))
+                    {
+                        shadedRegions[i][j].UpdateActivityRegion(nodePoint, node.xoffset * OffsetScalePixels, node.yoffset * OffsetScalePixels);
+                    }
+                }
+            }
         }
 
         private void AddViewboxOffset(Viewbox viewbox, int offsetx, int offsety)
@@ -333,7 +366,31 @@ namespace MissMooseConfigurationApplication
 
         private void InitializeDetectionLines(SensorNode node)
         {
-            switch(node.configuration)
+            if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Up))
+            {
+                LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Up];
+                linesegment.line.X2 = node.xoffset * OffsetScalePixels;
+                linesegment.line.Y2 = -node.yoffset * OffsetScalePixels;
+            }
+            if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Right))
+            {
+                LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Right];
+                linesegment.line.X1 = node.xoffset * OffsetScalePixels;
+                linesegment.line.Y1 = -node.yoffset * OffsetScalePixels;
+            }
+            if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Down))
+            {
+                LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Down];
+                linesegment.line.X1 = node.xoffset * OffsetScalePixels;
+                linesegment.line.Y1 = -node.yoffset * OffsetScalePixels;
+            }
+            if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Left))
+            {
+                LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Left];
+                linesegment.line.X2 = node.xoffset * OffsetScalePixels;
+                linesegment.line.Y2 = -node.yoffset * OffsetScalePixels;
+            }
+            switch (node.configuration)
             {
                 case HardwareConfiguration.Pir2:
                     if(node.Rotation.Val == Rotation.R0)
