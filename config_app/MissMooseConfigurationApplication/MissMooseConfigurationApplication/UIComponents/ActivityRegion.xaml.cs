@@ -23,12 +23,16 @@ namespace MissMooseConfigurationApplication.UIComponents
         #region Private Members
         private Point TopRightPoint;
         private Point TopRightCoordinate;
+        private Point TopRightOffset = new Point() { X = 0, Y = 0 };
         private Point TopLeftPoint;
         private Point TopLeftCoordinate;
+        private Point TopLeftOffset = new Point() { X = 0, Y = 0 };
         private Point BottomRightPoint;
         private Point BottomRightCoordinate;
+        private Point BottomRightOffset = new Point() { X = 0, Y = 0 };
         private Point BottomLeftPoint;
         private Point BottomLeftCoordinate;
+        private Point BottomLeftOffset = new Point() { X=0, Y=0 };
         #endregion
 
         #region Public Members
@@ -74,19 +78,23 @@ namespace MissMooseConfigurationApplication.UIComponents
         {
             if (coordinatePoint == TopRightCoordinate)
             {
-                TopRightPoint = new Point() { X = TopRightPoint.X + xoffset, Y = TopRightPoint.Y - yoffset };
+                TopRightPoint = new Point() { X = TopRightPoint.X + xoffset - TopRightOffset.X, Y = TopRightPoint.Y - yoffset + TopRightOffset.Y };
+                TopRightOffset = new Point() { X = xoffset, Y = yoffset };
             }
             if (coordinatePoint == TopLeftCoordinate)
             {
-                TopLeftPoint = new Point() { X = TopLeftPoint.X + xoffset, Y = TopLeftPoint.Y - yoffset };
+                TopLeftPoint = new Point() { X = TopLeftPoint.X + xoffset - TopLeftOffset.X, Y = TopLeftPoint.Y - yoffset + TopLeftOffset.Y };
+                TopLeftOffset = new Point() { X = xoffset, Y = yoffset };
             }
             if (coordinatePoint == BottomLeftCoordinate)
             {
-                BottomLeftPoint = new Point() { X = BottomLeftPoint.X + xoffset, Y = BottomLeftPoint.Y - yoffset };
+                BottomLeftPoint = new Point() { X = BottomLeftPoint.X + xoffset - BottomLeftOffset.X, Y = BottomLeftPoint.Y - yoffset + BottomLeftOffset.Y };
+                BottomLeftOffset = new Point() { X = xoffset, Y = yoffset };
             }
             if (coordinatePoint == BottomRightCoordinate)
             {
-                BottomRightPoint = new Point() { X = BottomRightPoint.X + xoffset, Y = BottomRightPoint.Y - yoffset };
+                BottomRightPoint = new Point() { X = BottomRightPoint.X + xoffset - BottomRightOffset.X, Y = BottomRightPoint.Y - yoffset + BottomRightOffset.Y };
+                BottomRightOffset = new Point() { X = xoffset, Y = yoffset };
             }
             Region.Points = Points;
         }
