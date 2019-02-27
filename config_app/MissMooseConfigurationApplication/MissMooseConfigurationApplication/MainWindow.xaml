@@ -9,17 +9,17 @@
         Title="MissMoose" Height="650" Width="800" Closing="SaveConfiguration">
     <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
+            <RowDefinition Height="6*"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="80"/>
         </Grid.RowDefinitions>
         <Frame Grid.Row="0" Grid.Column="0" Name="PageFrame" Source="UIPages/ConfigurationPage.xaml" Background="LightGray" NavigationUIVisibility="Hidden"></Frame>
         <Grid Grid.Row="1" Grid.Column="0" Background="Gray">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="160"/>
+                <ColumnDefinition Width="8*"/>
+                <ColumnDefinition Width="16*"/>
+                <ColumnDefinition Width="8*"/>
+                <ColumnDefinition Width="8*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="160"/>
-                <ColumnDefinition Width="160"/>
-                <ColumnDefinition Width="20"/>
             </Grid.ColumnDefinitions>
             <Label Content="Miss Moose" Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="20" FontWeight="Bold"/>
             <local:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="2" x:Name="ConfigPageButton" Margin="2,16,2,16" >Configure Nodes</local:PageSwitcherButton>
