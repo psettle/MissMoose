@@ -20,8 +20,8 @@
 #define MEDIAN(a,b,c) ((a > b) ? (b > c) ? b : (a > c) ? c : a : \
                        (b > c) ? (a > c) ? a : c : b)
 
-#define ANT_BROADCAST_DEBUG         false // If true, broadcast the most recent filtered sample over ANT.
-#define USE_POWER_CYCLING           true  // Whether or not we should try and turn the lidar off between samplings.
+#define ANT_BROADCAST_DEBUG         true // If true, broadcast the most recent filtered sample over ANT.
+#define USE_POWER_CYCLING           false  // Whether or not we should try and turn the lidar off between samplings.
 
 /* Register definitions for the LIDAR. */
 #define DISTANCE_VALUE_REGISTER     (0x8FU)
@@ -496,6 +496,8 @@ static void on_timer_event(void* evt_data, uint16_t evt_size)
             {
                 bsp_board_led_on(3);
             }
+            lidar_sampling_state = NOT_SAMPLING;
+            xfer_done = true;
         }
         #if(USE_POWER_CYCLING)
             lidar_sampling_state = ROLLING_OUT_ZEROS;

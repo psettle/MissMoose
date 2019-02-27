@@ -84,14 +84,16 @@ static void scheduler_init(void);
 int main(void)
 {
     uint32_t err_code;
+    // Provide time for power to stabilize
+    nrf_delay_ms(100);
 
     scheduler_init();
     utils_init();
 
-    if(read_hardware_config() == HARDWARE_CONFIG_PIR_LIDAR_LED)
-    {
-    	mm_rgb_led_init(false);
-    }
+    // if(read_hardware_config() == HARDWARE_CONFIG_PIR_LIDAR_LED)
+    // {
+    // 	mm_rgb_led_init(false);
+    // }
 
     mm_softdevice_init();
     mm_ant_init();
@@ -100,19 +102,19 @@ int main(void)
     #ifdef NODE_ID_FROM_CONFIG_APP
     // If getting node ID from the configuration app,
     // start the node config procedure
-    mm_node_config_init();
+    // mm_node_config_init();
     #else
     APP_ERROR_CHECK(true); /* Used to initialize blaze here, that is no longer a supported mode. */
     #endif
 
 	#ifdef MM_BLAZE_GATEWAY
 
-    mm_monitoring_dispatch_init();
-	mm_position_config_init();
+    // mm_monitoring_dispatch_init();
+	// mm_position_config_init();
 
 	#endif
 
-    // mm_hardware_test_init();
+    mm_hardware_test_init();
 
     while(true)
     {

@@ -22,7 +22,7 @@ notes:
 
 #define POSITION_CONFIG_PAGE_NUM        ( 0x11 )
 
-#define NODE_SEPERATION_CM              ( 800 )
+#define NODE_SEPERATION_CM              ( 50 )
 #define NODE_OFFSET_SCALE_CM            ( 5 )
 
 /**********************************************************
