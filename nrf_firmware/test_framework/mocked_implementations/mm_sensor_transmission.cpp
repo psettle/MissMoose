@@ -98,7 +98,7 @@ void test_send_pir_data
 )
 {
     auto node = get_node_for_position(x_pos, y_pos);
-    sensor_rotation_t rotation = (sensor_rotation_t)((total_rotation - node->node_rotation) % NODE_ROTATION_COUNT);
+    sensor_rotation_t rotation = (sensor_rotation_t)((NODE_ROTATION_COUNT + total_rotation - node->node_rotation) % NODE_ROTATION_COUNT);
 
     uint16_t node_id = node->node_id;
 

@@ -59,28 +59,14 @@ static void test_case_test_sending_sensor_data(TestOutput& oracle)
 
 static void test_case_with_oracle(TestOutput& oracle)
 {
-    std::vector<mm_node_position_t const *> outputNodes;
-    oracle.initOracle(outputNodes);
-
     test_send_pir_data(2, SENSOR_ROTATION_90, PIR_DETECTION_START);
     test_send_lidar_data(3, SENSOR_ROTATION_0, 100);
 
     /* Those two detections could put all the leds to on forever
        (This isn't a very serious test) */
-    for (auto node : outputNodes) {
-        if (node != NULL)
-        {
-            oracle.logLedUpdate(
-                LedUpdate{
-                    1,
-                    node->node_id,
-                    LED_FUNCTION_LEDS_BLINKING,
-                    LED_COLOURS_RED
-                }
-            );
-        }
-    }
-
+    oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
+    oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
+    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 
     // Simulate time passing
     simulate_time(MINUTES(5));

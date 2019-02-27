@@ -25,9 +25,10 @@ notes:
                        DEFINITIONS
 **********************************************************/
 
-void TestOutput::initOracle(std::vector<mm_node_position_t const *>& outputNodes)
+void TestOutput::initOracle(void)
 {
     /* Fetch top 3 positions */
+    std::vector<mm_node_position_t const *> outputNodes;
     outputNodes.push_back(get_node_for_position(-1, 1));
     outputNodes.push_back(get_node_for_position(0, 1));
     outputNodes.push_back(get_node_for_position(1, 1));
@@ -171,6 +172,16 @@ float TestOutput::getMatchScore(TestOutput const & result, TestOutput const & or
     /* Calculate correct on/off fractions.  */
     float correct_on_f = (correct_on_time / (float)max_correct_on_time);
     float correct_off_f = (correct_off_time / (float)max_correct_off_time);
+
+    if (!max_correct_on_time)
+    {
+        correct_on_f = 0.0f;
+    }
+
+    if (!max_correct_off_time)
+    {
+        correct_off_f = 0.0f;
+    }
 
     /* Calculate final score */
     float score = std::pow(correct_on_f, ON_TIME_WEIGHT) * std::pow(correct_off_f, OFF_TIME_WEIGHT);

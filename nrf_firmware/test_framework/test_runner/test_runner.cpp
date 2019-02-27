@@ -63,6 +63,7 @@ static float run_test_case(TestCase const & test)
     try
     {
         TestOutput oracle;
+        oracle.initOracle();
         test.test(oracle);
         auto result = test_led_control_get_output();
         test_score = TestOutput::getMatchScore(result, oracle);

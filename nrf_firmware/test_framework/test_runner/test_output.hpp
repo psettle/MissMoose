@@ -35,7 +35,7 @@ public:
     /**
      * Setup a test output as a blank oracle, and return the set of output leds.
      */
-    void initOracle(std::vector<mm_node_position_t const *>& outputNodes);
+    void initOracle(void);
 
     /**
      * Add an led update to the output. Must be logged in chronological order.
