@@ -26,8 +26,8 @@
         <local:LineWithBorder x:Name="Line_12_22" X1="250" X2="450" Y1="350" Y2="350" Thickness="10" isVertical="false"/>
 
         <local:ActivityRegion x:Name="Rectangle_0_0" Panel.ZIndex="-1" Points="50,50 250,50 250,200 50,200" PointCoordinates="0,0 1,0 1,1 0,1"></local:ActivityRegion>
-        <local:ActivityRegion x:Name="Rectangle_0_1" Panel.ZIndex="-1" Points="250,50 450,50 450,200 250,200" PointCoordinates="1,0 2,0 2,1 1,1"></local:ActivityRegion>
-        <local:ActivityRegion x:Name="Rectangle_1_0" Panel.ZIndex="-1" Points="50,200 250,200 250,350 50,350" PointCoordinates="0,1 1,1 1,2 0,2"></local:ActivityRegion>
+        <local:ActivityRegion x:Name="Rectangle_0_1" Panel.ZIndex="-1" Points="50,200 250,200 250,350 50,350" PointCoordinates="0,1 1,1 1,2 0,2" ></local:ActivityRegion>
+        <local:ActivityRegion x:Name="Rectangle_1_0" Panel.ZIndex="-1" Points="250,50 450,50 450,200 250,200" PointCoordinates="1,0 2,0 2,1 1,1"></local:ActivityRegion>
         <local:ActivityRegion x:Name="Rectangle_1_1" Panel.ZIndex="-1" Points="250,200 450,200 450,350 250,350" PointCoordinates="1,1 2,1 2,2 1,2"></local:ActivityRegion>
 
         <Viewbox Name="SensorViewbox_0_0" Width="100" Height="100" Stretch="Fill" Margin="0,0,400,300">
