@@ -67,10 +67,10 @@ namespace MissMooseConfigurationApplication
             nodes.Add(node);
 
             AddViewboxOffset(viewbox, node.xoffset, node.yoffset);
+            AddShadedRegionOffset(node);
 
             SetNodeRotation(viewbox, node.Rotation);
             InitializeDetectionLines(node);
-            UpdateShadedRegion(node);
         }
 
         /// <summary>
@@ -333,7 +333,7 @@ namespace MissMooseConfigurationApplication
             };
         }
 
-        private void UpdateShadedRegion(SensorNode node)
+        private void AddShadedRegionOffset(SensorNode node)
         {
             Point nodePoint = new Point() { X = node.xpos, Y = node.ypos };
             for (int i = 0; i < shadedRegions.Count; i++)

@@ -20,6 +20,7 @@ namespace MissMooseConfigurationApplication.UIComponents
     /// </summary>
     public partial class ActivityRegion : UserControl
     {
+        #region Private Members
         private Point TopRightPoint;
         private Point TopRightCoordinate;
         private Point TopLeftPoint;
@@ -28,7 +29,9 @@ namespace MissMooseConfigurationApplication.UIComponents
         private Point BottomRightCoordinate;
         private Point BottomLeftPoint;
         private Point BottomLeftCoordinate;
+        #endregion
 
+        #region Public Members
         public PointCollection Points
         {
             get
@@ -59,7 +62,9 @@ namespace MissMooseConfigurationApplication.UIComponents
                 BottomLeftCoordinate = value[3];
             }
         }
+        #endregion
 
+        #region Public Methods
         public ActivityRegion()
         {
             InitializeComponent();
@@ -86,5 +91,6 @@ namespace MissMooseConfigurationApplication.UIComponents
             }
             Region.Points = Points;
         }
+        #endregion
     }
 }

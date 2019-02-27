@@ -20,15 +20,12 @@ namespace MissMooseConfigurationApplication.UIComponents
     /// </summary>
     public partial class LineWithBorder : UserControl
     {
+        #region Private Members
         private Color firstHalfColor;
         private Color secondHalfColor;
+        #endregion
 
-        public enum LineHalves
-        {
-            FirstHalf, // the "first" half is always the rightmost or topmost half of the line
-            SecondHalf
-        }
-
+        #region Public Members
         public int X1
         {
             set
@@ -92,7 +89,9 @@ namespace MissMooseConfigurationApplication.UIComponents
                 }
             }
         }
+        #endregion
 
+        #region Public Methods
         public LineWithBorder()
         {
             InitializeComponent();
@@ -153,6 +152,14 @@ namespace MissMooseConfigurationApplication.UIComponents
                     break;
             }
         }
+        #endregion
+
+        #region Public Types
+        public enum LineHalves
+        {
+            FirstHalf, // the "first" half is always the rightmost or topmost half of the line
+            SecondHalf
+        }
 
         public class LineSegment
         {
@@ -164,5 +171,6 @@ namespace MissMooseConfigurationApplication.UIComponents
                 this.half = half;
             }
         }
+        #endregion
     }
 }
