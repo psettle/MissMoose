@@ -13,12 +13,13 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*" MaxWidth="250"/>
             <ColumnDefinition Width="4*"/>
-            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*" MaxWidth="250"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2*"></RowDefinition>
+            <RowDefinition Height="2*"  MaxHeight="60"></RowDefinition>
+            <RowDefinition Height="10"></RowDefinition>
             <RowDefinition Height="12*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Grid.ColumnSpan="3" Background="#2e2e2e">
@@ -31,8 +32,8 @@
             <TextBlock Text="Direction of Traffic &#x2794;" Grid.RowSpan="2" Foreground="DeepSkyBlue" FontWeight="Bold" FontSize="20" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4" Padding="4" Background="#2e2e2e"/>
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="0">
-            <Viewbox>
+        <Grid Grid.Row="2" Grid.Column="0">
+            <Viewbox >
                 <Grid Margin="20,0,20,0">
                     <Rectangle Stroke="Black" Fill="DarkGray" Height="180" Width="125"/>
                     <Viewbox Name="NewSensorViewbox" Width="100" Height="100" Stretch="Fill" Margin="0,40,0,20">
@@ -45,13 +46,13 @@
             </Viewbox>
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="1">
+        <Grid Grid.Row="2" Grid.Column="1">
             <Viewbox>
                 <uicomponents:ConfigurationGrid x:Name="ConfigGrid"/>
             </Viewbox>
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="2">
+        <Grid Grid.Row="2" Grid.Column="2">
             <Viewbox Margin="20,30">
                 <Grid Width="155" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
