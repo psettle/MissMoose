@@ -10,49 +10,96 @@ notes:
                     ALGORITHM TUNING
 **********************************************************/
 
-#define MAX_GRID_SIZE_X                     ( 3 )
-#define MAX_GRID_SIZE_Y                     ( 3 )
-#define MAX_NUMBER_NODES                    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
-#define MAX_SENSORS_PER_NODE                ( 2 )
-#define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )     
+/**
+    Sensor algorithm configuration constants container.
+*/
+typedef struct
+{
+    uint16_t max_grid_size_x;             
+    uint16_t max_grid_size_y;             
+    uint16_t max_number_nodes;            
+    uint16_t max_sensors_per_node;         
+    uint16_t max_sensor_count;
 
-#define MAX_NUMBER_NODES                    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
-#define MAX_SENSORS_PER_NODE                ( 2 )
-#define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )  
+    float activity_variable_min;    
+    float activity_variable_max;           
+    float common_sensor_weight_factor;
+    float base_sensor_weight_factor_pir;
+    float base_sensor_weight_factor_lidar;
+    float road_proximity_factor_0;
+    float road_proximity_factor_1;
+    float road_proximity_factor_2;
 
-#define ACTIVITY_VARIABLE_MIN               ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX               ( 12.0f )
+    float common_sensor_trickle_factor;
+    float base_sensor_trickle_factor_pir;
+    float base_sensor_trickle_factor_lidar;
+    float road_trickle_proximity_factor_0;
+    float road_trickle_proximity_factor_1;
+    float road_trickle_proximity_factor_2;
 
-#define COMMON_SENSOR_WEIGHT_FACTOR         ( 1.0f )
-#define BASE_SENSOR_WEIGHT_FACTOR_PIR       ( 3.0f )
-#define BASE_SENSOR_WEIGHT_FACTOR_LIDAR     ( 3.5f )
-#define ROAD_PROXIMITY_FACTOR_0             ( 1.4f )
-#define ROAD_PROXIMITY_FACTOR_1             ( 1.2f )
-#define ROAD_PROXIMITY_FACTOR_2             ( 1.0f )
+    uint16_t sensor_inactivity_threshold_min;
+    uint16_t sensor_hyperactivity_event_window_size;
+    float sensor_hyperactivity_frequency_thres; // events / SENSOR_HYPERACTIVITY_DETECTION_PERIOD
 
-#define COMMON_SENSOR_TRICKLE_FACTOR        ( 1.0f )
-#define BASE_SENSOR_TRICKLE_FACTOR_PIR      ( 1.003f )
-#define BASE_SENSOR_TRICKLE_FACTOR_LIDAR    ( 1.0035f )
-#define ROAD_TRICKLE_PROXIMITY_FACTOR_0     ( 1.004f )
-#define ROAD_TRICKLE_PROXIMITY_FACTOR_1     ( 1.002f )
-#define ROAD_TRICKLE_PROXIMITY_FACTOR_2     ( 1.0f )
+    float activity_variable_decay_factor;
+    uint16_t activity_decay_period_ms;
 
-#define SENSOR_INACTIVITY_THRESHOLD_MIN         ( 60 * 24 )
-#define SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE  ( 120 )
-#define SENSOR_HYPERACTIVITY_FREQUENCY_THRES    ( 1.0 ) // events / SENSOR_HYPERACTIVITY_DETECTION_PERIOD
+    /* Road-side (RS), non-road-side (NRS) */
+    float possible_detection_threshold_rs;
+    float possible_detection_threshold_nrs;
 
-#define ACTIVITY_VARIABLE_DECAY_FACTOR      ( 0.99f )
-#define ACTIVITY_DECAY_PERIOD_MS            ( ONE_SECOND_MS )
+    float detection_threshold_rs;
+    float detection_threshold_nrs;
 
-/* Road-side (RS), non-road-side (NRS) */
-#define POSSIBLE_DETECTION_THRESHOLD_RS     ( 3.0f )
-#define POSSIBLE_DETECTION_THRESHOLD_NRS    ( 4.0f )
+    uint16_t minimum_concern_signal_duration_s;
+    uint16_t minimum_alarm_signal_duration_s;
+} mm_sensor_algorithm_config_t;
 
-#define DETECTION_THRESHOLD_RS              ( 6.0f )
-#define DETECTION_THRESHOLD_NRS             ( 7.0f )
+/**
+    Default sensor algorithm configuration constants.
+*/
+mm_sensor_algorithm_config_t const mm_sensor_algorithm_config_default =
+{
+    3,  // max_grid_size_x
+    3,  // max_grid_size_y
+    9,  // max_number_nodes
+    2,  // max_sensors_per_node
+    18, // max_sensor_count
 
-#define MINIMUM_CONCERN_SIGNAL_DURATION_S ( 30 )
-#define MINIMUM_ALARM_SIGNAL_DURATION_S   ( 60 )
+    1.0f,   // activity_variable_min
+    12.0f,  // activity_variable_max
+
+    1.0f, // common_sensor_weight_factor
+    3.0f, // base_sensor_weight_factor_pir
+    3.5f, // base_sensor_weight_factor_lidar
+    1.4f, // road_proximity_factor_0
+    1.2f, // road_proximity_factor_1
+    1.0f, // road_proximity_factor_2
+
+    1.0f,       // common_sensor_trickle_factor
+    1.003f,     // base_sensor_trickle_factor_pir
+    1.0035f,    // base_sensor_trickle_factor_lidar
+    1.004f,     // road_trickle_proximity_factor_0
+    1.002f,     // road_trickle_proximity_factor_1
+    1.0f,       // road_trickle_proximity_factor_2
+
+    (60 * 24 ), // sensor_inactivity_threshold_min
+    120,        // sensor_hyperactivity_event_window_size
+    1.0f,       // sensor_hyperactivity_frequency_thres
+
+    0.99f,          // activity_variable_decay_factor
+    ONE_SECOND_MS,  // activity_decay_period_ms
+
+    3.0f, // possible_detection_threshold_rs
+    4.0f, // possible_detection_threshold_nrs
+
+    6.0f, // detection_threshold_rs
+    7.0f, // detection_threshold_nrs
+
+    30, // minimum_concern_signal_duration_s
+    60, // minimum_alarm_signal_duration_s
+};
+
 
 #endif /* MM_SENSOR_ALGORITHM_CONFIG_H */
 
