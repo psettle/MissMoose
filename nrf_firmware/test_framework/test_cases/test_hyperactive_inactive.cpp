@@ -42,6 +42,11 @@ static void test_case_test_inactive_state_update(void);
 DEFINITIONS
 **********************************************************/
 
+void test_sensor_algorithm_config(mm_sensor_algorithm_config_t const * config)
+{
+	sensor_algorithm_config = config;
+}
+
 void test_hyperactive_inactive_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names)
 {
     ADD_TEST(test_case_test_sensor_normal_activity);
