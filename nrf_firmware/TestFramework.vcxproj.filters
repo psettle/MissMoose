@@ -84,6 +84,12 @@
     <ClCompile Include="test_framework\mocked_implementations\mm_av_transmission.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_framework\mocked_implementations\mm_led_transmission.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_framework\mocked_implementations\mm_sensor_error_transmission.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_framework\mocked_interfaces\app_error.h">

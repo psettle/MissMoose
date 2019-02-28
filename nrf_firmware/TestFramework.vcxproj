@@ -131,8 +131,10 @@
     <ClCompile Include="test_framework\main.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_av_transmission.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_led_control.cpp" />
+    <ClCompile Include="test_framework\mocked_implementations\mm_led_transmission.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_monitoring_dispatch.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_position_config.cpp" />
+    <ClCompile Include="test_framework\mocked_implementations\mm_sensor_error_transmission.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_sensor_transmission.cpp" />
     <ClCompile Include="test_framework\mocked_interfaces\app_error.cpp" />
     <ClCompile Include="test_framework\test_cases\test_hyperactive_inactive.cpp" />
