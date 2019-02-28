@@ -12,6 +12,8 @@
                         INCLUDES
 **********************************************************/
 
+#include "mm_sensor_algorithm_config.h"
+
 /**********************************************************
                         CONSTANTS
 **********************************************************/
@@ -24,7 +26,7 @@
                        DECLARATIONS
 **********************************************************/
 
-void mm_led_strip_states_init(void);
+void mm_led_strip_states_init(mm_sensor_algorithm_config_t const * config);
 
 /**
     Updates current LED signalling states and increments

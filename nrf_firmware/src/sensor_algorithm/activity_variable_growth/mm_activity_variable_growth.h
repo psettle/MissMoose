@@ -12,6 +12,7 @@ notes:
 
 #include "mm_sensor_transmission.h"
 #include "mm_position_config.h"
+#include "mm_sensor_algorithm_config.h"
 
 /**********************************************************
                         TYPES
@@ -24,7 +25,7 @@ notes:
 /**
  * Initialize growth logic.
  */
-void mm_activity_variable_growth_init(void);
+void mm_activity_variable_growth_init(mm_sensor_algorithm_config_t const * config);
 
 /**
  * On sensor detection.

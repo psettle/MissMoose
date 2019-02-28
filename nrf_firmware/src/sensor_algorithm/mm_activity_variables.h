@@ -14,13 +14,11 @@ notes:
 
 #include <stdint.h>
 
+#include "mm_sensor_algorithm_config.h"
+
 /**********************************************************
                         CONSTANTS
 **********************************************************/
-
-#define MAX_AV_SIZE_X           ( MAX_GRID_SIZE_X - 1 )
-#define MAX_AV_SIZE_Y           ( MAX_GRID_SIZE_Y - 1 )
-#define ACTIVITY_VARIABLES_NUM  ( MAX_AV_SIZE_X * MAX_AV_SIZE_Y )
 
 /**********************************************************
                         MACROS
@@ -62,7 +60,7 @@ typedef enum
 /**
  * Initialize activity variables.
  */
-void mm_activity_variables_init(void);
+void mm_activity_variables_init(mm_sensor_algorithm_config_t const * config);
 
 /**
  * Access AV value.
@@ -73,5 +71,20 @@ mm_activity_variable_t* mm_av_access(uint8_t x, uint8_t y);
  * Check which threshold an activity variable falls under.
  */
 activity_variable_state_t mm_get_status_for_av(mm_activity_variable_t const * av);
+
+/**
+ * Get the max AV size in the X direction.
+ */
+uint16_t mm_get_max_av_size_x();
+
+/**
+ * Get the max AV size in the Y direction.
+ */
+uint16_t mm_get_max_av_size_y();
+
+/**
+ * Get the number of AVs.
+ */
+uint16_t mm_get_activity_variables_num();
 
 #endif /* MM_ACTIVITY_VARIABLES_H */

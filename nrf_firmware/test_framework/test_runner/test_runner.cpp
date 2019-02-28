@@ -14,6 +14,7 @@ notes:
 #include "test_output_logger.hpp"
 
 extern "C" {
+#include "mm_sensor_algorithm_config.h"
 #include "mm_sensor_algorithm.h"
 #include "mm_sensor_transmission.h"
 #include "mm_monitoring_dispatch.h"
@@ -76,7 +77,7 @@ static void init_test_case(std::string const & test_name)
     mm_led_control_init();
     mm_monitoring_dispatch_init();
     mm_sensor_transmission_init();
-    mm_sensor_algorithm_init();
+    mm_sensor_algorithm_init(&MM_SENSOR_ALGORITHM_CONFIG_DEFAULT);
     mm_av_transmission_init();
 
     /* Initialize the logger for this test. */

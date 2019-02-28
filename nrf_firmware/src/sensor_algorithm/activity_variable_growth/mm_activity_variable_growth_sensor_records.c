@@ -10,11 +10,11 @@ notes:
 **********************************************************/
 
 #include "string.h"
+#include "stdlib.h"
 
 #include "app_error.h"
 
 #include "mm_activity_variable_growth_sensor_records_prv.h"
-#include "mm_sensor_algorithm_config.h"
 
 /**********************************************************
                         MACROS
@@ -28,11 +28,12 @@ notes:
                        VARIABLES
 **********************************************************/
 
+static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
+static sensor_record_t * sensor_records;
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
-
-static sensor_record_t      sensor_records[MAX_SENSOR_COUNT];
 
 /**********************************************************
                        DEFINITIONS
@@ -41,9 +42,11 @@ static sensor_record_t      sensor_records[MAX_SENSOR_COUNT];
 /**
  * Initialize all sensor records to default values.
  */
-void init_sensor_records(void)
+void init_sensor_records(mm_sensor_algorithm_config_t const * config)
 {
-    memset(&(sensor_records[0]), 0, sizeof(sensor_records));
+	sensor_algorithm_config = config;
+	sensor_records = malloc(sensor_algorithm_config->max_sensor_count * sizeof(sensor_record_t));
+	memset(&(sensor_records[0]), 0, sizeof(sensor_records));
 }
 
 /**
@@ -52,7 +55,7 @@ void init_sensor_records(void)
 sensor_record_t* get_sensor_record(uint16_t node_id, sensor_rotation_t sensor_rotation, sensor_type_t sensor_type)
 {  
     sensor_record_t * empty = NULL; 
-    for(uint16_t i = 0; i < MAX_SENSOR_COUNT; ++i)
+    for(uint16_t i = 0; i < sensor_algorithm_config->max_sensor_count; ++i)
     {
         sensor_record_t * record = &(sensor_records[i]);
 
@@ -101,7 +104,7 @@ sensor_record_t* get_sensor_record(uint16_t node_id, sensor_rotation_t sensor_ro
 
 sensor_record_t* next_sensor_record(sensor_record_iterator_t* iterator)
 {
-    for(uint16_t i = iterator->next_id; i < MAX_SENSOR_COUNT; ++i)
+    for(uint16_t i = iterator->next_id; i < sensor_algorithm_config->max_sensor_count; ++i)
     {
         if(sensor_records[i].sensor_type == iterator->sensor_type &&
            sensor_records[i].is_valid)

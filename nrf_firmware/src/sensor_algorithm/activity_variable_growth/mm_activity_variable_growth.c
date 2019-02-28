@@ -16,7 +16,6 @@ notes:
 #include "mm_activity_variable_growth.h"
 #include "mm_activity_variable_growth_prv.h"
 #include "mm_activity_variables.h"
-#include "mm_sensor_algorithm_config.h"
 
 #include "mm_activity_variable_growth_prv.h"
 #include "mm_activity_variable_growth_pir_prv.h"
@@ -49,6 +48,8 @@ typedef struct
                        VARIABLES
 **********************************************************/
 
+static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
@@ -77,9 +78,10 @@ static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set);
 /**
  * Initialize growth logic.
  */
-void mm_activity_variable_growth_init(void)
+void mm_activity_variable_growth_init(mm_sensor_algorithm_config_t const * config)
 {
-    init_sensor_records();
+	sensor_algorithm_config = config;
+	init_sensor_records(config);
 }
 
 /**
@@ -171,9 +173,9 @@ static void grow_activity_variables(activity_variable_set_t* av_set, activity_va
         *(av_set->avs[i]) *= factor;
 
         /* Check if max exceeded */
-        if(*(av_set->avs[i]) > ACTIVITY_VARIABLE_MAX)
+        if(*(av_set->avs[i]) > sensor_algorithm_config->activity_variable_max)
         {
-            *(av_set->avs[i]) = ACTIVITY_VARIABLE_MAX;
+            *(av_set->avs[i]) = sensor_algorithm_config->activity_variable_max;
         }
     }
 }
@@ -190,7 +192,7 @@ static void find_adjacent_activity_variables(int8_t xpos, int8_t ypos, total_rot
     uint8_t x_array = xpos + 1;
     uint8_t y_array = ypos + 1;
     /* Positon coordinates and AV coordinates use inverted Y direction. */
-    y_array = MAX_GRID_SIZE_Y - y_array - 1;
+    y_array = sensor_algorithm_config->max_grid_size_y - y_array - 1;
 
     /* On any case x or y may underflow, if that happens they will be too big and won't be saved. */
     switch(rotation)
@@ -228,12 +230,12 @@ static void find_adjacent_activity_variables(int8_t xpos, int8_t ypos, total_rot
 static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set)
 {
     /* Check bounds on input */
-    if(x >= MAX_AV_SIZE_X)
+	if(x >= mm_get_max_av_size_x())
     {
         return;
     }
 
-    if(y >= MAX_AV_SIZE_Y)
+    if(y >= mm_get_max_av_size_y())
     {
         return;
     }

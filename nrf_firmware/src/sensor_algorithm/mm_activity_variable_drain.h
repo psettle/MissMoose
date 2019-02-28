@@ -12,6 +12,8 @@
                         INCLUDES
 **********************************************************/
 
+#include "mm_sensor_algorithm_config.h"
+
 /**********************************************************
                         CONSTANTS
 **********************************************************/
@@ -27,6 +29,12 @@
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
+
+/**
+ * Sets the sensor algorithm configuration constants. Should never
+ * be called more than once.
+ */
+void mm_set_activity_variable_drain_config(mm_sensor_algorithm_config_t const * config);
 
 /**
     Applies the activity variable drain factor to all activity variables.

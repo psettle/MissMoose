@@ -11,7 +11,6 @@
 
 #include "mm_activity_variable_drain.h"
 #include "mm_activity_variables.h"
-#include "mm_sensor_algorithm_config.h"
 
 /**********************************************************
                         CONSTANTS
@@ -29,27 +28,38 @@
                        VARIABLES
 **********************************************************/
 
+static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
+
+/**
+ * Sets the sensor algorithm configuration constants. Should never
+ * be called more than once.
+ */
+void mm_set_activity_variable_drain_config(mm_sensor_algorithm_config_t const * config)
+{
+	sensor_algorithm_config = config;
+}
 
 /**
     Applies the activity variable drain factor to all activity variables.
 */
 void mm_apply_activity_variable_drain_factor(void)
 {
-    for ( uint8_t x = 0; x < MAX_AV_SIZE_X; x++ )
+    for ( uint8_t x = 0; x < mm_get_max_av_size_x(); x++ )
     {
-        for ( uint8_t y = 0; y < MAX_AV_SIZE_Y; y++ )
+        for ( uint8_t y = 0; y < mm_get_max_av_size_y(); y++ )
         {
-            if ( AV(x, y) >  ACTIVITY_VARIABLE_MIN )
+            if ( AV(x, y) > sensor_algorithm_config->activity_variable_min )
             {
-                AV(x, y) *= ACTIVITY_VARIABLE_DECAY_FACTOR;
+                AV(x, y) *= sensor_algorithm_config->activity_variable_decay_factor;
 
                 /* Enforce ACTIVITY_VARIABLE_MIN */
-                if ( AV(x, y) < ACTIVITY_VARIABLE_MIN )
+                if ( AV(x, y) < sensor_algorithm_config->activity_variable_min )
                 {
-                    AV(x, y) = ACTIVITY_VARIABLE_MIN;
+                    AV(x, y) = sensor_algorithm_config->activity_variable_min;
                 }
             }
         }

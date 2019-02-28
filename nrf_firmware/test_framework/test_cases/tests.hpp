@@ -14,6 +14,11 @@ notes:
 #include "mm_sensor_transmission.hpp"
 #include "test_constants.hpp"
 
+extern "C" {
+#include "mm_sensor_algorithm_config.h"
+}
+
+
 /**********************************************************
                           TYPES
 **********************************************************/
@@ -30,7 +35,11 @@ typedef void(*test_case_cb)(void);
                        DECLARATIONS
 **********************************************************/
 
+// Sets the sensor algorithm config constants to be used during testing.
+void set_test_sensor_algorithm_config(mm_sensor_algorithm_config_t const * config);
+
 void test_demo_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);\
+
 // Adds the 4 tests to be run to the test runner
 void test_basic_sensor_activity_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);
 

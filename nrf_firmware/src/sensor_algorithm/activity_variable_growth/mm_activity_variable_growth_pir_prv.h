@@ -11,6 +11,7 @@ notes:
 **********************************************************/
 
 #include "mm_sensor_transmission.h"
+#include "mm_sensor_algorithm_config.h"
 
 /**********************************************************
                           TYPES
@@ -19,6 +20,12 @@ notes:
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
+
+/**
+ * Sets the sensor algorithm configuration constants. Should never
+ * be called more than once.
+ */
+void set_pir_sensor_algorithm_config(mm_sensor_algorithm_config_t const * config);
 
 /**
  * Translates a pir detection event into an abstract detection event.

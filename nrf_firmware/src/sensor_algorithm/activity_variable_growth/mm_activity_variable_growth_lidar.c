@@ -41,6 +41,8 @@ typedef struct
                        VARIABLES
 **********************************************************/
 
+static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
@@ -84,6 +86,15 @@ static void generate_trickle_constants(abstract_lidar_detection_t const * detect
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
+
+/**
+ * Sets the sensor algorithm configuration constants. Should never
+ * be called more than once.
+ */
+void set_lidar_sensor_algorithm_config(mm_sensor_algorithm_config_t const * config)
+{
+	sensor_algorithm_config = config;
+}
 
 /**
  * Translates a lidar detection event into an abstract detection event.
@@ -319,19 +330,19 @@ static void generate_growth_constants(abstract_lidar_detection_t const * detecti
 {
     memset(constants, 0, sizeof(activity_variable_sensor_constants_t));
 
-    constants->common_sensor_weight_factor = COMMON_SENSOR_WEIGHT_FACTOR;
-    constants->base_sensor_weight_factor   = BASE_SENSOR_WEIGHT_FACTOR_LIDAR;
+    constants->common_sensor_weight_factor = sensor_algorithm_config->common_sensor_weight_factor;
+    constants->base_sensor_weight_factor   = sensor_algorithm_config->base_sensor_weight_factor_lidar;
 
     switch(detection->ypos)
     {
         case 1:
-            constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_0;
+            constants->road_proximity_factor = sensor_algorithm_config->road_proximity_factor_0;
             break;
         case 0:
-            constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_1;
+            constants->road_proximity_factor = sensor_algorithm_config->road_proximity_factor_1;
             break;
         case -1:
-            constants->road_proximity_factor = ROAD_PROXIMITY_FACTOR_2;
+            constants->road_proximity_factor = sensor_algorithm_config->road_proximity_factor_2;
             break;
         default:
             /* Invalid grid position given grid height */
@@ -344,19 +355,19 @@ static void generate_trickle_constants(abstract_lidar_detection_t const * detect
 {
     memset(constants, 0, sizeof(activity_variable_sensor_constants_t));
 
-    constants->common_sensor_weight_factor = COMMON_SENSOR_TRICKLE_FACTOR;
-    constants->base_sensor_weight_factor   = BASE_SENSOR_TRICKLE_FACTOR_LIDAR;
+    constants->common_sensor_weight_factor = sensor_algorithm_config->common_sensor_trickle_factor;
+    constants->base_sensor_weight_factor   = sensor_algorithm_config->base_sensor_trickle_factor_lidar;
 
     switch(detection->ypos)
     {
         case 1:
-            constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_0;
+            constants->road_proximity_factor = sensor_algorithm_config->road_trickle_proximity_factor_0;
             break;
         case 0:
-            constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_1;
+            constants->road_proximity_factor = sensor_algorithm_config->road_trickle_proximity_factor_1;
             break;
         case -1:
-            constants->road_proximity_factor = ROAD_TRICKLE_PROXIMITY_FACTOR_2;
+            constants->road_proximity_factor = sensor_algorithm_config->road_trickle_proximity_factor_2;
             break;
         default:
             /* Invalid grid position given grid height */

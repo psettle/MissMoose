@@ -10,11 +10,11 @@
 **********************************************************/
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "app_error.h"
 
 #include "mm_led_strip_states.h"
-#include "mm_sensor_algorithm_config.h"
 #include "mm_activity_variables.h"
 #include "mm_led_control.h"
 #include "mm_position_config.h"
@@ -42,7 +42,7 @@ typedef enum
 
 typedef struct
 {
-    led_signalling_state_t states[MAX_GRID_SIZE_X];
+	led_signalling_state_t * states;
 }  output_set_t;
 
 typedef struct
@@ -110,6 +110,22 @@ static bool has_current_output_state_timed_out(led_signalling_state_record_t con
 */
 static void clear_all_current_av_states(void);
 
+/**
+	Creates an output_table_t struct. num_states indicates how many led_signalling_state_t are
+	in states.
+*/
+/**
+	Creates an output_table_t struct. num_states indicates how many led_signalling_state_t are
+	in X_Y_states.
+*/
+static output_table_t create_output_table
+(
+	led_signalling_state_t const * no_detection_states,
+	led_signalling_state_t const * possible_detection_states,
+	led_signalling_state_t const * detection_states,
+	uint16_t num_states
+);
+
 /**********************************************************
                        VARIABLES
 **********************************************************/
@@ -118,80 +134,69 @@ static void clear_all_current_av_states(void);
     Records for managing minimum signalling duration timeouts.
     Assumes that there are MAX_GRID_SIZE_X nodes with LEDs.
 */
-static led_signalling_state_record_t led_signalling_state_records [MAX_GRID_SIZE_X];
+//static led_signalling_state_record_t led_signalling_state_records [MAX_GRID_SIZE_X];
+static led_signalling_state_record_t * led_signalling_state_records;
 
-static output_table_t const top_left_output =
-{
-    {
-        { IDLE, IDLE, IDLE }
-    },
-    {
-        { ALARM, CONCERN, IDLE }
-    },
-    {
-        { ALARM, ALARM, CONCERN }
-    }
-};
+static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
 
-static output_table_t const top_right_output =
-{
-    {
-        { IDLE, IDLE, IDLE }
-    },
-    {
-        { ALARM, ALARM, CONCERN }
-    },
-    {
-        { ALARM, ALARM, ALARM }
-    }
-};
-
-static output_table_t const bottom_left_output =
-{
-    {
-        { IDLE, IDLE, IDLE }
-    },
-    {
-        { CONCERN, IDLE, IDLE }
-    },
-    {
-        { ALARM, CONCERN, IDLE }
-    }
-};
-
-static output_table_t const bottom_right_output =
-{
-    {
-        { IDLE, IDLE, IDLE }
-    },
-    {
-        { ALARM, CONCERN, IDLE }
-    },
-    {
-        { ALARM, ALARM, CONCERN }
-    }
-};
-
-static output_table_t const default_output =
-{
-    {
-        { IDLE, IDLE, IDLE }
-    },
-    {
-        { IDLE, IDLE, IDLE }
-    },
-    {
-        { IDLE, IDLE, IDLE }
-    }
-};
+static output_table_t top_left_output;
+static output_table_t top_right_output;
+static output_table_t bottom_left_output;
+static output_table_t bottom_right_output;
+static output_table_t default_output;
 
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
 
-void mm_led_strip_states_init(void)
+void mm_led_strip_states_init(mm_sensor_algorithm_config_t const * config)
 {
-    /* Initialize LED signalling states */
+	sensor_algorithm_config = config;
+
+	led_signalling_state_records = malloc((sensor_algorithm_config->max_grid_size_x) * sizeof(led_signalling_state_record_t));
+
+	/* Creates all the output tables for use in the algorithm for 3x3 grids. */
+	top_left_output = create_output_table
+	(
+		(const led_signalling_state_t[]) {IDLE, IDLE, IDLE},
+		(const led_signalling_state_t[]) {ALARM, CONCERN, IDLE},
+		(const led_signalling_state_t[]) {ALARM, ALARM, CONCERN},
+		sensor_algorithm_config->max_grid_size_x
+	);
+
+	top_right_output = create_output_table
+	(
+		(const led_signalling_state_t[]) {IDLE, IDLE, IDLE},
+		(const led_signalling_state_t[]) {ALARM, ALARM, CONCERN},
+		(const led_signalling_state_t[]) {ALARM, ALARM, ALARM},
+		sensor_algorithm_config->max_grid_size_x
+	);	
+	
+	bottom_left_output = create_output_table
+	(
+		(const led_signalling_state_t[]) {IDLE, IDLE, IDLE},
+		(const led_signalling_state_t[]) {CONCERN, IDLE, IDLE},
+		(const led_signalling_state_t[]) {ALARM, CONCERN, IDLE},
+		sensor_algorithm_config->max_grid_size_x
+	);	
+	
+	bottom_right_output = create_output_table
+	(
+		(const led_signalling_state_t[]) {IDLE, IDLE, IDLE},
+		(const led_signalling_state_t[]) {ALARM, CONCERN, IDLE},
+		(const led_signalling_state_t[]) {ALARM, ALARM, CONCERN},
+		sensor_algorithm_config->max_grid_size_x
+	);	
+	
+	default_output = create_output_table
+	(
+		(const led_signalling_state_t[]) {IDLE, IDLE, IDLE},
+		(const led_signalling_state_t[]) {IDLE, IDLE, IDLE},
+		(const led_signalling_state_t[]) {IDLE, IDLE, IDLE},
+		sensor_algorithm_config->max_grid_size_x
+	);
+
+	/* Initialize LED signalling states */
     memset( &led_signalling_state_records[0], 0, sizeof(led_signalling_state_records) );
 }
 
@@ -210,7 +215,7 @@ void mm_led_signalling_states_on_second_elapsed(void)
  */
 void mm_led_signalling_states_on_position_update(void)
 {
-    for(int8_t i = 0; i < MAX_GRID_SIZE_X; ++i)
+    for(int8_t i = 0; i < sensor_algorithm_config->max_grid_size_x; ++i)
     {
         set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
     }
@@ -224,9 +229,9 @@ static void update_current_av_states(void)
     /* Clear previous states */
     clear_all_current_av_states();
 
-    for (uint8_t x = 0; x < (MAX_AV_SIZE_X); x++)
+    for (uint8_t x = 0; x < (mm_get_max_av_size_x()); x++)
     {
-        for (uint8_t y = 0; y < (MAX_AV_SIZE_Y); y++)
+        for (uint8_t y = 0; y < (mm_get_max_av_size_y()); y++)
         {
             output_table_t const * output_table = get_output_table_for_av(x, y);
             output_set_t const * output_set = get_output_set_for_av(&AV(x, y), output_table);
@@ -243,7 +248,7 @@ static void update_current_av_states(void)
 */
 static void update_current_output_states(void)
 {
-    for (int8_t i = 0; i < MAX_GRID_SIZE_X; i++)
+    for (int8_t i = 0; i < sensor_algorithm_config->max_grid_size_x; i++)
     {   
         if (led_signalling_state_records[i].current_av_state > led_signalling_state_records[i].current_output_state)
         {
@@ -335,7 +340,7 @@ static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t stat
 */
 static void escalate_set(led_signalling_state_record_t * p_record, output_set_t const * escalate_to)
 {
-    for(uint8_t i = 0; i < MAX_AV_SIZE_X; ++i)
+    for(uint16_t i = 0; i < (uint16_t) mm_get_max_av_size_x; ++i)
     {
         escalate_output(&(p_record[i].current_av_state), escalate_to->states[i]);
     }
@@ -420,8 +425,8 @@ static bool has_current_output_state_timed_out(led_signalling_state_record_t con
     APP_ERROR_CHECK(!p_record->timeout_active);
 
     return (
-            (p_record->current_output_state == CONCERN && p_record->second_counter >= MINIMUM_CONCERN_SIGNAL_DURATION_S) ||
-            (p_record->current_output_state == ALARM && p_record->second_counter >= MINIMUM_ALARM_SIGNAL_DURATION_S)
+            (p_record->current_output_state == CONCERN && p_record->second_counter >= sensor_algorithm_config->minimum_concern_signal_duration_s) ||
+            (p_record->current_output_state == ALARM && p_record->second_counter >= sensor_algorithm_config->minimum_alarm_signal_duration_s)
            );
 }
 
@@ -430,8 +435,40 @@ static bool has_current_output_state_timed_out(led_signalling_state_record_t con
 */
 static void clear_all_current_av_states(void)
 {
-    for (uint16_t i = 0; i < MAX_GRID_SIZE_X; i++)
+    for (uint16_t i = 0; i < sensor_algorithm_config->max_grid_size_x; i++)
     {
         led_signalling_state_records[i].current_av_state = IDLE;
     }
+}
+
+/**
+	Creates an output_table_t struct. num_states indicates how many led_signalling_state_t are
+	in X_Y_states.
+*/
+static output_table_t create_output_table
+(
+	led_signalling_state_t const * no_detection_states, 
+	led_signalling_state_t const * possible_detection_states,
+	led_signalling_state_t const * detection_states,
+	uint16_t num_states
+)
+{
+	output_table_t output_table =
+	{
+		{
+			malloc(num_states * sizeof(led_signalling_state_t))
+		},
+		{
+			malloc(num_states * sizeof(led_signalling_state_t))
+		},
+		{
+			malloc(num_states * sizeof(led_signalling_state_t))
+		}
+	};
+
+	memcpy(output_table.detection.states, no_detection_states, sizeof(no_detection_states));
+	memcpy(output_table.possible_detection.states, possible_detection_states, sizeof(possible_detection_states));
+	memcpy(output_table.detection.states, detection_states, sizeof(detection_states));
+
+	return output_table;
 }

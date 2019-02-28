@@ -3,6 +3,7 @@
 **********************************************************/
 
 #include "test_output_logger.hpp"
+#include <stdlib.h>
 
 extern "C" {
 #include "mm_av_transmission.h"
@@ -13,7 +14,8 @@ extern "C" {
                        VARIABLES
 **********************************************************/
 
-static mm_activity_variable_t av_cache[MAX_AV_SIZE_X][MAX_AV_SIZE_Y];
+static mm_activity_variable_t ** av_cache;
+
 
 /**********************************************************
                        DECLARATIONS
@@ -42,7 +44,13 @@ static void log_av_ouput
  */
 void mm_av_transmission_init(void)
 {
-    memset(av_cache, 0, sizeof(av_cache));
+	av_cache = (mm_activity_variable_t **) malloc(mm_get_max_av_size_x() * sizeof(mm_activity_variable_t *));
+	for (uint8_t i = 0; i < mm_get_max_av_size_x(); i++)
+	{
+		av_cache[i] = (mm_activity_variable_t *) malloc(mm_get_max_av_size_y() * sizeof(mm_activity_variable_t));
+	}
+
+	memset(av_cache, 0, sizeof(av_cache));
 }
 
 /**
@@ -67,9 +75,9 @@ void mm_av_transmission_send_all_avs(void)
 {
     bool send_update = false;
 
-    for (uint8_t x = 0; x < MAX_AV_SIZE_X; ++x)
+    for (uint8_t x = 0; x < mm_get_max_av_size_x(); ++x)
     {
-        for (uint8_t y = 0; y < MAX_AV_SIZE_Y; ++y)
+        for (uint8_t y = 0; y < mm_get_max_av_size_y(); ++y)
         {
             if (AV(x, y) != av_cache[x][y])
             {

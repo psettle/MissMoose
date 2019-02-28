@@ -11,6 +11,7 @@ notes:
 **********************************************************/
 
 #include "mm_sensor_transmission.h"
+#include "mm_sensor_algorithm_config.h"
 
 /**********************************************************
                           TYPES
@@ -38,7 +39,7 @@ typedef struct
 /**
  * Initialize all sensor records to default values.
  */
-void init_sensor_records(void);
+void init_sensor_records(mm_sensor_algorithm_config_t const * config);
 
 /**
  * Fetch a detection record for a sensor, create one if needed.
