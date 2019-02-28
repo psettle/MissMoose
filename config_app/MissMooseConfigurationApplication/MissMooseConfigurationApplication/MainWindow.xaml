@@ -21,7 +21,8 @@
                 <ColumnDefinition Width="8*" MaxWidth="160"/>
                 <ColumnDefinition Width="*"  MaxWidth="20"/>
             </Grid.ColumnDefinitions>
-            <Label Content="Miss Moose" Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="20" FontWeight="Bold"/>
+
+            <Image Name="LogoImage" Source="/MissMooseConfigurationApplication;component/logo_transparent.png" Grid.Column="0" Grid.Row="0" Height="150" Margin="-10,-35,-10,0"/>
             <local:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="2" x:Name="ConfigPageButton" Margin="2,16,2,16" >Configure Nodes</local:PageSwitcherButton>
             <local:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="3" x:Name="SystemOverviewPageButton"  Margin="2,16,2,16" >System Overview</local:PageSwitcherButton>
 
