@@ -340,7 +340,7 @@ static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t stat
 */
 static void escalate_set(led_signalling_state_record_t * p_record, output_set_t const * escalate_to)
 {
-    for(uint16_t i = 0; i < (uint16_t) mm_get_max_av_size_x; ++i)
+    for(uint16_t i = 0; i < mm_get_max_av_size_x(); ++i)
     {
         escalate_output(&(p_record[i].current_av_state), escalate_to->states[i]);
     }

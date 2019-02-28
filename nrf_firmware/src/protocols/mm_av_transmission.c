@@ -34,7 +34,7 @@ notes:
 /**
     Initialize activity variable state transmission over ANT.
 */
-void mm_av_transmission_init(void) 
+void mm_av_transmission_init(void)
 {
     /**
      * TODO: Actual implementation! Adding this for
@@ -48,9 +48,9 @@ void mm_av_transmission_init(void)
  */
 void mm_av_transmission_send_all_avs(void)
 {
-    for (uint8_t x = 0; x < MAX_AV_SIZE_X; ++x)
+    for (uint8_t x = 0; x < mm_get_max_av_size_x(); ++x)
     {
-        for (uint8_t y = 0; y < MAX_AV_SIZE_Y; ++y)
+        for (uint8_t y = 0; y < mm_get_max_av_size_y(); ++y)
         {
             /* Get the region status for AV transmission... */
             activity_variable_state_t av_status = mm_get_status_for_av(&AV(x, y));
