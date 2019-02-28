@@ -295,16 +295,15 @@ static void on_monitoring_data_acknowledge(void* evt_data, uint16_t evt_size)
     ANT_MESSAGE * p_message = (ANT_MESSAGE *)evt->msg.evt_buffer;
     uint8_t const * payload = &p_message->ANT_MESSAGE_aucPayload[0];
 
+    if(QUEUE_EMPTY())
+    {
+        /* Nothing to acknowledge,
+         likely received an extra ack, or ack for a different message */
+        return;
+    }
     //If the ack is for the message type that was being broadcast, then it's an ack for the right message.
     if(payload[ACKED_PAGE_NUM_INDEX] == current_page_id())
     {
-        if(QUEUE_EMPTY())
-        {
-            /* Nothing to acknowledge, likely
-            received an extra ack. */
-            return;
-        }
-
         if(current_msg_id() == payload[MESSAGE_ID_INDEX])
         {
             /* If the message is acknowledging the current broadcast, switch to the next page. */

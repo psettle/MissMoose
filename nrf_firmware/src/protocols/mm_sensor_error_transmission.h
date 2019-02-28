@@ -2,9 +2,6 @@
 file: mm_sensor_error_transmission.h
 brief: Methods for transmitting led data to the monitoring application over ANT
 notes:
-
-Author: Elijah Pennoyer
-
 */
 #ifndef MM_SENSOR_ERROR_TRANSMISSION_H
 #define MM_SENSOR_ERROR_TRANSMISSION_H

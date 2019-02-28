@@ -2,8 +2,6 @@
 file: mm_sensor_error_transmission.c
 brief: Methods for transmitting sensor error data to the monitoring application over ANT
 notes:
-
-Author: Elijah Pennoyer
 */
 
 /**********************************************************
@@ -81,12 +79,12 @@ typedef struct
 /**
  * Adds a page to the error_transmission_queue.
  */
-static void add_page_to_queue(error_payload_t *error_payload, error_payload_state_t error_type);
+static void add_page_to_queue(error_payload_t const *error_payload);
 
 /**
  * Helper - checks that the node_id, sensor_type, and sensor_rotation match inside of an error_payload
  */
-static bool check_sensor_match(error_payload_t *error_payload1, error_payload_t *error_payload2);
+static bool check_sensor_match(error_payload_t const *error_payload1, error_payload_t const *error_payload2);
 
 /**
  * Broadcasts the next element of the error_transmission_queue that needs to be broadcast
@@ -147,6 +145,11 @@ void mm_sensor_error_transmission_send_hyperactivity_update
     )
 {
     error_payload_t error_payload;
+    error_payload.payload_state = HYPERACTIVE_ERROR;
+    error_payload.node_id = node_id;
+    error_payload.sensor_type = sensor_type;
+    error_payload.sensor_rotation = sensor_rotation;
+
     uint8_t *payload = &(error_payload.payload.data[0]);
 
     memset(&(error_payload), 0, sizeof(error_payload_t));
@@ -162,7 +165,7 @@ void mm_sensor_error_transmission_send_hyperactivity_update
     message_id++;
 
     //Update pages to be broadcast.
-    add_page_to_queue(&error_payload, HYPERACTIVE_ERROR);
+    add_page_to_queue(&error_payload);
 }
 
 void mm_sensor_error_transmission_send_inactivity_update
@@ -174,6 +177,11 @@ void mm_sensor_error_transmission_send_inactivity_update
     )
 {
     error_payload_t error_payload;
+    error_payload.payload_state = INACTIVE_ERROR;
+    error_payload.node_id = node_id;
+    error_payload.sensor_type = sensor_type;
+    error_payload.sensor_rotation = sensor_rotation;
+
     uint8_t *payload = &(error_payload.payload.data[0]);
 
     memset(&(error_payload), 0, sizeof(error_payload_t));
@@ -189,20 +197,18 @@ void mm_sensor_error_transmission_send_inactivity_update
     message_id++;
 
     //Update pages to be broadcast.
-    add_page_to_queue(&error_payload, INACTIVE_ERROR);
+    add_page_to_queue(&error_payload);
 }
 
-static void add_page_to_queue(error_payload_t *error_payload, error_payload_state_t error_type)
+static void add_page_to_queue(error_payload_t const *error_payload)
 {
     //Make sure the sensor isn't already in the queue. Need to check node_id, sensor_type, and sensor_rotation
     for(uint8_t i = 0; i < MAX_NUM_SENSORS; i++)
     {
         if(check_sensor_match(error_payload, &(error_trans_queue.queue[i]) ))
         {
-            // The sensor already exists in the queue. Update this error payload and 
-            // No need to change node_id, sensor_type, or sensor_rotation as they already exist. 
-            memcpy( &(error_trans_queue.queue[i].payload), error_payload, sizeof(error_payload_t));
-            error_trans_queue.queue[i].payload_state = error_type;
+            // The sensor already exists in the queue. Update this error payload. 
+            memcpy( &(error_trans_queue.queue[i]), error_payload, sizeof(error_payload_t));
             if(!message_being_broadcast)
             {
                 broadcast_next_page();
@@ -216,11 +222,7 @@ static void add_page_to_queue(error_payload_t *error_payload, error_payload_stat
     {
         if(error_trans_queue.queue[i].payload_state == INVALID) //If invalid, store payload here
         {
-            memcpy( &(error_trans_queue.queue[i].payload), &error_payload, sizeof(error_payload_t));
-            error_trans_queue.queue[i].node_id = error_payload->node_id;
-            error_trans_queue.queue[i].sensor_type = error_payload->sensor_type;
-            error_trans_queue.queue[i].sensor_rotation = error_payload->sensor_rotation;
-            error_trans_queue.queue[i].payload_state = error_type;
+            memcpy( &(error_trans_queue.queue[i]), &error_payload, sizeof(error_payload_t));
             if(!message_being_broadcast)
             {
                 broadcast_next_page();
@@ -233,7 +235,7 @@ static void add_page_to_queue(error_payload_t *error_payload, error_payload_stat
     APP_ERROR_CHECK(true);
 }
 
-static bool check_sensor_match(error_payload_t *error_payload1, error_payload_t *error_payload2)
+static bool check_sensor_match(error_payload_t const *error_payload1, error_payload_t const *error_payload2)
 {
     if
         (
