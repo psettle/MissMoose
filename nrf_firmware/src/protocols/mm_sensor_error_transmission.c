@@ -254,9 +254,15 @@ static bool check_sensor_match(error_payload_t const *error_payload1, error_payl
 
 static void broadcast_next_page(void)
 {    
-    // Check the current index. If the payload is not invalid, broadcast it. Otherwise, loop
-    // until you find the first valid payload, or until you reach the last_broadcast_index again!
-    uint8_t queue_index = error_trans_queue.last_broadcast_index;
+    // Check the next queue index after the current broadcast index. If the payload is not invalid, 
+    // broadcast it. Otherwise, loop until you find the first valid payload, 
+    // or until you reach the last_broadcast_index again!
+    uint8_t queue_index = error_trans_queue.last_broadcast_index + 1;
+    // Wrap queue index if necessary
+    if(queue_index == MAX_NUM_SENSORS) 
+    {
+        queue_index = 0;
+    }
     do 
     {
         if(error_trans_queue.queue[queue_index].payload_state != INVALID)
@@ -264,18 +270,23 @@ static void broadcast_next_page(void)
             // Broadcast found!
             // Remove pages of the last broadcast error type.
             error_payload_state_t last_error_type = error_trans_queue.queue[error_trans_queue.last_broadcast_index].payload_state;
-            if(last_error_type == HYPERACTIVE_ERROR)
+            switch(last_error_type)
             {
-                mm_ant_page_manager_remove_all_pages(HYPERACTIVITY_ERROR_STATUS_PAGE_NUM);
-            }
-            else if(last_error_type == INACTIVE_ERROR)
-            {
-                mm_ant_page_manager_remove_all_pages(INACTIVE_SENSOR_ERROR_STATUS_PAGE_NUM);
+                case HYPERACTIVE_ERROR:
+                    mm_ant_page_manager_remove_all_pages(HYPERACTIVITY_ERROR_STATUS_PAGE_NUM);
+                    break;
+                case INACTIVE_ERROR:
+                    mm_ant_page_manager_remove_all_pages(INACTIVE_SENSOR_ERROR_STATUS_PAGE_NUM);
+                    break;
+                default:
+                    // State unknown, this should not occur. 
+                    APP_ERROR_CHECK(true);
             }
 
             // Add new broadcast. Figure out the type of error.
             if(error_trans_queue.queue[queue_index].payload_state == HYPERACTIVE_ERROR)
             {
+                broadcast_error_message_page_num = HYPERACTIVITY_ERROR_STATUS_PAGE_NUM;
                 mm_ant_page_manager_add_page
                     (
                         HYPERACTIVITY_ERROR_STATUS_PAGE_NUM,
@@ -285,6 +296,7 @@ static void broadcast_next_page(void)
             }
             else if(error_trans_queue.queue[queue_index].payload_state == INACTIVE_ERROR)
             {
+                    broadcast_error_message_page_num = INACTIVE_SENSOR_ERROR_STATUS_PAGE_NUM;
                     mm_ant_page_manager_add_page
                     (
                         INACTIVE_SENSOR_ERROR_STATUS_PAGE_NUM,
@@ -305,7 +317,7 @@ static void broadcast_next_page(void)
             queue_index = 0;
         }
     }
-    while(queue_index != error_trans_queue.last_broadcast_index);
+    while(queue_index != error_trans_queue.last_broadcast_index + 1);
 
     // Have exited loop without finding a page to broadcast.
     message_being_broadcast = false;
@@ -314,8 +326,12 @@ static void broadcast_next_page(void)
 static bool id_matches_current_broadcast(uint8_t message_id)
 {
     //Check if the message ID matches the broadcast currently being sent
-    mm_ant_payload_t broadcasting_payload = error_trans_queue.queue[error_trans_queue.last_broadcast_index].payload;
-    if(broadcasting_payload.data[MESSAGE_ID_INDEX] == message_id)
+    error_payload_t const *broadcasting_payload = &(error_trans_queue.queue[error_trans_queue.last_broadcast_index]);
+    if
+        (
+            (broadcasting_payload->payload_state != INVALID) &&
+            (broadcasting_payload->payload.data[MESSAGE_ID_INDEX] == message_id)
+        )
     {
         return true;
     }
