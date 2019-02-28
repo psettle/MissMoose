@@ -127,7 +127,7 @@ void mm_led_transmission_send_led_update
     led_colours_t current_led_colour
     )
 {
-    //Get a pointer to the relevant activity variable broadcast struct
+    //Get a pointer to the relevant led output broadcast struct
     led_output_page_broadcast_t * led_output_broadcast = get_led_broadcast(node_id); 
     led_output_broadcast->node_id = node_id;
     uint8_t* payload = &(led_output_broadcast->led_output_page_payload.data[0]);
@@ -224,8 +224,8 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size)
     ANT_MESSAGE * p_message = (ANT_MESSAGE *)evt->msg.evt_buffer;
     uint8_t const * payload = &p_message->ANT_MESSAGE_aucPayload[0];
 
-    // Make sure that ACKED_PAGE_NUM_INDEX is correct - Should match REGION_ACTIVITY_VARIABLE_PAGE_NUM
-    if(payload[ACKED_PAGE_NUM_INDEX] == MESSAGE_ACKNOWLEDGEMENT_PAGE_NUM)
+    // Make sure that ACKED_PAGE_NUM_INDEX is correct - Should match LED_OUTPUT_STATUS_PAGE_NUM
+    if(payload[ACKED_PAGE_NUM_INDEX] == LED_OUTPUT_STATUS_PAGE_NUM)
     {
         // Get the message ID and search for the relevant broadcast.
         for(uint8_t i = 0; i < MAX_NUM_LED_NODES; i++)
