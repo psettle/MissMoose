@@ -210,6 +210,8 @@ static void external_init(void)
 #ifdef MM_BLAZE_GATEWAY
     /* Init LED output transmission over ant. */
     mm_led_transmission_init();
+    /* Init sensor error transmission over ant. */
+    mm_sensor_error_transmission_init();
     /* Init sensor data processing now that data can be transmitted. */
     mm_sensor_algorithm_init();
 	/* Init AV output transmission over ant now that the sensor algorithm is up and running. */

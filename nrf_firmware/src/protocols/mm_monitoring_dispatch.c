@@ -36,6 +36,8 @@ notes:
 #define LIDAR_REGION_DETECTED_INDEX             ( 7 )
 #define PIR_DETECTION_INDEX                     ( 5 )
 
+#define ACKED_PAGE_NUM_INDEX                    ( 2 )
+
 #define TEST_MODE                               ( false )
 #define TEST_MODE_PERIOD_MS                     ( 200 )
 #define TEST_MODE_TICKS                         ( APP_TIMER_TICKS(TEST_MODE_PERIOD_MS) )
@@ -293,17 +295,21 @@ static void on_monitoring_data_acknowledge(void* evt_data, uint16_t evt_size)
     ANT_MESSAGE * p_message = (ANT_MESSAGE *)evt->msg.evt_buffer;
     uint8_t const * payload = &p_message->ANT_MESSAGE_aucPayload[0];
 
-    if(QUEUE_EMPTY())
+    //If the ack is for the message type that was being broadcast, then it's an ack for the right message.
+    if(payload[ACKED_PAGE_NUM_INDEX] == current_page_id())
     {
-        /* Nothing to acknowledge, likely
-           received an extra ack. */
-        return;
-    }
+        if(QUEUE_EMPTY())
+        {
+            /* Nothing to acknowledge, likely
+            received an extra ack. */
+            return;
+        }
 
-    if(current_msg_id() == payload[MESSAGE_ID_INDEX])
-    {
-        /* If the message is acknowledging the current broadcast, switch to the next page. */
-        broadcast_new_page();
+        if(current_msg_id() == payload[MESSAGE_ID_INDEX])
+        {
+            /* If the message is acknowledging the current broadcast, switch to the next page. */
+            broadcast_new_page();
+        }
     }
 }
 
