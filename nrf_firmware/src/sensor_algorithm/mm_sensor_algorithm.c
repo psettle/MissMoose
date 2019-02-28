@@ -102,6 +102,7 @@ void mm_sensor_algorithm_init(mm_sensor_algorithm_config_t const * config)
     mm_activity_variables_init(config);
     mm_activity_variable_growth_init(config);
     mm_led_strip_states_init(config);
+	mm_activity_variable_drain_init(config);
 
     /* Register for sensor data with sensor_transmission.h */
     mm_sensor_transmission_register_sensor_data(sensor_data_evt_handler);

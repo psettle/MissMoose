@@ -81,6 +81,10 @@ static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set);
 void mm_activity_variable_growth_init(mm_sensor_algorithm_config_t const * config)
 {
 	sensor_algorithm_config = config;
+
+	set_lidar_sensor_algorithm_config(config);
+	set_pir_sensor_algorithm_config(config);
+
 	init_sensor_records(config);
 }
 

@@ -38,7 +38,7 @@ static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
  * Sets the sensor algorithm configuration constants. Should never
  * be called more than once.
  */
-void mm_set_activity_variable_drain_config(mm_sensor_algorithm_config_t const * config)
+void mm_activity_variable_drain_init(mm_sensor_algorithm_config_t const * config)
 {
 	sensor_algorithm_config = config;
 }
