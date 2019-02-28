@@ -90,6 +90,9 @@
     <ClCompile Include="test_framework\test_cases\tests_one_animal_constant_speed.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_framework\test_cases\test_one_animal_in_out.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_framework\mocked_interfaces\app_error.h">

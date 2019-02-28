@@ -139,6 +139,7 @@
     <ClCompile Include="test_framework\test_cases\test_hyperactive_inactive.cpp" />
     <ClCompile Include="test_framework\test_cases\test_basic_sensor_activity.cpp" />
     <ClCompile Include="test_framework\test_cases\test_demo.cpp" />
+    <ClCompile Include="test_framework\test_cases\test_one_animal_in_out.cpp" />
     <ClCompile Include="test_framework\test_runner\test_output.cpp" />
     <ClCompile Include="test_framework\test_runner\test_runner.cpp" />
     <ClCompile Include="test_framework\util\sensor_evt_utils.cpp" />
