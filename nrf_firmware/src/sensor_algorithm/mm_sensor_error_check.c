@@ -226,13 +226,13 @@ static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t min
             record->t_last_detection = minute_count;
             record->is_inactive = false;
             // No longer inactive, send an update to the monitoring application.
-            mm_sensor_error_transmission_send_inactivity_update
-                (
-                    record->sensor.node_id,
-                    record->sensor.sensor_type,
-                    record->sensor.sensor_rotation,
-                    record->is_inactive
-                );
+            // mm_sensor_error_transmission_send_inactivity_update
+            //     (
+            //         record->sensor.node_id,
+            //         record->sensor.sensor_type,
+            //         record->sensor.sensor_rotation,
+            //         record->is_inactive
+            //     );
             return;
         }
     }
@@ -257,6 +257,7 @@ static void force_exist_inactive_sensor_records(mm_node_position_t const * posit
         memset(&sensor, 0, sizeof(sensor));
         sensor.node_id = position->node_id;
         sensor.sensor_rotation = node_sensor_rotations[i];
+		sensor.sensor_type = SENSOR_TYPE_PIR;
 
         force_exist_inactive_sensor_record(&sensor, minute_count);
     }
@@ -294,6 +295,13 @@ static void force_exist_inactive_sensor_record(sensor_def_t const * sensor, uint
     empty_record->is_valid = true;
     empty_record->is_inactive = false;
     empty_record->t_last_detection = minute_count; /* Save the current timestamp so it is not immedietly hyperactive. */
+                mm_sensor_error_transmission_send_inactivity_update
+                (
+                    sensor->node_id,
+                    sensor->sensor_type,
+                    sensor->sensor_rotation,
+                    true
+                );
 }
 
 /**
