@@ -21,14 +21,14 @@
 
 int main()
 {
-    std::vector<test_case_cb> tests;
-    std::vector<std::string> test_names;
+    std::vector<TestCase> tests;
 
-    test_demo_add_tests(tests, test_names);
-    test_basic_sensor_activity_add_tests(tests, test_names);
-    test_hyperactive_inactive_add_tests(tests, test_names);
+    test_basic_sensor_activity_add_tests(tests);
+    test_hyperactive_inactive_add_tests(tests);
+    test_one_animal_constant_speed_add_tests(tests);
+    test_one_animal_in_out_add_tests(tests);
 
-    test_runner_init(tests, test_names, "");
+    test_runner_init(tests);
 
     return 0;
 }

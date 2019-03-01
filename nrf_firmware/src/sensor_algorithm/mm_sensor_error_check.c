@@ -238,7 +238,7 @@ static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t min
     }
 
     /* If we got here, there was no record for that sensor, but there should be a record for all sensors */
-    APP_ERROR_CHECK(true);
+    // APP_ERROR_CHECK(true);
 }
 
 /**
