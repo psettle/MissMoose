@@ -6,6 +6,16 @@
              xmlns:local="clr-namespace:MissMooseConfigurationApplication"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="450">
+    
+    <UserControl.Resources>
+        <Storyboard x:Key="Blink">
+            <DoubleAnimation Storyboard.TargetName="OuterRing"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0" To="1" Duration="0:0:0.5"
+                             AutoReverse="True" RepeatBehavior="Forever" />
+        </Storyboard>
+    </UserControl.Resources>
+    
     <Grid>
         <Ellipse
           Name="PIR_0_Deg" Width="200" Height="200"
@@ -13,6 +23,17 @@
           Stroke="White" Fill="White" Margin="125,0,125,250">
             <Ellipse.Clip>
                 <RectangleGeometry Rect="0,0,200,100"/>
+            </Ellipse.Clip>
+        </Ellipse>
+
+        <Ellipse
+          Name="PIR_90_Deg"
+          Width="200" Height="200"
+          Canvas.Left="20" Canvas.Top="0" Stretch="Fill" 
+          Stroke="White" Fill="White" Margin="250,125,0,125"
+          Visibility="Hidden">
+            <Ellipse.Clip>
+                <RectangleGeometry Rect="100,0,100,200"/>
             </Ellipse.Clip>
         </Ellipse>
 
@@ -27,17 +48,29 @@
             </Ellipse.Clip>
         </Ellipse>
 
-        <Polygon Name="Lidar_270_Deg" Fill="Black" Points="0,30 100,0 100,200 0,170 0,130 50,100 0,70" Margin="0,125,0,0"/>
+        <Polygon Name="Lidar_0_Deg" Fill="Black" Points="0,30 100,0 100,200 0,170 0,130 50,100 0,70" Margin="0,0,350,250" Visibility="Hidden">
+            <Polygon.RenderTransform>
+                <TransformGroup>
+                    <RotateTransform Angle="90"/>
+                    <TranslateTransform X="325"/>
+                </TransformGroup>
+            </Polygon.RenderTransform>
+        </Polygon>
 
+        <Ellipse Name="OuterRingBoder" Fill="Black" Height="310" Width="310"/>
         <Ellipse Name="OuterRing" Fill="Blue" Height="300" Width="300" />
-        <Ellipse Name="Border" Fill="DarkGray" Height="260" Width="260" />
+        <Ellipse Name="Border" Fill="Black" Height="260" Width="260" />
         <Ellipse Name="InnerRing" Fill="DarkGray" Height="250" Width="250" />
+        <Ellipse Name="InnerRingBorder" Fill="DarkGray" Height="210" Width="210" />
         <Ellipse Name="InnerCircle" Fill="DarkGray" Height="200" Width="200" />
 
         <Label Name="NodeIDLabel" Content="X" Foreground="White" FontSize="120" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Label Name="NodeGatewayLabel" Content="G" Foreground="White" FontSize="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,185,0,0" FontWeight="Bold">
+            <Label.Effect>
+                <DropShadowEffect ShadowDepth="6" BlurRadius="10" Direction="300"/>
+            </Label.Effect>
+        </Label>
         <Button Name="Button" Opacity="0"></Button>
-
-
         
     </Grid>
 

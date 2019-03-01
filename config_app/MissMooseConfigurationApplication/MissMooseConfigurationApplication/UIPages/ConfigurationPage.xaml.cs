@@ -17,12 +17,23 @@ namespace MissMooseConfigurationApplication.UIPages
 
         private const int GridSize = 3;
         private const int OffsetScalePixels = 10;
+        private const int OffsetScaleCentimeters = 5;
 
         private Viewbox ActiveViewbox = null;
         #endregion
 
         #region Public Members
         public List<SensorNode> nodes { get; private set; } = new List<SensorNode>();
+
+        // Indicates whether there is currently a node in the "new node" box
+        public bool NewNodeBoxFull
+        {
+            get
+            {
+                return this.IsInitialized && NewSensorViewbox.Child != null ? true : false;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -32,12 +43,6 @@ namespace MissMooseConfigurationApplication.UIPages
             InitializeComponent();
             InitializeViewboxes();
             InitializePulses();
-            ClockwiseButton.Button.Click += RotateClockwise_Click;
-            CounterClockwiseButton.Button.Click += RotateCounterClockwise_Click;
-            UpButton.Button.Click += DirectionClick;
-            DownButton.Button.Click += DirectionClick;
-            RightButton.Button.Click += DirectionClick;
-            LeftButton.Button.Click += DirectionClick;
 
             AntControl.Instance.AddConfigUI(this);
         }
@@ -47,7 +52,7 @@ namespace MissMooseConfigurationApplication.UIPages
             NewSensorViewbox.Child = null;
             NewSensorViewbox.Child = node;
             node.Button.Click += NodeClick;
-            NewNodeLabel.Content = "Unconfigured Node";
+            NewNodeLabel.Content = "New Node!";
             SetActiveViewbox(NewSensorViewbox);
         }
 
@@ -127,18 +132,32 @@ namespace MissMooseConfigurationApplication.UIPages
             {
                 foreach(var v in list)
                 {
-                    v.Opacity = 0.8;
+                    v.Opacity = 0.7;
+                    // See if there's actually a sensornode on this child
+                    if (v.Child != null)
+                    {
+                        ((SensorNode)v.Child).UseInactivePalette();
+                    }
                 }
             }
 
-            NewSensorViewbox.Opacity = 0.8;
-
+            NewSensorViewbox.Opacity = 0.7;
+            if (NewSensorViewbox.Child != null)
+            {
+                ((SensorNode)NewSensorViewbox.Child).UseInactivePalette();
+            }
             ActiveViewbox = newActive;
+            if (ActiveViewbox.Child != null)
+            {
+                ((SensorNode)ActiveViewbox.Child).UseActivePalette();
+            }
             ActiveViewbox.Opacity = 1.0f;
 
             var node = ActiveViewbox.Child as SensorNode;
 
             NodeNameLabel.Content = "Node " + node.NodeID;
+            XOffsetText.NumberField.Content = node.xoffset * OffsetScaleCentimeters;
+            YOffsetText.NumberField.Content = node.yoffset * OffsetScaleCentimeters;
         }
 
         private void TransferNode(Viewbox source, Viewbox destination)
@@ -153,14 +172,14 @@ namespace MissMooseConfigurationApplication.UIPages
 
             if(source == NewSensorViewbox)
             {
-                NewNodeLabel.Content = "Unconfigured Node";
+                NewNodeLabel.Content = "New Node!";
                 nodes.Add(node);
             }
 
             SetNodeRotation(destination, node.Rotation);
             UpdatePulseStates();
 
-            int row, col;
+            sbyte row, col;
             for(row = 0; row < GridSize; ++row)
             {
                 for (col = 0; col < GridSize; ++col)
@@ -175,10 +194,10 @@ namespace MissMooseConfigurationApplication.UIPages
             }
         }
 
-        private void SetNodeRotation(Viewbox viewbox, NodeRotation rotation)
+        private void SetNodeRotation(Viewbox viewbox, Rotation rotation)
         {
             SensorNode node = viewbox.Child as SensorNode;
-            node.Rotation = new NodeRotation(rotation.Val);
+            node.Rotation = new Rotation(rotation.Val);
 
             var r = viewbox.RenderTransform as RotateTransform;
             r.Angle = rotation.Val;
@@ -303,7 +322,7 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             var node = ActiveViewbox.Child as SensorNode;
-            node.Rotation.Add(NodeRotation.R90);
+            node.Rotation.Add(Rotation.R90);
 
             SetNodeRotation(ActiveViewbox, node.Rotation);
         }
@@ -316,7 +335,7 @@ namespace MissMooseConfigurationApplication.UIPages
             }
 
             var node = ActiveViewbox.Child as SensorNode;
-            node.Rotation.Add(-NodeRotation.R90);
+            node.Rotation.Add(-Rotation.R90);
 
             SetNodeRotation(ActiveViewbox, node.Rotation);
         }
@@ -332,28 +351,28 @@ namespace MissMooseConfigurationApplication.UIPages
 
             AddViewboxOffset(ActiveViewbox, -node.xoffset, -node.yoffset);
 
-            if (sender == UpButton.Button)
+            if (sender == UpButton)
             {
                 if (node.yoffset < SensorNode.MaxOffset)
                 {
                     node.yoffset++;
                 }
             }
-            else if(sender == DownButton.Button)
+            else if(sender == DownButton)
             {
                 if (node.yoffset > -SensorNode.MaxOffset)
                 {
                     node.yoffset--;
                 }
             }
-            else if(sender == LeftButton.Button)
+            else if(sender == LeftButton)
             {
                 if (node.xoffset > -SensorNode.MaxOffset)
                 {
                     node.xoffset--;
                 }
             }
-            else if(sender == RightButton.Button)
+            else if(sender == RightButton)
             {
                 if (node.xoffset < SensorNode.MaxOffset)
                 {
@@ -372,6 +391,22 @@ namespace MissMooseConfigurationApplication.UIPages
             margin.Left += offsetx * OffsetScalePixels;
             margin.Right -= offsetx * OffsetScalePixels;
             viewbox.Margin = margin;
+
+            YOffsetText.NumberField.Content = (offsety * OffsetScaleCentimeters);
+            XOffsetText.NumberField.Content = (offsetx * OffsetScaleCentimeters);
+        }
+
+        private void ResetOffsetClick(object sender, RoutedEventArgs e)
+        {
+            if (ActiveViewbox == null || ActiveViewbox.Child == null || ActiveViewbox == NewSensorViewbox)
+            {
+                return;
+            }
+
+            var node = ActiveViewbox.Child as SensorNode;
+            AddViewboxOffset(ActiveViewbox, -node.xoffset, -node.yoffset);
+            node.yoffset = 0;
+            node.xoffset = 0;
         }
 
         #endregion

@@ -459,6 +459,23 @@
 #define APP_FIFO_ENABLED 0
 #endif
 
+//==========================================================
+// <e> APP_SCHEDULER_ENABLED - app_scheduler - Events scheduler
+//==========================================================
+#ifndef APP_SCHEDULER_ENABLED
+#define APP_SCHEDULER_ENABLED 1
+#endif
+
+#if  APP_SCHEDULER_ENABLED
+// <q> APP_SCHEDULER_WITH_PAUSE  - Enabling pause feature
+
+
+#ifndef APP_SCHEDULER_WITH_PAUSE
+#define APP_SCHEDULER_WITH_PAUSE 0
+#endif
+
+#endif
+
 // <e> APP_TIMER_ENABLED - app_timer - Application timer functionality
 //==========================================================
 #ifndef APP_TIMER_ENABLED
@@ -607,6 +624,13 @@
 
 #ifndef HARDFAULT_HANDLER_ENABLED
 #define HARDFAULT_HANDLER_ENABLED 1
+#endif
+
+// <q> LOW_POWER_PWM_ENABLED  - low_power_pwm - low_power_pwm module
+
+
+#ifndef LOW_POWER_PWM_ENABLED
+#define LOW_POWER_PWM_ENABLED 1
 #endif
 
 // </h>

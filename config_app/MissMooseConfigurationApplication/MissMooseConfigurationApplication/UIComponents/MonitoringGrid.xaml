@@ -7,35 +7,59 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <Line Name="Line_0_0_Down" X1="50" Y1="50" X2="50" Y2="125" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_0_1_Up"   X1="50" Y1="125" X2="50" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_0_1_Down" X1="50" Y1="200" X2="50" Y2="275" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_0_2_Up"   X1="50" Y1="275" X2="50" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_0_0_Down" X1="50" Y1="50" X2="50" Y2="125" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_0_1_Up"   X1="50" Y1="125" X2="50" Y2="200" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_0_1_Down" X1="50" Y1="200" X2="50" Y2="275" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_0_2_Up"   X1="50" Y1="275" X2="50" Y2="350" Thickness="10" isVertical="true" Visibility="Hidden"/>
 
-        <Line Name="Line_1_0_Down" X1="250" Y1="50" X2="250" Y2="125" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_1_1_Up"   X1="250" Y1="125" X2="250" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_1_1_Down" X1="250" Y1="200" X2="250" Y2="275" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_1_2_Up"   X1="250" Y1="275" X2="250" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_1_0_Down" X1="250" Y1="50" X2="250" Y2="125" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_1_1_Up"   X1="250" Y1="125" X2="250" Y2="200" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_1_1_Down" X1="250" Y1="200" X2="250" Y2="275" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_1_2_Up"   X1="250" Y1="275" X2="250" Y2="350" Thickness="10" isVertical="true" Visibility="Hidden"/>
 
-        <Line Name="Line_2_0_Down" X1="450" Y1="50" X2="450" Y2="125" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_2_1_Up"   X1="450" Y1="125" X2="450" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_2_1_Down" X1="450" Y1="200" X2="450" Y2="275" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_2_2_Up"   X1="450" Y1="275" X2="450" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_2_0_Down" X1="450" Y1="50" X2="450" Y2="125" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_2_1_Up"   X1="450" Y1="125" X2="450" Y2="200" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_2_1_Down" X1="450" Y1="200" X2="450" Y2="275" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_2_2_Up"   X1="450" Y1="275" X2="450" Y2="350" Thickness="10" isVertical="true" Visibility="Hidden"/>
 
-        <Line Name="Line_0_0_Right" X1="50" Y1="50" X2="150" Y2="50" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_1_0_Left"  X1="150" Y1="50" X2="250" Y2="50" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_1_0_Right" X1="250" Y1="50" X2="350" Y2="50" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_2_0_Left"  X1="350" Y1="50" X2="450" Y2="50" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_0_0_Right" X1="50" Y1="50" X2="150" Y2="50" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_1_0_Left"  X1="150" Y1="50" X2="250" Y2="50" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_1_0_Right" X1="250" Y1="50" X2="350" Y2="50" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_2_0_Left"  X1="350" Y1="50" X2="450" Y2="50" Thickness="10" isVertical="false" Visibility="Hidden"/>
 
-        <Line Name="Line_0_1_Right" X1="50" Y1="200" X2="150" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_1_1_Left"  X1="150" Y1="200" X2="250" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_1_1_Right" X1="250" Y1="200" X2="350" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_2_1_Left"  X1="350" Y1="200" X2="450" Y2="200" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_0_1_Right" X1="50" Y1="200" X2="150" Y2="200" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_1_1_Left"  X1="150" Y1="200" X2="250" Y2="200" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_1_1_Right" X1="250" Y1="200" X2="350" Y2="200" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_2_1_Left"  X1="350" Y1="200" X2="450" Y2="200" Thickness="10" isVertical="false" Visibility="Hidden"/>
 
-        <Line Name="Line_0_2_Right" X1="50" Y1="350" X2="150" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_1_2_Left"  X1="150" Y1="350" X2="250" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_1_2_Right" X1="250" Y1="350" X2="350" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
-        <Line Name="Line_2_2_Left"  X1="350" Y1="350" X2="450" Y2="350" Stroke="Black" StrokeThickness="10" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_0_2_Right" X1="50" Y1="350" X2="150" Y2="350" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_1_2_Left"  X1="150" Y1="350" X2="250" Y2="350" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_1_2_Right" X1="250" Y1="350" X2="350" Y2="350" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_2_2_Left"  X1="350" Y1="350" X2="450" Y2="350" Thickness="10" isVertical="false" Visibility="Hidden"/>
+
+        <Path Name="Rectangle_0_0" Panel.ZIndex="-1" Opacity="0.35">
+            <Path.Data>
+                <RectangleGeometry Rect="50,50,200,150" />
+            </Path.Data>
+        </Path>
+
+        <Path Name="Rectangle_0_1" Panel.ZIndex="-1" Opacity="0.35">
+            <Path.Data>
+                <RectangleGeometry Rect="250,50,200,150" />
+            </Path.Data>
+        </Path>
+
+        <Path Name="Rectangle_1_0" Panel.ZIndex="-1" Opacity="0.35">
+            <Path.Data>
+                <RectangleGeometry Rect="50,200,200,150" />
+            </Path.Data>
+        </Path>
+
+        <Path Name="Rectangle_1_1" Panel.ZIndex="-1" Opacity="0.35">
+            <Path.Data>
+                <RectangleGeometry Rect="250,200,200,150" />
+            </Path.Data>
+        </Path>
 
         <Viewbox Name="SensorViewbox_0_0" Width="100" Height="100" Stretch="Fill" Margin="0,0,400,300">
             <Viewbox.RenderTransform>

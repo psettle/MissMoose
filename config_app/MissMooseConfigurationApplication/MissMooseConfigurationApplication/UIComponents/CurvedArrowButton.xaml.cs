@@ -18,8 +18,19 @@ namespace MissMooseConfigurationApplication
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class CurvedArrowButton : UserControl
+    public partial class CurvedArrowButton : Button
     {
+        public bool IsCounterClockwise
+        {
+            set
+            {
+                if (value)
+                {
+                    ArrowImage.Source = new BitmapImage(new Uri(@"/MissMooseConfigurationApplication;component/counter_clockwise_curved_arrow_tranparent.png", UriKind.Relative));
+                }
+            }
+        }
+
         public CurvedArrowButton()
         {
             InitializeComponent();

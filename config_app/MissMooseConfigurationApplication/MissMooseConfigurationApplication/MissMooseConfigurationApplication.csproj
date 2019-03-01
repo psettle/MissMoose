@@ -81,14 +81,29 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AntControl\AntControl.cs" />
+    <Compile Include="AntControl\ChannelManager.cs" />
+    <Compile Include="AntControl\NodeConfigurationData.cs" />
+    <Compile Include="AntControl\PageHandler.cs" />
+    <Compile Include="ANTDataPages\ErrorStatusAckPage.cs" />
+    <Compile Include="ANTDataPages\HyperactivityErrorStatusPage.cs" />
+    <Compile Include="ANTDataPages\BaseErrorStatusPage.cs" />
+    <Compile Include="ANTDataPages\InactiveSensorErrorStatusPage.cs" />
+    <Compile Include="ANTDataPages\RegionActivityVariablePage.cs" />
+    <Compile Include="ANTDataPages\LidarMonitoringPage.cs" />
+    <Compile Include="ANTDataPages\MonitoringDataAckPage.cs" />
+    <Compile Include="ANTDataPages\LedOutputStatusPage.cs" />
+    <Compile Include="ANTDataPages\PirMonitoringPage.cs" />
     <Compile Include="ANTDataPages\PositionConfigurationCommandPage.cs" />
-    <Compile Include="Utils\ANTUtils\PageSender.cs" />
-    <Compile Include="Utils\ANTUtils\PageParser.cs" />
+    <Compile Include="AntControl\PageSender.cs" />
+    <Compile Include="AntControl\PageParser.cs" />
     <Compile Include="UIComponents\ArrowButton.xaml.cs">
       <DependentUpon>ArrowButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="UIComponents\ConfigurationGrid.xaml.cs">
       <DependentUpon>ConfigurationGrid.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UIComponents\LineWithBorder.xaml.cs">
+      <DependentUpon>LineWithBorder.xaml</DependentUpon>
     </Compile>
     <Compile Include="UIComponents\MonitoringGrid.xaml.cs">
       <DependentUpon>MonitoringGrid.xaml</DependentUpon>
@@ -148,6 +163,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UIComponents\ConfigurationGrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UIComponents\LineWithBorder.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -236,7 +255,8 @@
     <Content Include="ANT_WrappedLib.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Resource Include="curved_arrow_tranparent.png" />
+    <Resource Include="clockwise_curved_arrow_tranparent.png" />
+    <Resource Include="counter_clockwise_curved_arrow_tranparent.png" />
     <Content Include="DSI_CP210xManufacturing_3_1.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

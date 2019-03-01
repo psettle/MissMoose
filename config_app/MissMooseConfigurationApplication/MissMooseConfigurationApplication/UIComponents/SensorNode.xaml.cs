@@ -9,6 +9,8 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -23,11 +25,32 @@ namespace MissMooseConfigurationApplication
         PirLidarLed,
     }
 
+    public enum SensorType : byte
+    {
+        Pir,
+        Lidar,
+    }
+
+    public enum LedFunction : byte
+    {
+        Off,
+        Blinking,
+        Continuous,
+    }
+
+    public enum LedColourEnum : byte
+    {
+        Yellow,
+        Red,
+    }
+
     public class LedColour
     {
         public static readonly Brush Red = Brushes.Red;
         public static readonly Brush Yellow = Brushes.Yellow;
         public static readonly Brush Green = Brushes.Green;
+        public static readonly Brush Blue = Brushes.Blue;
+        public static readonly Brush Disabled = Brushes.Gray;
     }
 
     public class StatusColour
@@ -35,13 +58,14 @@ namespace MissMooseConfigurationApplication
         public static readonly Brush Red = Brushes.Red;
         public static readonly Brush Yellow = Brushes.Yellow;
         public static readonly Brush Blue = Brushes.Blue;
+        public static readonly Brush Disabled = Brushes.Gray;
     }
 
-    public class NodeRotation
+    public class Rotation
     {
         public double Val { get; private set; }
 
-        public NodeRotation(double val)
+        public Rotation(double val)
         {
             Val = val;
         }
@@ -60,7 +84,7 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public void Add(NodeRotation val)
+        public void Add(Rotation val)
         {
             Add(val.Val);
         }
@@ -153,61 +177,140 @@ namespace MissMooseConfigurationApplication
     {
         #region Public Members
         public const int MaxOffset = 5;
+        public const int OffsetScale = 10;
 
-        public int NodeID { get; }
+        public ushort DeviceNumber { get; }
 
-        public NodeRotation Rotation { get; set; } = new NodeRotation(NodeRotation.R0);
+        public ushort NodeID { get; }
 
-        public int xpos { get; set; } = -1;
-        public int ypos { get; set; } = -1;
+        public Rotation Rotation { get; set; } = new Rotation(Rotation.R0);
 
-        public int xoffset { get; set; } = 0;
-        public int yoffset { get; set; } = 0;
+        public sbyte xpos { get; set; } = -1;
+        public sbyte ypos { get; set; } = -1;
+
+        public sbyte xoffset { get; set; } = 0;
+        public sbyte yoffset { get; set; } = 0;
         public HardwareConfiguration configuration { get; private set; }
-		
+
+        public bool isgateway
+        {
+            get
+            {
+                return isGateway;
+            }
+            set
+            {
+                isGateway = value;
+                NodeGatewayLabel.Visibility = isGateway ? Visibility.Visible : Visibility.Hidden;
+            }
+        }
+
         #endregion
 
         #region Private Members
 
+        private LedFunction ledFunction;
         private Brush ledColour;
         private Brush statusColour;
+        private bool isGateway;
+
         #endregion
 
         #region Public Methods
 
-        public SensorNode(HardwareConfiguration configuration, int NodeID)
+        public SensorNode(ushort deviceNumber, HardwareConfiguration configuration, ushort NodeID, bool IsGateway)
         {
             InitializeComponent();
 
+            this.DeviceNumber = deviceNumber;
             this.configuration = configuration;
             this.NodeID = NodeID;
             NodeIDLabel.Content = NodeID;
+            isgateway = IsGateway;
 
-            switch(configuration)
+            switch (configuration)
             {
                 case HardwareConfiguration.Pir2:
                     PIR_0_Deg.Visibility = Visibility.Visible;
+                    PIR_90_Deg.Visibility = Visibility.Hidden;
                     PIR_270_Deg.Visibility = Visibility.Visible;
-                    Lidar_270_Deg.Visibility = Visibility.Hidden;
+                    Lidar_0_Deg.Visibility = Visibility.Hidden;
                     break;
                 case HardwareConfiguration.PirLidar:
                 case HardwareConfiguration.PirLidarLed:
-                    PIR_0_Deg.Visibility = Visibility.Visible;
+                    PIR_0_Deg.Visibility = Visibility.Hidden;
+                    PIR_90_Deg.Visibility = Visibility.Visible;
                     PIR_270_Deg.Visibility = Visibility.Hidden;
-                    Lidar_270_Deg.Visibility = Visibility.Visible;
+                    Lidar_0_Deg.Visibility = Visibility.Visible;
+                    if (configuration == HardwareConfiguration.PirLidarLed)
+                    {
+                        InnerRingBorder.Fill = Brushes.Black;
+                    }
                     break;
             }
 
             SetStatusColour(StatusColour.Blue);
-            SetLedColour(LedColour.Green);
+            SetLedFunction(LedFunction.Off);
+            SetLedColour(LedColour.Blue);
         }
 
-        public void SetLedColour(Brush colour)
+        public bool SetLedFunction(LedFunction ledFunction)
         {
-            if(configuration == HardwareConfiguration.PirLidarLed)
+            if (this.ledFunction != ledFunction)
+            {
+                this.ledFunction = ledFunction;
+
+                Storyboard sb = (Storyboard)this.FindResource("Blink");
+                if (ledFunction == LedFunction.Blinking)
+                {
+                    sb.Begin();
+                }
+                else
+                {
+                    sb.Stop();
+                }
+
+                if (ledFunction == LedFunction.Off)
+                {
+                    SetLedColour(LedColour.Blue);
+                }
+
+                // The function was changed
+                return true;
+            }
+
+            // The function was not changed
+            return false;
+        }
+
+        public bool SetLedColour(Brush colour)
+        {
+            if(configuration == HardwareConfiguration.PirLidarLed
+                && colour != this.ledColour
+                && (ledFunction != LedFunction.Off || colour == LedColour.Blue))
             {
                 ledColour = colour;
                 OuterRing.Fill = colour;
+
+                // The colour was changed
+                return true;
+            }
+
+            // The colour was not changed
+            return false;
+        }
+
+        public bool SetLedColour(LedColourEnum colour)
+        {
+            switch (colour)
+            {
+                case LedColourEnum.Yellow:
+                    return SetLedColour(LedColour.Yellow);
+                case LedColourEnum.Red:
+                    return SetLedColour(LedColour.Red);
+                default:
+                    // Do nothing
+                    return false;
             }
         }
 
@@ -231,18 +334,45 @@ namespace MissMooseConfigurationApplication
 
         public SensorNode Clone()
         {
-            var node = new SensorNode(configuration, NodeID)
+            var node = new SensorNode(DeviceNumber, configuration, NodeID, isgateway)
             {
                 xoffset = xoffset,
                 yoffset = yoffset,
                 xpos = xpos,
                 ypos = ypos,
-                Rotation = new NodeRotation(Rotation.Val)
+                Rotation = new Rotation(Rotation.Val)
             };
+            node.SetLedFunction(ledFunction);
             node.SetLedColour(ledColour);
             node.SetStatusColour(statusColour);
 
             return node;
+        }
+
+        /// <summary>
+        /// Change to a set of visual properties that make the node look active
+        /// </summary>
+        public void UseActivePalette()
+        {
+            InnerCircle.Fill = Brushes.DarkGray;
+            Effect = new DropShadowEffect
+            {
+                Color = new Color { A = 255, R = 125, G = 125, B = 125 },
+                Direction = 320,
+                ShadowDepth = 10,
+                Opacity = 10
+            };
+            NodeIDLabel.Foreground = Brushes.White;
+        }
+
+        /// <summary>
+        /// Change to a set of visual properties that make the node look inactive
+        /// </summary>
+        public void UseInactivePalette()
+        {
+            InnerCircle.Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#b2b2b2"));
+            Effect = null;
+            NodeIDLabel.Foreground = Brushes.DarkSlateGray;
         }
 
         #endregion
