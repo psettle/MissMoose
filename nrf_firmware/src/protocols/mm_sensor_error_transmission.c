@@ -17,12 +17,12 @@ notes:
 #include "app_timer.h"
 
 #include "mm_sensor_error_transmission.h"
+#include "mm_sensor_algorithm_config.h"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
 
-#define MAX_NUM_SENSORS                         ( 16 )
 #define MESSAGE_ACKNOWLEDGEMENT_PAGE_NUM        ( 0x20 )
 #define HYPERACTIVITY_ERROR_STATUS_PAGE_NUM     ( 0x25 )
 #define INACTIVE_SENSOR_ERROR_STATUS_PAGE_NUM   ( 0x26 )
@@ -68,8 +68,8 @@ typedef struct
 // A queue to hold sensor error information. 
 typedef struct 
 {
-    error_payload_t  queue[MAX_NUM_SENSORS]; //Queue size - Max number of sensors.
-    uint16_t         last_broadcast_index; //The element of the array that was last broadcast
+    error_payload_t  queue[MAX_SENSOR_COUNT]; //Queue size - Max number of sensors.
+    uint8_t          broadcast_index; //The element of the array that is currently being broadcast
 } error_transmission_queue_t;
 
 /**********************************************************
@@ -92,11 +92,6 @@ static bool check_sensor_match(error_payload_t const *error_payload1, error_payl
 static void broadcast_next_page(void);
 
 /**
- * Checks if a message ID matches the currently broadcasting message
- */
-static bool id_matches_current_broadcast(uint8_t message_id);
-
-/**
  * Interrupt callback for ant events, kicks to on_message_acknowledge
  */
 static void process_ant_evt(ant_evt_t * evt);
@@ -107,6 +102,11 @@ static void process_ant_evt(ant_evt_t * evt);
  */
 static void on_message_acknowledge(void* evt_data, uint16_t evt_size);
 
+/**
+ * Fetch the next index in the queue after index.
+ */
+static uint8_t next_index(uint8_t index);
+
 
 /**********************************************************
                        VARIABLES
@@ -115,6 +115,7 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size);
 static error_transmission_queue_t error_trans_queue;
 static uint8_t message_id = 0;
 // The page of the error message currently being broadcast.
+static uint8_t broadcast_message_id = 0;
 static uint8_t broadcast_error_message_page_num = 0;
 static bool message_being_broadcast = false;
 
@@ -128,7 +129,7 @@ static bool message_being_broadcast = false;
 void mm_sensor_error_transmission_init(void)
 {
     // Initialize error_trans_queue. This sets all elements of the struct to 0,
-    // including flags inside of the queue element. Also sets last_broadcast_index to 0, the first element
+    // including flags inside of the queue element. Also sets broadcast_index to 0, the first element
     // of the struct
     memset(&error_trans_queue, 0, sizeof(error_trans_queue));
 
@@ -145,14 +146,14 @@ void mm_sensor_error_transmission_send_hyperactivity_update
     )
 {
     error_payload_t error_payload;
+    memset(&error_payload, 0, sizeof(error_payload_t));
+
     error_payload.payload_state = HYPERACTIVE_ERROR;
     error_payload.node_id = node_id;
     error_payload.sensor_type = sensor_type;
     error_payload.sensor_rotation = sensor_rotation;
 
     uint8_t *payload = &(error_payload.payload.data[0]);
-
-    memset(&(error_payload), 0, sizeof(error_payload_t));
 
     payload[PAGE_NUM_INDEX] = HYPERACTIVITY_ERROR_STATUS_PAGE_NUM;
     payload[MESSAGE_ID_INDEX] = message_id;
@@ -177,14 +178,14 @@ void mm_sensor_error_transmission_send_inactivity_update
     )
 {
     error_payload_t error_payload;
+    memset(&error_payload, 0, sizeof(error_payload_t));
+
     error_payload.payload_state = INACTIVE_ERROR;
     error_payload.node_id = node_id;
     error_payload.sensor_type = sensor_type;
     error_payload.sensor_rotation = sensor_rotation;
 
     uint8_t *payload = &(error_payload.payload.data[0]);
-
-    memset(&(error_payload), 0, sizeof(error_payload_t));
 
     payload[PAGE_NUM_INDEX] = INACTIVE_SENSOR_ERROR_STATUS_PAGE_NUM;
     payload[MESSAGE_ID_INDEX] = message_id;
@@ -203,7 +204,7 @@ void mm_sensor_error_transmission_send_inactivity_update
 static void add_page_to_queue(error_payload_t const *error_payload)
 {
     //Make sure the sensor isn't already in the queue. Need to check node_id, sensor_type, and sensor_rotation
-    for(uint8_t i = 0; i < MAX_NUM_SENSORS; i++)
+    for(uint8_t i = 0; i < MAX_SENSOR_COUNT; i++)
     {
         if(check_sensor_match(error_payload, &(error_trans_queue.queue[i]) ))
         {
@@ -218,11 +219,11 @@ static void add_page_to_queue(error_payload_t const *error_payload)
 
     }
     //Sensor not found in queue. Find an invalid loction to save the sensor data.
-    for(uint8_t i = 0; i < MAX_NUM_SENSORS; i++)
+    for(uint8_t i = 0; i < MAX_SENSOR_COUNT; i++)
     {
         if(error_trans_queue.queue[i].payload_state == INVALID) //If invalid, store payload here
         {
-            memcpy( &(error_trans_queue.queue[i]), &error_payload, sizeof(error_payload_t));
+            memcpy( &(error_trans_queue.queue[i]), error_payload, sizeof(error_payload_t));
             if(!message_being_broadcast)
             {
                 broadcast_next_page();
@@ -253,89 +254,61 @@ static bool check_sensor_match(error_payload_t const *error_payload1, error_payl
 }
 
 static void broadcast_next_page(void)
-{    
-    // Check the next queue index after the current broadcast index. If the payload is not invalid, 
-    // broadcast it. Otherwise, loop until you find the first valid payload, 
-    // or until you reach the last_broadcast_index again!
-    uint8_t queue_index = error_trans_queue.last_broadcast_index + 1;
-    // Wrap queue index if necessary
-    if(queue_index == MAX_NUM_SENSORS) 
+{         
+    /* Eject the current broadcast, if it exists */
+    if(message_being_broadcast)
     {
-        queue_index = 0;
+        error_trans_queue.queue[error_trans_queue.broadcast_index].payload_state = INVALID;
+        mm_ant_page_manager_remove_all_pages(broadcast_error_message_page_num);
     }
-    do 
-    {
-        if(error_trans_queue.queue[queue_index].payload_state != INVALID)
-        {
-            // Broadcast found!
-            // Remove pages of the last broadcast error type.
-            error_payload_state_t last_error_type = error_trans_queue.queue[error_trans_queue.last_broadcast_index].payload_state;
-            switch(last_error_type)
-            {
-                case HYPERACTIVE_ERROR:
-                    mm_ant_page_manager_remove_all_pages(HYPERACTIVITY_ERROR_STATUS_PAGE_NUM);
-                    break;
-                case INACTIVE_ERROR:
-                    mm_ant_page_manager_remove_all_pages(INACTIVE_SENSOR_ERROR_STATUS_PAGE_NUM);
-                    break;
-                default:
-                    // State unknown, this should not occur. 
-                    APP_ERROR_CHECK(true);
-            }
 
-            // Add new broadcast. Figure out the type of error.
-            if(error_trans_queue.queue[queue_index].payload_state == HYPERACTIVE_ERROR)
-            {
-                broadcast_error_message_page_num = HYPERACTIVITY_ERROR_STATUS_PAGE_NUM;
-                mm_ant_page_manager_add_page
-                    (
-                        HYPERACTIVITY_ERROR_STATUS_PAGE_NUM,
-                        &(error_trans_queue.queue[queue_index].payload),
-                        CONCURRENT_PAGE_COUNT
-                    );
-            }
-            else if(error_trans_queue.queue[queue_index].payload_state == INACTIVE_ERROR)
-            {
-                    broadcast_error_message_page_num = INACTIVE_SENSOR_ERROR_STATUS_PAGE_NUM;
-                    mm_ant_page_manager_add_page
-                    (
-                        INACTIVE_SENSOR_ERROR_STATUS_PAGE_NUM,
-                        &(error_trans_queue.queue[queue_index].payload),
-                        CONCURRENT_PAGE_COUNT
-                    );
-            }
-            //Update the queue index and message_being_broadcast variable
-            error_trans_queue.last_broadcast_index = queue_index;
-            message_being_broadcast = true;
+    /* find the next page to broadcast */
+    uint8_t queue_index = next_index(error_trans_queue.broadcast_index);
+    while(true)
+    {     
+        if(queue_index == error_trans_queue.broadcast_index)
+        {
+            /* We looped, and didn't find a page to broadcast */
+            message_being_broadcast = false;
             return;
         }
 
-        // Increment the index. If past the last queue index, go back to index 0.
-        queue_index++;
-        if(queue_index == MAX_NUM_SENSORS) 
+        if(error_trans_queue.queue[queue_index].payload_state != INVALID)
         {
-            queue_index = 0;
+            /* Found one! */
+            break;
         }
+
+        queue_index = next_index(queue_index);
     }
-    while(queue_index != error_trans_queue.last_broadcast_index + 1);
 
-    // Have exited loop without finding a page to broadcast.
-    message_being_broadcast = false;
-}
+    message_being_broadcast = true;
+    broadcast_message_id = error_trans_queue.queue[queue_index].payload.data[MESSAGE_ID_INDEX];
 
-static bool id_matches_current_broadcast(uint8_t message_id)
-{
-    //Check if the message ID matches the broadcast currently being sent
-    error_payload_t const *broadcasting_payload = &(error_trans_queue.queue[error_trans_queue.last_broadcast_index]);
-    if
-        (
-            (broadcasting_payload->payload_state != INVALID) &&
-            (broadcasting_payload->payload.data[MESSAGE_ID_INDEX] == message_id)
-        )
+    // Add new broadcast. Figure out the type of error.
+    if(error_trans_queue.queue[queue_index].payload_state == HYPERACTIVE_ERROR)
     {
-        return true;
+        broadcast_error_message_page_num = HYPERACTIVITY_ERROR_STATUS_PAGE_NUM;
     }
-    return false;
+    else if(error_trans_queue.queue[queue_index].payload_state == INACTIVE_ERROR)
+    {
+        broadcast_error_message_page_num = INACTIVE_SENSOR_ERROR_STATUS_PAGE_NUM;
+    }
+    else
+    {
+        /* Unknown error type */
+        APP_ERROR_CHECK(true);
+    }
+    
+    mm_ant_page_manager_add_page
+    (
+        broadcast_error_message_page_num,
+        &(error_trans_queue.queue[queue_index].payload),
+        CONCURRENT_PAGE_COUNT
+    );
+
+    //Update the queue index and message_being_broadcast variable
+    error_trans_queue.broadcast_index = queue_index;
 }
 
 static void process_ant_evt(ant_evt_t * evt)
@@ -370,14 +343,24 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size)
     ANT_MESSAGE * p_message = (ANT_MESSAGE *)evt->msg.evt_buffer;
     uint8_t const * payload = &p_message->ANT_MESSAGE_aucPayload[0];
 
-    if(payload[ACKED_PAGE_NUM_INDEX] == broadcast_error_message_page_num)
+    if(payload[ACKED_PAGE_NUM_INDEX] != broadcast_error_message_page_num)
     {
-        // Check the message ID. Should match the message being broadcast. If it does, start next broadcast.
-        if(id_matches_current_broadcast(payload[MESSAGE_ID_INDEX]))
-        {
-            //Invalidate the current broadcast, as it has been acknowledged.
-            error_trans_queue.queue[error_trans_queue.last_broadcast_index].payload_state = INVALID;
-            broadcast_next_page();
-        }
+        return;
     }
+        
+    if(!message_being_broadcast)
+    {
+        return;
+    }
+
+    // Check the message ID. Should match the message being broadcast. If it does, start next broadcast.
+    if(broadcast_message_id == payload[MESSAGE_ID_INDEX])
+    {
+        broadcast_next_page();
+    }
+}
+
+static uint8_t next_index(uint8_t index)
+{
+    return (index + 1) % MAX_SENSOR_COUNT;
 }

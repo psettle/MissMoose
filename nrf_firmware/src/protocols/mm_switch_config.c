@@ -68,5 +68,5 @@ hardware_config_t read_hardware_config(void)
     	APP_ERROR_CHECK(true);
     }
 
-    return HARDWARE_CONFIG_PIR_PIR;
+    return config;
 }
