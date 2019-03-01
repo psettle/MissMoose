@@ -86,7 +86,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this sensor data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);
@@ -116,7 +117,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this sensor data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);
@@ -144,7 +146,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this LED data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);
@@ -161,7 +164,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this region AV data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);
@@ -205,7 +209,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this error data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);
@@ -249,7 +254,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this error data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);

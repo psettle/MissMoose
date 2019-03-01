@@ -12,6 +12,7 @@ namespace MissMooseConfigurationApplication
 
         private static readonly byte dataPageNumber = 0x20;
         private byte messageId;
+        private byte ackedPageId;
 
         #endregion
 
@@ -28,6 +29,11 @@ namespace MissMooseConfigurationApplication
             set { messageId = value; OnPropertyChanged("MessageId"); }
         }
 
+        public byte AckedId {
+            get { return ackedPageId; }
+            set { ackedPageId = value; OnPropertyChanged("AckedId"); }
+        }
+
         #endregion
 
         #region Public Methods
@@ -39,7 +45,7 @@ namespace MissMooseConfigurationApplication
 
             txBuffer[1] = MessageId;
 
-            txBuffer[2] = BitManipulation.ReservedZeros;
+            txBuffer[2] = AckedId;
             txBuffer[3] = BitManipulation.ReservedZeros;
             txBuffer[4] = BitManipulation.ReservedZeros;
             txBuffer[5] = BitManipulation.ReservedZeros;
