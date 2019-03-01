@@ -28,6 +28,8 @@ notes:
 #include "mm_rgb_led_pub.h"
 //For MM_GATEWAY_ID
 #include "mm_blaze_static_config.h"
+//To transmit LED state information to the monitoring application
+#include "mm_led_transmission.h"
 
 
 /**********************************************************
@@ -165,6 +167,9 @@ void mm_led_control_update_node_leds
     blaze_message.p_data = &payload[0];
 
     mm_blaze_send_message( &blaze_message );
+
+    // Tell the monitoring application that the LED has been updated
+    mm_led_transmission_send_led_update(target_node_id, led_function, led_colour);
 }
 #endif
 

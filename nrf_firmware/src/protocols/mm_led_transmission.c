@@ -61,7 +61,6 @@ typedef enum
 typedef struct {
     mm_ant_payload_t led_output_page_payload; // The payload data
     current_broadcast_state_t broadcast_state; //If this page is being broadcast
-    //TODO
     uint16_t node_id;
 } led_output_page_broadcast_t;
 
