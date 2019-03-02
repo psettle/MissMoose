@@ -21,6 +21,7 @@
                        (b > c) ? (a > c) ? a : c : b)
 
 #define ANT_BROADCAST_DEBUG         false // If true, broadcast the most recent filtered sample over ANT.
+#define USE_POWER_CYCLING           true  // Whether or not we should try and turn the lidar off between samplings.
 
 /* Register definitions for the LIDAR. */
 #define DISTANCE_VALUE_REGISTER     (0x8FU)
@@ -43,7 +44,7 @@
 #define MEDIAN_FILTER_SIZE          (3)  // Store the last 3 samples.
 #define MEDIAN_FILTER_DIFF_THRES    (30) // How different 2 consecutive median-filtered samples have to be noted as a detection.
 
-#define MAX_EVT_HANDLERS ( 4 )
+#define MAX_EVT_HANDLERS            ( 4 )
 
 /**
  * @brief States of the twi reading/writing state machine.
@@ -303,7 +304,9 @@ static void lidar_process_distance(void)
         }
 
         lidar_sampling_state = NOT_SAMPLING;
-        nrf_drv_gpiote_out_clear(LIDAR_ENABLE_PIN); // Pull the power enable pin low to save power
+        #if(USE_POWER_CYCLING)
+            nrf_drv_gpiote_out_clear(LIDAR_ENABLE_PIN); // Pull the power enable pin low to save power
+        #endif
         error_code = LIDAR_ERROR_NONE;
     }
 }
@@ -426,6 +429,9 @@ void lidar_init(bool use_led_debug)
 
     err_code = nrf_drv_gpiote_out_init(LIDAR_ENABLE_PIN, &out_config);
     APP_ERROR_CHECK(err_code);
+    #if(!(USE_POWER_CYCLING))
+        nrf_drv_gpiote_out_set(LIDAR_ENABLE_PIN); // Pull the power enable pin low
+    #endif
 
     xfer_done = true;
 }
@@ -491,9 +497,15 @@ static void on_timer_event(void* evt_data, uint16_t evt_size)
                 bsp_board_led_on(3);
             }
         }
-        lidar_sampling_state = ROLLING_OUT_ZEROS;
+        #if(USE_POWER_CYCLING)
+            lidar_sampling_state = ROLLING_OUT_ZEROS;
+        #else
+            lidar_sampling_state = SAMPLING;
+        #endif
         sample_readings = 0;
-        nrf_drv_gpiote_out_set(LIDAR_ENABLE_PIN); // Stop pulling the power enable pin low
+        #if(USE_POWER_CYCLING)
+            nrf_drv_gpiote_out_set(LIDAR_ENABLE_PIN); // Stop pulling the power enable pin low
+        #endif
     }
     switch(lidar_sampling_state)
     {
