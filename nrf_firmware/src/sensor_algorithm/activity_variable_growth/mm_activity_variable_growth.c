@@ -144,7 +144,7 @@ void get_grid_direction(total_rotation_t rotation, int8_t* dx, int8_t* dy)
         case TOTAL_ROTATION_270:
             /* Next node is in -x direction. */
             *dx = -1;
-            *dy = 1;
+            *dy = 0;
             break;
         default:
             /* Current design does not support intermediate angles. */

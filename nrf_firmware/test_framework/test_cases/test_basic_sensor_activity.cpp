@@ -18,19 +18,19 @@ Author: Elijah Pennoyer
 **********************************************************/
 
 // Test sending sensor data from every PIR sensor in the network.
-static void test_case_detect_from_all_pirs(void);
+static void test_case_detect_from_all_pirs(TestOutput& oracle);
 // Test sending sensor data from every lidar sensor in the network.
-static void test_case_detect_from_all_lidars(void);
+static void test_case_detect_from_all_lidars(TestOutput& oracle);
 // Tests letting a PIR charge up an activity variable then let the AV drain again
-static void test_case_pir_on_let_drain_to_1(void);
+static void test_case_pir_on_let_drain_to_1(TestOutput& oracle);
 // Tests letting a PIR charge up an activity variable then let the AV drain again
-static void test_case_lidar_on_let_drain_to_1(void);
+static void test_case_lidar_on_let_drain_to_1(TestOutput& oracle);
 
 /**********************************************************
 					   DEFINITIONS
 **********************************************************/
 
-void test_basic_sensor_activity_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names)
+void test_basic_sensor_activity_add_tests(std::vector<TestCase>& tests)
 {
 	//Basic tests
 	ADD_TEST(test_case_detect_from_all_pirs);
@@ -42,7 +42,7 @@ void test_basic_sensor_activity_add_tests(std::vector<test_case_cb>& tests, std:
 
 // Test sending sensor data from every PIR sensor in the network.
 // Allows 1 minute between tests to make sure nothing odd happens as the result of any 1 detection.
-static void test_case_detect_from_all_pirs(void)
+static void test_case_detect_from_all_pirs(TestOutput& oracle)
 {
 	// Node 1 - 1 PIR, sensor rotation 90 degrees
 	test_send_pir_data(1, SENSOR_ROTATION_90, PIR_DETECTION_START);
@@ -89,7 +89,7 @@ static void test_case_detect_from_all_pirs(void)
 
 // Test sending sensor data from every Lidar sensor in the network.
 // Allows 1 minute between tests to make sure nothing odd happens as the result of any 1 detection.
-static void test_case_detect_from_all_lidars(void)
+static void test_case_detect_from_all_lidars(TestOutput& oracle)
 {
 
 	// Node 1 - 1 Lidar, sensor rotation 0 degrees
@@ -119,7 +119,7 @@ static void test_case_detect_from_all_lidars(void)
 }
 
 // Tests letting a PIR charge up an activity variable then let the AV drain again
-static void test_case_pir_on_let_drain_to_1(void)
+static void test_case_pir_on_let_drain_to_1(TestOutput& oracle)
 {
 	// Use node 1's PIR. 
 	test_send_pir_data(1, SENSOR_ROTATION_90, PIR_DETECTION_START);
@@ -131,7 +131,7 @@ static void test_case_pir_on_let_drain_to_1(void)
 
 
 // Tests letting a PIR charge up an activity variable then let the AV drain again
-static void test_case_lidar_on_let_drain_to_1(void)
+static void test_case_lidar_on_let_drain_to_1(TestOutput& oracle)
 {
 	// Use node 1's lidar. Send that a detection occurred.
 	test_send_lidar_data(1, SENSOR_ROTATION_0, LIDAR_DETECT_DISTANCE_350CM);
