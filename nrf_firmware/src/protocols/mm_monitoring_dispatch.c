@@ -278,8 +278,8 @@ static void process_ant_evt(ant_evt_t * evt)
                 {
                     /* This might acknowledge the current broadcast, kick it to main to check. */
                     uint32_t err_code;
-                	err_code = app_sched_event_put(evt, sizeof(ant_evt_t), on_monitoring_data_acknowledge);
-                	APP_ERROR_CHECK(err_code);
+                    err_code = app_sched_event_put(evt, sizeof(ant_evt_t), on_monitoring_data_acknowledge);
+                    APP_ERROR_CHECK(err_code);
                 }
             }
             break;

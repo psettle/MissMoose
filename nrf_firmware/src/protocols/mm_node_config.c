@@ -41,14 +41,14 @@ notes:
 #define CONTROL_PIN (BSP_BUTTON_1)
 
 #ifdef MM_BLAZE_GATEWAY
-	#define TIMEOUT_PERIOD_S		( 600 )
+    #define TIMEOUT_PERIOD_S        ( 600 )
 #else
-	#define TIMEOUT_PERIOD_S		( 60 )
+    #define TIMEOUT_PERIOD_S        ( 60 )
 #endif
 
-#define SENSOR_MANAGER_LED_DEBUG_ENABLED	( false )
+#define SENSOR_MANAGER_LED_DEBUG_ENABLED    ( false )
 
-#define TIMEOUT_PERIOD_MS		( TIMEOUT_PERIOD_S * 1000 )
+#define TIMEOUT_PERIOD_MS        ( TIMEOUT_PERIOD_S * 1000 )
 #define TIMER_TICKS APP_TIMER_TICKS(TIMEOUT_PERIOD_MS)
 
 /**********************************************************
@@ -122,31 +122,31 @@ void mm_node_config_init(void)
 
 static void on_config_command_page(void* evt_data, uint16_t evt_size)
 {
-	ant_evt_t const * evt = (ant_evt_t const *)evt_data;
-	ANT_MESSAGE * p_message = (ANT_MESSAGE *)evt->msg.evt_buffer;
+    ant_evt_t const * evt = (ant_evt_t const *)evt_data;
+    ANT_MESSAGE * p_message = (ANT_MESSAGE *)evt->msg.evt_buffer;
 
-	// Only accept node configuration if this node
-	// does not already have a node_id and network_id
-	if (node_id == 0 && network_id == 0)
-	{
-		// Set the node ID and network ID
-		memcpy(&node_id, &p_message->ANT_MESSAGE_aucPayload[1], sizeof(node_id));
-		memcpy(&network_id, &p_message->ANT_MESSAGE_aucPayload[3], sizeof(network_id));
+    // Only accept node configuration if this node
+    // does not already have a node_id and network_id
+    if (node_id == 0 && network_id == 0)
+    {
+        // Set the node ID and network ID
+        memcpy(&node_id, &p_message->ANT_MESSAGE_aucPayload[1], sizeof(node_id));
+        memcpy(&network_id, &p_message->ANT_MESSAGE_aucPayload[3], sizeof(network_id));
 
-		// Start init now that node ID and network ID are known
-		external_init();
+        // Start init now that node ID and network ID are known
+        external_init();
 
-		mm_ant_payload_t payload;
-		encode_node_status_page(&payload);
-		mm_ant_page_manager_replace_all_pages(NODE_STATUS_PAGE, &payload);
-	}
+        mm_ant_payload_t payload;
+        encode_node_status_page(&payload);
+        mm_ant_page_manager_replace_all_pages(NODE_STATUS_PAGE, &payload);
+    }
 }
 
 static void encode_node_status_page(mm_ant_payload_t * payload)
 {
-	memset(&payload->data[0], 0x00, 8);
+    memset(&payload->data[0], 0x00, 8);
 
-	payload->data[0] = NODE_STATUS_PAGE_NUM;
+    payload->data[0] = NODE_STATUS_PAGE_NUM;
 
 #ifdef MM_BLAZE_GATEWAY
     uint16_t gateway_id = MM_GATEWAY_ID;
@@ -167,26 +167,26 @@ static void encode_node_status_page(mm_ant_payload_t * payload)
 
 static void on_button_press(void* evt_data, uint16_t evt_size)
 {
-	uint32_t err_code;
+    uint32_t err_code;
 
-	/* If broadcast is on, pause it and stop the timer. */
-	if(mm_ant_get_broadcast_state())
-	{
-		mm_ant_pause_broadcast();
+    /* If broadcast is on, pause it and stop the timer. */
+    if(mm_ant_get_broadcast_state())
+    {
+        mm_ant_pause_broadcast();
 
-		//stop timeout timer
-		err_code = app_timer_stop(m_timer_id);
-		APP_ERROR_CHECK(err_code);
-	}
-	/* If broadcast is off, start it and launch the timer. */
-	else
-	{
-		mm_ant_resume_broadcast();
+        //stop timeout timer
+        err_code = app_timer_stop(m_timer_id);
+        APP_ERROR_CHECK(err_code);
+    }
+    /* If broadcast is off, start it and launch the timer. */
+    else
+    {
+        mm_ant_resume_broadcast();
 
-		//launch timeout timer
-		err_code = app_timer_start(m_timer_id, TIMER_TICKS, NULL);
-		APP_ERROR_CHECK(err_code);
-	}
+        //launch timeout timer
+        err_code = app_timer_start(m_timer_id, TIMER_TICKS, NULL);
+        APP_ERROR_CHECK(err_code);
+    }
 }
 
 static void on_timer_event(void* evt_data, uint16_t evt_size)
@@ -215,13 +215,13 @@ static void external_init(void)
     mm_sensor_error_transmission_init();
     /* Init sensor data processing now that data can be transmitted. */
     mm_sensor_algorithm_init();
-	/* Init AV output transmission over ant now that the sensor algorithm is up and running. */
-	mm_av_transmission_init();
+    /* Init AV output transmission over ant now that the sensor algorithm is up and running. */
+    mm_av_transmission_init();
 #endif
 }
 
 /**********************************************************
-					INTERUPT HANDLERS
+                    INTERUPT HANDLERS
 **********************************************************/
 
 static void ant_evt_handler(ant_evt_t * evt)
@@ -238,10 +238,10 @@ static void ant_evt_handler(ant_evt_t * evt)
             {
                 if (p_message->ANT_MESSAGE_aucPayload[0] == CONFIG_COMMAND_PAGE_NUM)
                 {
-                	uint32_t err_code;
-                	/* Kick ant event to main. */
-                	err_code = app_sched_event_put(evt, sizeof(ant_evt_t), on_config_command_page);
-                	APP_ERROR_CHECK(err_code);
+                    uint32_t err_code;
+                    /* Kick ant event to main. */
+                    err_code = app_sched_event_put(evt, sizeof(ant_evt_t), on_config_command_page);
+                    APP_ERROR_CHECK(err_code);
                 }
             }
             break;
@@ -253,12 +253,12 @@ static void ant_evt_handler(ant_evt_t * evt)
 
 static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-	uint32_t err_code;
+    uint32_t err_code;
 
     /* Check that button is actually set. */
     if(!nrf_drv_gpiote_in_is_set(CONTROL_PIN))
     {
-    	return;
+        return;
     }
 
     /* Kick button event to main. */
@@ -269,9 +269,9 @@ static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t 
 
 static void timer_handler(void * p_context)
 {
-	uint32_t err_code;
+    uint32_t err_code;
 
-	/* Kick timer event to main. */
+    /* Kick timer event to main. */
     err_code = app_sched_event_put(NULL, 0, on_timer_event);
     APP_ERROR_CHECK(err_code);
 }

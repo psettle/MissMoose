@@ -156,7 +156,8 @@ static led_output_page_broadcast_t* get_led_broadcast(uint16_t node_id)
     for(uint8_t i = 0; i < MAX_NUM_LED_NODES; i++)
     {
         //Check if the broadcast is unassigned. If we reach this point, then there was no previous broadcast. Return this value.
-        if(led_output_page_broadcasts[i].broadcast_state == NO_ELEMENT_ASSIGNED){
+        if(led_output_page_broadcasts[i].broadcast_state == NO_ELEMENT_ASSIGNED)
+        {
             return &led_output_page_broadcasts[i];
         }
         //If not unassigned, check for the input node_id. If found, return that.
@@ -206,8 +207,8 @@ static void process_ant_evt(ant_evt_t * evt)
                 {
                     /* This might acknowledge the current broadcast, kick it to main to check. */
                     uint32_t err_code;
-                	err_code = app_sched_event_put(evt, sizeof(ant_evt_t), on_message_acknowledge);
-                	APP_ERROR_CHECK(err_code);
+                    err_code = app_sched_event_put(evt, sizeof(ant_evt_t), on_message_acknowledge);
+                    APP_ERROR_CHECK(err_code);
                 }
             }
             break;
@@ -235,12 +236,11 @@ static void on_message_acknowledge(void* evt_data, uint16_t evt_size)
             {
                 //Indexes match, the message has been ACKed. Disable this broadcast.
                 led_output_page_broadcasts[i].broadcast_state = NOT_BROADCASTING;
+                // Resend any remaining broadcasts:
+                broadcast_led_output_pages();
                 break;
             }
         }
-        // Resend any remaining broadcasts:
-        broadcast_led_output_pages();
-    }
 
-    // If it's an ACK for a different type of message, do nothing.
+    }
 }
