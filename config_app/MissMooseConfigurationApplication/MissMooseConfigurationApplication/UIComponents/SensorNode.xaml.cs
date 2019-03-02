@@ -49,6 +49,7 @@ namespace MissMooseConfigurationApplication
         public static readonly Brush Red = Brushes.Red;
         public static readonly Brush Yellow = Brushes.Yellow;
         public static readonly Brush Green = Brushes.Green;
+        public static readonly Brush Blue = Brushes.Blue;
         public static readonly Brush Disabled = Brushes.Gray;
     }
 
@@ -250,7 +251,7 @@ namespace MissMooseConfigurationApplication
 
             SetStatusColour(StatusColour.Blue);
             SetLedFunction(LedFunction.Off);
-            SetLedColour(LedColour.Green);
+            SetLedColour(LedColour.Blue);
         }
 
         public bool SetLedFunction(LedFunction ledFunction)
@@ -262,7 +263,7 @@ namespace MissMooseConfigurationApplication
                 Storyboard sb = (Storyboard)this.FindResource("Blink");
                 if (ledFunction == LedFunction.Blinking)
                 {
-                    sb.Begin();                    
+                    sb.Begin();
                 }
                 else
                 {
@@ -271,7 +272,7 @@ namespace MissMooseConfigurationApplication
 
                 if (ledFunction == LedFunction.Off)
                 {
-                    SetLedColour(LedColour.Green);
+                    SetLedColour(LedColour.Blue);
                 }
 
                 // The function was changed
@@ -286,7 +287,7 @@ namespace MissMooseConfigurationApplication
         {
             if(configuration == HardwareConfiguration.PirLidarLed
                 && colour != this.ledColour
-                && (ledFunction != LedFunction.Off || colour == LedColour.Green))
+                && (ledFunction != LedFunction.Off || colour == LedColour.Blue))
             {
                 ledColour = colour;
                 OuterRing.Fill = colour;
