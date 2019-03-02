@@ -87,10 +87,10 @@
     <ClCompile Include="test_framework\test_runner\test_output.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="test_framework\test_cases\tests_one_animal_constant_speed.cpp">
+    <ClCompile Include="test_framework\test_cases\test_one_animal_in_out.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="test_framework\test_cases\test_one_animal_in_out.cpp">
+    <ClCompile Include="test_framework\test_cases\tests_one_animal_constant_speed.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
