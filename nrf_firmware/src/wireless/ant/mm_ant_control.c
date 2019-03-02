@@ -62,6 +62,10 @@ void mm_softdevice_init(void)
 
     err_code = ant_stack_static_config(); // set ant resource
     APP_ERROR_CHECK(err_code);
+
+    // Use DC-DC Converter (recommended to optimize power consumption on D52 module, apparently)
+    err_code = sd_power_dcdc_mode_set(DC_TO_DC_ON);
+    APP_ERROR_CHECK(err_code);
 }
 
 void mm_ant_init(void)

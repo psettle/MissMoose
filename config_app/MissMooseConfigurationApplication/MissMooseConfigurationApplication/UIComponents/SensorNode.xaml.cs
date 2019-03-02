@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -24,11 +25,31 @@ namespace MissMooseConfigurationApplication
         PirLidarLed,
     }
 
+    public enum SensorType : byte
+    {
+        Pir,
+        Lidar,
+    }
+
+    public enum LedFunction : byte
+    {
+        Off,
+        Blinking,
+        Continuous,
+    }
+
+    public enum LedColourEnum : byte
+    {
+        Yellow,
+        Red,
+    }
+
     public class LedColour
     {
         public static readonly Brush Red = Brushes.Red;
         public static readonly Brush Yellow = Brushes.Yellow;
         public static readonly Brush Green = Brushes.Green;
+        public static readonly Brush Blue = Brushes.Blue;
         public static readonly Brush Disabled = Brushes.Gray;
     }
 
@@ -188,9 +209,11 @@ namespace MissMooseConfigurationApplication
 
         #region Private Members
 
+        private LedFunction ledFunction;
         private Brush ledColour;
         private Brush statusColour;
         private bool isGateway;
+
         #endregion
 
         #region Public Methods
@@ -227,15 +250,67 @@ namespace MissMooseConfigurationApplication
             }
 
             SetStatusColour(StatusColour.Blue);
-            SetLedColour(LedColour.Green);
+            SetLedFunction(LedFunction.Off);
+            SetLedColour(LedColour.Blue);
         }
 
-        public void SetLedColour(Brush colour)
+        public bool SetLedFunction(LedFunction ledFunction)
         {
-            if(configuration == HardwareConfiguration.PirLidarLed)
+            if (this.ledFunction != ledFunction)
+            {
+                this.ledFunction = ledFunction;
+
+                Storyboard sb = (Storyboard)this.FindResource("Blink");
+                if (ledFunction == LedFunction.Blinking)
+                {
+                    sb.Begin();
+                }
+                else
+                {
+                    sb.Stop();
+                }
+
+                if (ledFunction == LedFunction.Off)
+                {
+                    SetLedColour(LedColour.Blue);
+                }
+
+                // The function was changed
+                return true;
+            }
+
+            // The function was not changed
+            return false;
+        }
+
+        public bool SetLedColour(Brush colour)
+        {
+            if(configuration == HardwareConfiguration.PirLidarLed
+                && colour != this.ledColour
+                && (ledFunction != LedFunction.Off || colour == LedColour.Blue))
             {
                 ledColour = colour;
                 OuterRing.Fill = colour;
+
+                // The colour was changed
+                return true;
+            }
+
+            // The colour was not changed
+            return false;
+        }
+
+        public bool SetLedColour(LedColourEnum colour)
+        {
+            switch (colour)
+            {
+                case LedColourEnum.Yellow:
+                    return SetLedColour(LedColour.Yellow);
+                case LedColourEnum.Red:
+                    return SetLedColour(LedColour.Red);
+                default:
+                    // Do nothing
+                    return false;
             }
         }
 
@@ -267,6 +342,7 @@ namespace MissMooseConfigurationApplication
                 ypos = ypos,
                 Rotation = new Rotation(Rotation.Val)
             };
+            node.SetLedFunction(ledFunction);
             node.SetLedColour(ledColour);
             node.SetStatusColour(statusColour);
 
