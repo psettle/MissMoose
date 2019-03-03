@@ -34,7 +34,7 @@ namespace MissMooseConfigurationApplication
         private List<List<Path>> shadedRegions;
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
-        private const string timestampFormatString = "MMM-dd hh:mm tt";
+        private const string timestampFormatString = "yyyy-MMM-dd hh:mm:ss tt";
         #endregion
 
         #region Public Methods
