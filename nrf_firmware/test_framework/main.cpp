@@ -25,6 +25,7 @@ int main()
 
     test_basic_sensor_activity_add_tests(tests);
     test_hyperactive_inactive_add_tests(tests);
+    test_one_animal_with_one_stop_add_tests(tests);
 
     test_runner_init(tests);
 
