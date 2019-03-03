@@ -122,7 +122,7 @@ void mm_hardware_test_init(void)
             break;
 
         default:
-        	APP_ERROR_CHECK(true);
+            APP_ERROR_CHECK(true);
     }
 }
 
@@ -174,7 +174,7 @@ static void process_pir_evt(pir_evt_t * evt)
 static void timer_event_handler(void * p_context)
 {
     uint32_t err_code;
-	/* Kick handling of the timer to main context */
+    /* Kick handling of the timer to main context */
     err_code = app_sched_event_put(NULL, 0, on_timer_event);
     APP_ERROR_CHECK(err_code);
 }

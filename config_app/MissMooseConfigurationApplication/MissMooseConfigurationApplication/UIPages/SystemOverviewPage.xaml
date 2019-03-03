@@ -33,9 +33,9 @@
                     <RowDefinition Height="4*"></RowDefinition>
                     <RowDefinition Height="2*"></RowDefinition>
                 </Grid.RowDefinitions>
-                <local:PageSwitcherTextbox Grid.Row="0" Title="Event Log"></local:PageSwitcherTextbox>
-                <local:PageSwitcherTextbox Grid.Row="1" Title="System Problems"></local:PageSwitcherTextbox>
-                <local:PageSwitcherNumberBox Grid.Row="2" Title="Detections Past Hour"></local:PageSwitcherNumberBox>
+                <local:PageSwitcherTextbox x:Name="EventLog" Grid.Row="0" Title="Event Log"></local:PageSwitcherTextbox>
+                <local:PageSwitcherTextbox x:Name="SystemProblems" Grid.Row="1" Title="System Problems"></local:PageSwitcherTextbox>
+                <local:PageSwitcherNumberBox x:Name="DetectionsPastHour" Grid.Row="2" Title="Detections Past Hour"></local:PageSwitcherNumberBox>
             </Grid>
         </Grid>
         <Grid Grid.Column="0" Grid.Row="1">
