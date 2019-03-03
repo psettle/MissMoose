@@ -25,7 +25,7 @@ notes:
  *
  * Note: Requires sensor_transmission.h is initialized.
  */
-void mm_sensor_algorithm_init(mm_sensor_algorithm_config_t const * config);
+void mm_sensor_algorithm_init(void);
 
 #ifdef MM_ALLOW_SIMULATED_TIME
     /**

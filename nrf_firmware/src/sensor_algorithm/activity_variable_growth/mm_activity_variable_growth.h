@@ -25,7 +25,7 @@ notes:
 /**
  * Initialize growth logic.
  */
-void mm_activity_variable_growth_init(mm_sensor_algorithm_config_t const * config);
+void mm_activity_variable_growth_init(void);
 
 /**
  * On sensor detection.

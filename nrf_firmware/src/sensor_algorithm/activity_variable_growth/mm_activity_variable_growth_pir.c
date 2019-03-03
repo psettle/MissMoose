@@ -37,12 +37,6 @@ typedef struct
 } abstract_pir_detection_t;
 
 /**********************************************************
-                       VARIABLES
-**********************************************************/
-
-static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
-
-/**********************************************************
                        DECLARATIONS
 **********************************************************/
 
@@ -78,15 +72,6 @@ static void generate_trickle_constants(abstract_pir_detection_t const * detectio
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
-
-/**
- * Sets the sensor algorithm configuration constants. Should never
- * be called more than once.
- */
-void set_pir_sensor_algorithm_config(mm_sensor_algorithm_config_t const * config)
-{
-	sensor_algorithm_config = config;
-}
 
 /**
  * Translates a pir detection event into an abstract detection event.
@@ -252,19 +237,19 @@ static void generate_growth_constants(abstract_pir_detection_t const * detection
 {
     memset(constants, 0, sizeof(activity_variable_sensor_constants_t));
 
-    constants->common_sensor_weight_factor = sensor_algorithm_config->common_sensor_weight_factor;
-    constants->base_sensor_weight_factor   = sensor_algorithm_config->base_sensor_weight_factor_pir;
+    constants->common_sensor_weight_factor = mm_sensor_algorithm_config()->common_sensor_weight_factor;
+    constants->base_sensor_weight_factor   = mm_sensor_algorithm_config()->base_sensor_weight_factor_pir;
 
     switch(detection->ypos)
     {
         case 1:
-            constants->road_proximity_factor = sensor_algorithm_config->road_proximity_factor_0;
+            constants->road_proximity_factor = mm_sensor_algorithm_config()->road_proximity_factor_0;
             break;
         case 0:
-            constants->road_proximity_factor = sensor_algorithm_config->road_proximity_factor_1;
+            constants->road_proximity_factor = mm_sensor_algorithm_config()->road_proximity_factor_1;
             break;
         case -1:
-            constants->road_proximity_factor = sensor_algorithm_config->road_proximity_factor_2;
+            constants->road_proximity_factor = mm_sensor_algorithm_config()->road_proximity_factor_2;
             break;
         default:
             /* Invalid grid position given grid height */
@@ -277,19 +262,19 @@ static void generate_trickle_constants(abstract_pir_detection_t const * detectio
 {
     memset(constants, 0, sizeof(activity_variable_sensor_constants_t));
 
-    constants->common_sensor_weight_factor = sensor_algorithm_config->common_sensor_trickle_factor;
-    constants->base_sensor_weight_factor   = sensor_algorithm_config->base_sensor_trickle_factor_pir;
+    constants->common_sensor_weight_factor = mm_sensor_algorithm_config()->common_sensor_trickle_factor;
+    constants->base_sensor_weight_factor   = mm_sensor_algorithm_config()->base_sensor_trickle_factor_pir;
 
     switch(detection->ypos)
     {
         case 1:
-            constants->road_proximity_factor = sensor_algorithm_config->road_trickle_proximity_factor_0;
+            constants->road_proximity_factor = mm_sensor_algorithm_config()->road_trickle_proximity_factor_0;
             break;
         case 0:
-            constants->road_proximity_factor = sensor_algorithm_config->road_trickle_proximity_factor_1;
+            constants->road_proximity_factor = mm_sensor_algorithm_config()->road_trickle_proximity_factor_1;
             break;
         case -1:
-            constants->road_proximity_factor = sensor_algorithm_config->road_trickle_proximity_factor_2;
+            constants->road_proximity_factor = mm_sensor_algorithm_config()->road_trickle_proximity_factor_2;
             break;
         default:
             /* Invalid grid position given grid height */

@@ -16,6 +16,9 @@ notes:
 					ALGORITHM CONSTANTS
 **********************************************************/
 
+/**
+    Static sensor algorithm constants.
+*/
 #define MAX_GRID_SIZE_X                     ( 3 )
 #define MAX_GRID_SIZE_Y                     ( 3 )
 #define MAX_NUMBER_NODES                    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
@@ -31,7 +34,7 @@ notes:
 **********************************************************/
 
 /**
-    Sensor algorithm configuration constants container.
+    Dynamic sensor algorithm constants container.
 */
 typedef struct
 {
@@ -65,6 +68,24 @@ typedef struct
 	uint16_t minimum_concern_signal_duration_s;
 	uint16_t minimum_alarm_signal_duration_s;
 } mm_sensor_algorithm_config_t;
+
+
+/**********************************************************
+                     DECLARATIONS
+**********************************************************/
+
+/**
+    Initializes the dynamic sensor algorithm configuration
+    constants. Should never be used more than once!
+*/
+void mm_sensor_algorithm_config_init(mm_sensor_algorithm_config_t const config);
+
+/**
+    Gets the dynamic sensor algorithm configuration constants. Assumes that
+    they have been previously configured using mm_sensor_algorithm_config_init
+    once before!
+*/
+mm_sensor_algorithm_config_t const * mm_sensor_algorithm_config(void);
 
 #endif /* MM_SENSOR_ALGORITHM_CONFIG_H */
 

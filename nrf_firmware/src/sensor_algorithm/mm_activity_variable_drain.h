@@ -15,26 +15,8 @@
 #include "mm_sensor_algorithm_config.h"
 
 /**********************************************************
-                        CONSTANTS
-**********************************************************/
-
-/**********************************************************
-                        MACROS
-**********************************************************/
-
-/**********************************************************
-                        TYPES
-**********************************************************/
-
-/**********************************************************
                        DECLARATIONS
 **********************************************************/
-
-/**
- * Sets the sensor algorithm configuration constants. Should never
- * be called more than once.
- */
-void mm_activity_variable_drain_init(mm_sensor_algorithm_config_t const * config);
 
 /**
     Applies the activity variable drain factor to all activity variables.

@@ -64,7 +64,7 @@ typedef enum
 /**
  * Initialize activity variables.
  */
-void mm_activity_variables_init(mm_sensor_algorithm_config_t const * config);
+void mm_activity_variables_init(void);
 
 /**
  * Access AV value.

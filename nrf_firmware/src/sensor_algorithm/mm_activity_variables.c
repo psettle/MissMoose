@@ -27,8 +27,6 @@ notes:
                        VARIABLES
 **********************************************************/
 
-static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
-
 /**
      Activity variable definition, can be accessed as AV(x, y).
 
@@ -47,16 +45,14 @@ static mm_activity_variable_t activity_variables[ACTIVITY_VARIABLES_NUM];
                        DEFINITIONS
 **********************************************************/
 
-void mm_activity_variables_init(mm_sensor_algorithm_config_t const * config)
+void mm_activity_variables_init(void)
 {
-	sensor_algorithm_config = config;
-	
 	/* Initialize activity variables. */
     memset(&(activity_variables[0]), 0, sizeof(activity_variables));
     
     for(uint16_t i = 0; i < ACTIVITY_VARIABLES_NUM; ++i)
     {
-        activity_variables[i] = sensor_algorithm_config->activity_variable_min;
+        activity_variables[i] = mm_sensor_algorithm_config()->activity_variable_min;
     }
 }
 
@@ -84,8 +80,8 @@ activity_variable_state_t mm_get_status_for_av(mm_activity_variable_t const * av
     }
 
     /* Collect the correct thresholds. */
-    float low_thresh = is_roadside ? sensor_algorithm_config->possible_detection_threshold_rs : sensor_algorithm_config->possible_detection_threshold_nrs;
-    float high_thresh = is_roadside ? sensor_algorithm_config->detection_threshold_rs : sensor_algorithm_config->detection_threshold_nrs;
+    float low_thresh = is_roadside ? mm_sensor_algorithm_config()->possible_detection_threshold_rs : mm_sensor_algorithm_config()->possible_detection_threshold_nrs;
+    float high_thresh = is_roadside ? mm_sensor_algorithm_config()->detection_threshold_rs : mm_sensor_algorithm_config()->detection_threshold_nrs;
 
     /* Check against the thresholds. */
     if (*av < low_thresh)

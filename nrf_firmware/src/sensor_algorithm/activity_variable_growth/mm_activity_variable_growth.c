@@ -45,12 +45,6 @@ typedef struct
 } activity_variable_set_t;
 
 /**********************************************************
-                       VARIABLES
-**********************************************************/
-
-static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
-
-/**********************************************************
                        DECLARATIONS
 **********************************************************/
 
@@ -78,13 +72,8 @@ static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set);
 /**
  * Initialize growth logic.
  */
-void mm_activity_variable_growth_init(mm_sensor_algorithm_config_t const * config)
+void mm_activity_variable_growth_init(void)
 {
-	sensor_algorithm_config = config;
-
-	set_lidar_sensor_algorithm_config(config);
-	set_pir_sensor_algorithm_config(config);
-
 	init_sensor_records();
 }
 
@@ -177,9 +166,9 @@ static void grow_activity_variables(activity_variable_set_t* av_set, activity_va
         *(av_set->avs[i]) *= factor;
 
         /* Check if max exceeded */
-        if(*(av_set->avs[i]) > sensor_algorithm_config->activity_variable_max)
+        if(*(av_set->avs[i]) > mm_sensor_algorithm_config()->activity_variable_max)
         {
-            *(av_set->avs[i]) = sensor_algorithm_config->activity_variable_max;
+            *(av_set->avs[i]) = mm_sensor_algorithm_config()->activity_variable_max;
         }
     }
 }

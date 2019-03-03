@@ -22,12 +22,6 @@ notes:
 **********************************************************/
 
 /**
- * Sets the sensor algorithm configuration constants. Should never
- * be called more than once.
- */
-void set_lidar_sensor_algorithm_config(mm_sensor_algorithm_config_t const * config);
-
-/**
  * Translates a lidar detection event into an abstract detection event.
  */
 void translate_lidar_detection(sensor_evt_t const * sensor_evt);

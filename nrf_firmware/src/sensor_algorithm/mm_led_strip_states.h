@@ -26,7 +26,7 @@
                        DECLARATIONS
 **********************************************************/
 
-void mm_led_strip_states_init(mm_sensor_algorithm_config_t const * config);
+void mm_led_strip_states_init(void);
 
 /**
     Updates current LED signalling states and increments

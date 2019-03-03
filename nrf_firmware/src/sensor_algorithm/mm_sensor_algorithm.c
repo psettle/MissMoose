@@ -91,7 +91,7 @@ static uint32_t hour_counter = 0;
 /**
     Initialize algorithm intermediates, register with external interfaces.
 */
-void mm_sensor_algorithm_init(mm_sensor_algorithm_config_t const * config)
+void mm_sensor_algorithm_init(void)
 {
     second_counter = 0;
     minute_counter = 0;
@@ -99,10 +99,9 @@ void mm_sensor_algorithm_init(mm_sensor_algorithm_config_t const * config)
 
     /* Initialize algorithm components. */
     mm_sensor_error_init();
-    mm_activity_variables_init(config);
-    mm_activity_variable_growth_init(config);
-    mm_led_strip_states_init(config);
-	mm_activity_variable_drain_init(config);
+    mm_activity_variables_init();
+    mm_activity_variable_growth_init();
+    mm_led_strip_states_init();
 
     /* Register for sensor data with sensor_transmission.h */
     mm_sensor_transmission_register_sensor_data(sensor_data_evt_handler);

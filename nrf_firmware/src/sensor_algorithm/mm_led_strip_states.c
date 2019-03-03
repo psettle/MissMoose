@@ -120,8 +120,6 @@ static void clear_all_current_av_states(void);
 */
 static led_signalling_state_record_t led_signalling_state_records [MAX_GRID_SIZE_X];
 
-static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
-
 static output_table_t const top_left_output =
 {
 	{
@@ -191,10 +189,8 @@ static output_table_t const default_output =
                        DECLARATIONS
 **********************************************************/
 
-void mm_led_strip_states_init(mm_sensor_algorithm_config_t const * config)
+void mm_led_strip_states_init(void)
 {
-	sensor_algorithm_config = config;
-
 	/* Initialize LED signalling states */
     memset( &led_signalling_state_records[0], 0, sizeof(led_signalling_state_records) );
 }
@@ -428,8 +424,8 @@ static bool has_current_output_state_timed_out(led_signalling_state_record_t con
     APP_ERROR_CHECK(!p_record->timeout_active);
 
     return (
-            (p_record->current_output_state == CONCERN && p_record->second_counter >= sensor_algorithm_config->minimum_concern_signal_duration_s) ||
-            (p_record->current_output_state == ALARM && p_record->second_counter >= sensor_algorithm_config->minimum_alarm_signal_duration_s)
+            (p_record->current_output_state == CONCERN && p_record->second_counter >= mm_sensor_algorithm_config()->minimum_concern_signal_duration_s) ||
+            (p_record->current_output_state == ALARM && p_record->second_counter >= mm_sensor_algorithm_config()->minimum_alarm_signal_duration_s)
            );
 }
 
