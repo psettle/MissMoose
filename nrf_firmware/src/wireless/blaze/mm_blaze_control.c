@@ -26,7 +26,7 @@ notes:
                         CONSTANTS
 **********************************************************/
 
-#define LED_DEBUG        ( false )
+#define LED_DEBUG       ( false )
 #define TEST_MESSAGE    ( false )
 #if LED_DEBUG
     #include "bsp.h"
