@@ -98,7 +98,7 @@ void mm_sensor_algorithm_init(mm_sensor_algorithm_config_t const * config)
     hour_counter = 0;
 
     /* Initialize algorithm components. */
-    mm_sensor_error_init(config);
+    mm_sensor_error_init();
     mm_activity_variables_init(config);
     mm_activity_variable_growth_init(config);
     mm_led_strip_states_init(config);

@@ -39,7 +39,7 @@ typedef struct
 /**
  * Initialize all sensor records to default values.
  */
-void init_sensor_records(mm_sensor_algorithm_config_t const * config);
+void init_sensor_records(void);
 
 /**
  * Fetch a detection record for a sensor, create one if needed.

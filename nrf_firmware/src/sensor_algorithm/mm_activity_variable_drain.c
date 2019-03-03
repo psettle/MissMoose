@@ -48,9 +48,9 @@ void mm_activity_variable_drain_init(mm_sensor_algorithm_config_t const * config
 */
 void mm_apply_activity_variable_drain_factor(void)
 {
-    for ( uint8_t x = 0; x < mm_get_max_av_size_x(); x++ )
+    for ( uint8_t x = 0; x < MAX_AV_SIZE_X; x++ )
     {
-        for ( uint8_t y = 0; y < mm_get_max_av_size_y(); y++ )
+        for ( uint8_t y = 0; y < MAX_AV_SIZE_Y; y++ )
         {
             if ( AV(x, y) > sensor_algorithm_config->activity_variable_min )
             {

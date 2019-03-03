@@ -35,9 +35,6 @@ typedef void(*test_case_cb)(void);
                        DECLARATIONS
 **********************************************************/
 
-// Sets the sensor algorithm config constants to be used during testing.
-void test_sensor_algorithm_config(mm_sensor_algorithm_config_t const * config);
-
 void test_demo_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);\
 
 // Adds the 4 tests to be run to the test runner

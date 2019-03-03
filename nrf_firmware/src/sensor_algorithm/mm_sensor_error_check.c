@@ -42,7 +42,7 @@ typedef struct
 typedef struct
 {
     sensor_def_t      sensor;
-    uint32_t *        activity_timestamps;
+	uint32_t          activity_timestamps[SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE];
     uint16_t          activity_timestamp_index;
     bool              sensor_hyperactive;
     bool              is_valid;
@@ -102,31 +102,19 @@ static void evaluate_sensor_hyperactivity(void);
  */
 static void evaluate_sensor_hyperactivity_record(sensor_hyperactivity_record_t * record);
 
-/**
-	Creates a new sensor_hyperactivity_record_t with num_timestamps
-	timestamps and with sensor_def_t given by sensor.
- */
-static sensor_hyperactivity_record_t create_new_sensor_hyperactivity_record(const sensor_def_t * sensor, uint16_t num_timestamps);
-
 /**********************************************************
                        VARIABLES
 **********************************************************/
 
-static sensor_inactivity_record_t * sensor_inactivity_records;
-static sensor_hyperactivity_record_t * sensor_hyperactivity_records;
-static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
+static sensor_inactivity_record_t       sensor_inactivity_records[MAX_SENSOR_COUNT];
+static sensor_hyperactivity_record_t    sensor_hyperactivity_records[MAX_SENSOR_COUNT];
 
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
 
-void mm_sensor_error_init(mm_sensor_algorithm_config_t const * config)
+void mm_sensor_error_init(void)
 {
-	sensor_algorithm_config = config;
-	
-	sensor_inactivity_records = malloc((sensor_algorithm_config->max_sensor_count) * sizeof(sensor_inactivity_record_t));
-	sensor_hyperactivity_records = malloc((sensor_algorithm_config->max_sensor_count) * sizeof(sensor_hyperactivity_record_t));
-
 	memset(&sensor_inactivity_records[0], 0, sizeof(sensor_inactivity_records));
     memset(&sensor_hyperactivity_records[0], 0, sizeof(sensor_hyperactivity_records));
 }
@@ -182,7 +170,7 @@ void mm_sensor_error_on_node_positions_update(uint32_t minute_count)
        there are potentially new sensors to track inactivity
        for. Go through each node position and fetch an inactivity record for it. */
 
-    for (uint16_t i = 0; i < sensor_algorithm_config->max_number_nodes; i++)
+    for (uint16_t i = 0; i < MAX_NUMBER_NODES; i++)
     {
         mm_node_position_t const * position = &(get_node_positions()[i]);
 
@@ -225,7 +213,7 @@ static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t min
     create_sensor_record(evt, &sensor);
 
     /* Find the inactive record for that sensor, mark the minutes since last detection. */
-    for (uint16_t i = 0; i < sensor_algorithm_config->max_sensor_count; i++)
+    for (uint16_t i = 0; i < MAX_SENSOR_COUNT; i++)
     {
         sensor_inactivity_record_t* record = &sensor_inactivity_records[i];
 
@@ -249,11 +237,11 @@ static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t min
 static void force_exist_inactive_sensor_records(mm_node_position_t const * position, uint32_t minute_count)
 {
     /* Which sensors does this node have? */
-    sensor_rotation_t * node_sensor_rotations = malloc((sensor_algorithm_config->max_sensors_per_node) * sizeof(sensor_rotation_t));
-    get_sensor_rotations(position->node_type, sensor_algorithm_config->max_sensors_per_node, node_sensor_rotations);
+    sensor_rotation_t * node_sensor_rotations = malloc(MAX_SENSORS_PER_NODE * sizeof(sensor_rotation_t));
+    get_sensor_rotations(position->node_type, MAX_SENSORS_PER_NODE, node_sensor_rotations);
 
     /* Create a record for each one. */
-    for (uint16_t i = 0; i < sensor_algorithm_config->max_sensors_per_node; ++i)
+    for (uint16_t i = 0; i < MAX_SENSORS_PER_NODE; ++i)
     {
         sensor_def_t sensor;
         memset(&sensor, 0, sizeof(sensor));
@@ -271,7 +259,7 @@ static void force_exist_inactive_sensor_record(sensor_def_t const * sensor, uint
 {
     /* First check if the record exists already. */
     sensor_inactivity_record_t* empty_record = NULL;
-    for (uint16_t i = 0; i < sensor_algorithm_config->max_sensor_count; ++i)
+    for (uint16_t i = 0; i < MAX_SENSOR_COUNT; ++i)
     {
         sensor_inactivity_record_t const * record = &sensor_inactivity_records[i];
 
@@ -314,7 +302,7 @@ static void on_sensor_evt_hyperactive_update(sensor_evt_t const * evt, uint32_t 
 
     /* Increment queue index */
     record->activity_timestamp_index++;
-    record->activity_timestamp_index %= sensor_algorithm_config->sensor_hyperactivity_event_window_size;
+    record->activity_timestamp_index %= SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE;
 }
 
 /**
@@ -327,7 +315,7 @@ static sensor_hyperactivity_record_t* get_sensor_hyperactivity_record(sensor_evt
     create_sensor_record(evt, &sensor);
 
     /* check to see if this sensor has an existing hyperactivity record and if it does add to it */
-    for (uint16_t i = 0; i < sensor_algorithm_config->max_sensor_count; i++)
+    for (uint16_t i = 0; i < MAX_SENSOR_COUNT; i++)
     {
         sensor_hyperactivity_record_t* existing_record = &sensor_hyperactivity_records[i];
 
@@ -343,7 +331,7 @@ static sensor_hyperactivity_record_t* get_sensor_hyperactivity_record(sensor_evt
         return existing_record;
     }
 
-    for (uint16_t i = 0; i < sensor_algorithm_config->max_sensor_count; i++)
+    for (uint16_t i = 0; i < MAX_SENSOR_COUNT; i++)
     {
         sensor_hyperactivity_record_t* new_record = &sensor_hyperactivity_records[i];
 
@@ -354,7 +342,10 @@ static sensor_hyperactivity_record_t* get_sensor_hyperactivity_record(sensor_evt
         }
 
         /* Initialize the new record. */
-		*new_record = create_new_sensor_hyperactivity_record(&sensor, sensor_algorithm_config->sensor_hyperactivity_event_window_size);
+		memset(new_record, 0, sizeof(sensor_hyperactivity_record_t));
+		memcpy(&new_record->sensor, &sensor, sizeof(sensor_def_t));
+		new_record->sensor_hyperactive = false;
+		new_record->is_valid = true;
 
         return new_record;
     }
@@ -374,7 +365,7 @@ static sensor_inactivity_record_t* get_sensor_inactivity_record(sensor_evt_t con
     create_sensor_record(evt, &sensor);
 
     /* check to see if this sensor has an existing inactivity record and if it does add to it */
-    for (uint16_t i = 0; i < sensor_algorithm_config->max_sensor_count; i++)
+    for (uint16_t i = 0; i < MAX_SENSOR_COUNT; i++)
     {
         sensor_inactivity_record_t* existing_record = &sensor_inactivity_records[i];
 
@@ -401,7 +392,7 @@ static sensor_inactivity_record_t* get_sensor_inactivity_record(sensor_evt_t con
 static void evaluate_sensor_inactivity(uint32_t minute_count)
 {
     /* Check for and flag any sensors where the last detection is too old. */
-    for (uint16_t i = 0; i < sensor_algorithm_config->max_sensor_count; ++i)
+    for (uint16_t i = 0; i < MAX_SENSOR_COUNT; ++i)
     {
         sensor_inactivity_record_t* record = &sensor_inactivity_records[i];
 
@@ -419,7 +410,7 @@ static void evaluate_sensor_inactivity(uint32_t minute_count)
 
         uint32_t dt = minute_count - record->t_last_detection;
 
-        if (dt >= (uint32_t) sensor_algorithm_config->sensor_inactivity_threshold_min)
+        if (dt >= SENSOR_INACTIVITY_THRESHOLD_MIN)
         {
             record->is_inactive = true;
             /* Note: will be set is_inactive = false when a sensor event occurs for that sensor. */
@@ -432,7 +423,7 @@ static void evaluate_sensor_inactivity(uint32_t minute_count)
  */
 static void evaluate_sensor_hyperactivity(void)
 {
-    for (uint16_t i = 0; i < sensor_algorithm_config->max_sensor_count; i++)
+    for (uint16_t i = 0; i < MAX_SENSOR_COUNT; i++)
     {
         sensor_hyperactivity_record_t * record = &sensor_hyperactivity_records[i];
 
@@ -456,7 +447,7 @@ static void evaluate_sensor_hyperactivity_record(sensor_hyperactivity_record_t *
     uint32_t tmin = UINT32_MAX;
 
     /* Calculate the duration the events were collected over. */
-    for (uint16_t i = 0; i < sensor_algorithm_config->sensor_hyperactivity_event_window_size; i++)
+    for (uint16_t i = 0; i < SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE; i++)
     {
         uint32_t t = record->activity_timestamps[i];
 
@@ -488,9 +479,9 @@ static void evaluate_sensor_hyperactivity_record(sensor_hyperactivity_record_t *
 
     float dt = (float)(tmax - tmin);
 
-    float detection_frequency = sensor_algorithm_config->sensor_hyperactivity_event_window_size / dt; /* In detection/minute */
+    float detection_frequency = SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE / dt; /* In detection/minute */
 
-    if (detection_frequency >= sensor_algorithm_config->sensor_hyperactivity_frequency_thres)
+    if (detection_frequency >= SENSOR_HYPERACTIVITY_FREQUENCY_THRES)
     {
         record->sensor_hyperactive = true;
     }
@@ -498,22 +489,4 @@ static void evaluate_sensor_hyperactivity_record(sensor_hyperactivity_record_t *
     {
         record->sensor_hyperactive = false;
     }
-}
-
-/**
-	Creates a new sensor_hyperactivity_record_t with num_timestamps
-	timestamps and with sensor_def_t given by sensor.
- */
-static sensor_hyperactivity_record_t create_new_sensor_hyperactivity_record(const sensor_def_t * sensor, uint16_t num_timestamps)
-{
-	sensor_hyperactivity_record_t sensor_hyperactivity_record =
-	{
-		*sensor,
-		malloc(num_timestamps * sizeof(uint32_t)),
-		0,
-		false,
-		false
-	};
-
-	return sensor_hyperactivity_record;
 }

@@ -21,8 +21,6 @@ extern "C" {
 VARIABLES
 **********************************************************/
 
-static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
-
 /**********************************************************
 DECLARATIONS
 **********************************************************/
@@ -42,11 +40,6 @@ static void test_case_test_inactive_state_update(void);
 DEFINITIONS
 **********************************************************/
 
-void test_sensor_algorithm_config(mm_sensor_algorithm_config_t const * config)
-{
-	sensor_algorithm_config = config;
-}
-
 void test_hyperactive_inactive_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names)
 {
     ADD_TEST(test_case_test_sensor_normal_activity);
@@ -63,7 +56,7 @@ static void test_case_test_sensor_normal_activity(void)
     create_all_pir_sensor_evts(pir_evts, PIR_DETECTION_START);
     create_all_lidar_sensor_evts(lidar_evts, 100);
     // Test sending data at a reasonable frequency
-    for (int i = 0; i < sensor_algorithm_config->sensor_hyperactivity_event_window_size + 2; i++)
+    for (int i = 0; i < SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE + 2; i++)
     {
         for (auto const & evt : pir_evts)
         {
@@ -73,7 +66,7 @@ static void test_case_test_sensor_normal_activity(void)
         {
             test_send_lidar_data(evt.lidar_data.node_id, evt.lidar_data.sensor_rotation, 100);
         }
-        simulate_time(MINUTES(sensor_algorithm_config->sensor_hyperactivity_frequency_thres) + 5);
+        simulate_time(MINUTES(SENSOR_HYPERACTIVITY_FREQUENCY_THRES) + 5);
     }
 
     // If any sensors are listed as hyperactive, that's a fail.
@@ -104,7 +97,7 @@ static void test_case_test_sensor_hyperactivity(void)
     create_all_pir_sensor_evts(pir_evts, PIR_DETECTION_START);
     create_all_lidar_sensor_evts(lidar_evts, 100);
     // Test sending data at a high frequency
-    for (int i = 0; i < sensor_algorithm_config->sensor_hyperactivity_event_window_size + 2; i++)
+    for (int i = 0; i < SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE + 2; i++)
     {
         for (auto const & evt : pir_evts)
         {
@@ -114,7 +107,7 @@ static void test_case_test_sensor_hyperactivity(void)
         {
             test_send_lidar_data(evt.lidar_data.node_id, evt.lidar_data.sensor_rotation, 100);
         }
-        simulate_time(MINUTES(sensor_algorithm_config->sensor_hyperactivity_frequency_thres) - 5);
+        simulate_time(MINUTES(SENSOR_HYPERACTIVITY_FREQUENCY_THRES) - 5);
     }
 
     // If any sensors are listed as not hyperactive, that's a fail.
@@ -145,7 +138,7 @@ static void test_case_test_sensor_hyperactivity_cooldown(void)
     create_all_pir_sensor_evts(pir_evts, true);
     create_all_lidar_sensor_evts(lidar_evts, 100);
     // Test sending data at a high frequency
-    for (int i = 0; i < sensor_algorithm_config->sensor_hyperactivity_event_window_size + 2; i++)
+    for (int i = 0; i < SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE + 2; i++)
     {
         for (auto const & evt : pir_evts)
         {
@@ -155,7 +148,7 @@ static void test_case_test_sensor_hyperactivity_cooldown(void)
         {
             test_send_lidar_data(evt.lidar_data.node_id, evt.lidar_data.sensor_rotation, 100);
         }
-        simulate_time(MINUTES(sensor_algorithm_config->sensor_hyperactivity_frequency_thres) - 5);
+        simulate_time(MINUTES(SENSOR_HYPERACTIVITY_FREQUENCY_THRES) - 5);
     }
 
     /* While not the purpose of this test, if any sensors are listed as not hyperactive, that's also a fail
@@ -179,7 +172,7 @@ static void test_case_test_sensor_hyperactivity_cooldown(void)
         }
     }
     // Wait long enough to clear out any hyperactivity flags, then send one more event.
-    simulate_time(MINUTES(sensor_algorithm_config->sensor_hyperactivity_event_window_size / sensor_algorithm_config->sensor_hyperactivity_frequency_thres));
+    simulate_time(MINUTES(SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE / SENSOR_HYPERACTIVITY_FREQUENCY_THRES));
 
     for (auto const & evt : pir_evts)
     {
@@ -251,7 +244,7 @@ static void test_case_test_sensor_inactivity(void)
     }
 
     // Wait long enough to cause the sensors to be marked as inactive
-    simulate_time(MINUTES(sensor_algorithm_config->sensor_inactivity_threshold_min + 1));
+    simulate_time(MINUTES(SENSOR_INACTIVITY_THRESHOLD_MIN + 1));
 
     // If any sensors are listed as not inactive, that's a fail.
     for (auto const & evt : pir_evts)

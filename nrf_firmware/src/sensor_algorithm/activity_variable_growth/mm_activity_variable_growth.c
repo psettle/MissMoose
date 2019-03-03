@@ -85,7 +85,7 @@ void mm_activity_variable_growth_init(mm_sensor_algorithm_config_t const * confi
 	set_lidar_sensor_algorithm_config(config);
 	set_pir_sensor_algorithm_config(config);
 
-	init_sensor_records(config);
+	init_sensor_records();
 }
 
 /**
@@ -196,7 +196,7 @@ static void find_adjacent_activity_variables(int8_t xpos, int8_t ypos, total_rot
     uint8_t x_array = xpos + 1;
     uint8_t y_array = ypos + 1;
     /* Positon coordinates and AV coordinates use inverted Y direction. */
-    y_array = sensor_algorithm_config->max_grid_size_y - y_array - 1;
+    y_array = MAX_GRID_SIZE_Y - y_array - 1;
 
     /* On any case x or y may underflow, if that happens they will be too big and won't be saved. */
     switch(rotation)
@@ -234,12 +234,12 @@ static void find_adjacent_activity_variables(int8_t xpos, int8_t ypos, total_rot
 static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set)
 {
     /* Check bounds on input */
-	if(x >= mm_get_max_av_size_x())
+	if(x >= MAX_AV_SIZE_X)
     {
         return;
     }
 
-    if(y >= mm_get_max_av_size_y())
+    if(y >= MAX_AV_SIZE_Y)
     {
         return;
     }

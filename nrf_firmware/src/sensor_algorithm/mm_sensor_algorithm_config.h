@@ -13,6 +13,20 @@ notes:
 #include "stdint.h"
 
 /**********************************************************
+					ALGORITHM CONSTANTS
+**********************************************************/
+
+#define MAX_GRID_SIZE_X                     ( 3 )
+#define MAX_GRID_SIZE_Y                     ( 3 )
+#define MAX_NUMBER_NODES                    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
+#define MAX_SENSORS_PER_NODE                ( 2 )
+#define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )     
+
+#define SENSOR_INACTIVITY_THRESHOLD_MIN         ( 60 * 24 )
+#define SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE  ( 120 )
+#define SENSOR_HYPERACTIVITY_FREQUENCY_THRES    ( 1.0 ) // events / SENSOR_HYPERACTIVITY_DETECTION_PERIOD
+
+/**********************************************************
                     ALGORITHM TUNING
 **********************************************************/
 
@@ -21,12 +35,6 @@ notes:
 */
 typedef struct
 {
-    uint16_t max_grid_size_x;             
-	uint16_t max_grid_size_y;
-	uint16_t max_number_nodes;
-	uint16_t max_sensors_per_node;
-	uint16_t max_sensor_count;
-
     float activity_variable_min;    
     float activity_variable_max;  
 
@@ -44,12 +52,8 @@ typedef struct
     float road_trickle_proximity_factor_1;
     float road_trickle_proximity_factor_2;
 
-	uint16_t sensor_inactivity_threshold_min;
-	uint16_t sensor_hyperactivity_event_window_size;
-    float sensor_hyperactivity_frequency_thres; // events / SENSOR_HYPERACTIVITY_DETECTION_PERIOD
-
     float activity_variable_decay_factor;
-    int activity_decay_period_ms;
+	uint16_t activity_decay_period_ms;
 
     /* Road-side (RS), non-road-side (NRS) */
 	float possible_detection_threshold_rs;

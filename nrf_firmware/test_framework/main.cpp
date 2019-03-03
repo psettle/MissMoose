@@ -20,12 +20,6 @@
 */
 static mm_sensor_algorithm_config_t const sensor_algorithm_config_default =
 {
-	3,  // max_grid_size_x
-	3,  // max_grid_size_y
-	9,  // max_number_nodes
-	2,  // max_sensors_per_node
-	18, // max_sensor_count
-
 	1.0f,   // activity_variable_min
 	12.0f,  // activity_variable_max
 
@@ -42,10 +36,6 @@ static mm_sensor_algorithm_config_t const sensor_algorithm_config_default =
 	1.004f,     // road_trickle_proximity_factor_0
 	1.002f,     // road_trickle_proximity_factor_1
 	1.0f,       // road_trickle_proximity_factor_2
-
-	(60 * 24), // sensor_inactivity_threshold_min
-	120,        // sensor_hyperactivity_event_window_size
-	1.0f,       // sensor_hyperactivity_frequency_thres
 
 	0.99f, // activity_variable_decay_factor
 	1000,  // activity_decay_period_ms
@@ -70,7 +60,6 @@ int main()
     std::vector<test_case_cb> tests;
     std::vector<std::string> test_names;
 
-	test_sensor_algorithm_config(&sensor_algorithm_config_default);
 	test_demo_add_tests(tests, test_names);
     test_basic_sensor_activity_add_tests(tests, test_names);
     test_hyperactive_inactive_add_tests(tests, test_names);

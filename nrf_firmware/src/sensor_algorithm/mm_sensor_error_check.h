@@ -20,7 +20,7 @@ notes:
 /**
     Initialize sensor error checking.
 */
-void mm_sensor_error_init(mm_sensor_algorithm_config_t const * config);
+void mm_sensor_error_init(void);
 
 /**
     Record that a sensor has been active (has had a detection event).
