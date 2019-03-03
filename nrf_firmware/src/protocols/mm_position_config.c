@@ -21,7 +21,7 @@ notes:
                         CONSTANTS
 **********************************************************/
 
-#define MAX_NUMBER_NODES                    ( 9 )
+#define MAX_NUMBER_NODES                     ( 9 )
 
 #define PAGE_NUMBER_INDEX                    ( 0 )
 

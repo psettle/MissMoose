@@ -34,7 +34,7 @@ static void process_pir_evt(pir_evt_t * evt);
                         VARIABLES
 **********************************************************/
 
-static bool                 sensor_manager_init_complete = false;
+static bool              sensor_manager_init_complete = false;
 static hardware_config_t hardware_config = HARDWARE_CONFIG_UNKNOWN;
 
 /**********************************************************
