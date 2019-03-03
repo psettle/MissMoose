@@ -59,7 +59,7 @@ static void test_case_in_out_left_side(TestOutput& oracle)
     test_send_lidar_data(-1, -1, SENSOR_ROTATION_0, 2100);
     simulate_time(13);
 
-    /* End pir detection from top-left of network (No expected output) */
+    /* End pir detection from left of network */
     test_send_pir_data(-1, 0, SENSOR_ROTATION_180, PIR_DETECTION_END);
 
     simulate_time(30);
@@ -150,7 +150,7 @@ static void test_case_in_out_right_side(TestOutput& oracle)
     test_send_lidar_data(1, 1, SENSOR_ROTATION_180, 1800);
     simulate_time(22);
 
-    /* End pir detection from right (No expected output) */
+    /* End pir detection from bottom-right */
     test_send_pir_data(1, -1, SENSOR_ROTATION_0, PIR_DETECTION_END);
 
     simulate_time(30);
