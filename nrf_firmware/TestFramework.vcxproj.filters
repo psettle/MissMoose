@@ -93,6 +93,9 @@
     <ClCompile Include="test_framework\test_runner\test_output.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_framework\test_cases\tests_one_animal_with_one_stop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_framework\mocked_interfaces\app_error.h">
