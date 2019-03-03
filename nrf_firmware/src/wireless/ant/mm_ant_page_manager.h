@@ -11,12 +11,12 @@
                         CONSTANTS
 **********************************************************/
 
-#define NODE_STATUS_PAGE 									( 0x01 )
-#define NETWORK_CONFIGURATION_COMMAND_PAGE 					( 0x10 )
-#define POSITION_CONFIGURATION_COMMAND_PAGE 				( 0x11 )
-#define MONITORING_APPLICATION_DATA_ACKNOWLEDGEMENT_PAGE 	( 0x20 )
-#define LIDAR_MONITORING_APP_DATA_PAGE						( 0x21 )
-#define PIR_MONITORING_APP_DATA PAGE						( 0x22 )
+#define NODE_STATUS_PAGE                                     ( 0x01 )
+#define NETWORK_CONFIGURATION_COMMAND_PAGE                     ( 0x10 )
+#define POSITION_CONFIGURATION_COMMAND_PAGE                 ( 0x11 )
+#define MONITORING_APPLICATION_DATA_ACKNOWLEDGEMENT_PAGE     ( 0x20 )
+#define LIDAR_MONITORING_APP_DATA_PAGE                        ( 0x21 )
+#define PIR_MONITORING_APP_DATA PAGE                        ( 0x22 )
 
 /**********************************************************
                        DECLARATIONS

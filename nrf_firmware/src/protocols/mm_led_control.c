@@ -147,17 +147,17 @@ void mm_led_control_update_node_leds
     }
     //Otherwise - Create and send a blaze message to the specified node.
     ant_blaze_message_t blaze_message;
-	memset( &blaze_message, 0, sizeof( blaze_message ) );
+    memset( &blaze_message, 0, sizeof( blaze_message ) );
 
-	blaze_message.address = target_node_id;
-	blaze_message.index = 0; //Always 0, used internally by blaze code
-	blaze_message.length = 5; //Payload length
+    blaze_message.address = target_node_id;
+    blaze_message.index = 0; //Always 0, used internally by blaze code
+    blaze_message.length = 5; //Payload length
 
     uint8_t payload [5];
-	memset( &payload[0], 0, sizeof( payload ) );
+    memset( &payload[0], 0, sizeof( payload ) );
 
-	payload[PAGE_NUM_INDEX] = BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM;
-	payload[LED_FUNCTION_INDEX] = led_function;
+    payload[PAGE_NUM_INDEX] = BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM;
+    payload[LED_FUNCTION_INDEX] = led_function;
     payload[LED_COLOUR_INDEX] = led_colour;
 
     memset( &payload[3], 0xFF, 2); //Set bytes 3-4 to 0xFF
@@ -171,23 +171,23 @@ void mm_led_control_update_node_leds
 #ifndef MM_BLAZE_GATEWAY
 static void blaze_rx_handler(ant_blaze_message_t msg)
 {
-	/* Filter message for types we care about. */
-	switch(msg.p_data[PAGE_NUM_INDEX])
-	{
-		case BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM:
-			break;
-		default:
-			return;
-	}
+    /* Filter message for types we care about. */
+    switch(msg.p_data[PAGE_NUM_INDEX])
+    {
+        case BLAZE_LED_STATUS_TRANSMISSION_PAGE_NUM:
+            break;
+        default:
+            return;
+    }
 
-	/* Pack message to serializable format. */
-	mm_blaze_message_serialized_t evt;
-	mm_blaze_pack_message(&msg, &evt);
+    /* Pack message to serializable format. */
+    mm_blaze_message_serialized_t evt;
+    mm_blaze_pack_message(&msg, &evt);
 
-	/* Kick event to main */
-	uint32_t err_code;
-	err_code = app_sched_event_put(&evt, sizeof(evt), on_led_control_evt);
-	APP_ERROR_CHECK(err_code);
+    /* Kick event to main */
+    uint32_t err_code;
+    err_code = app_sched_event_put(&evt, sizeof(evt), on_led_control_evt);
+    APP_ERROR_CHECK(err_code);
 }
 
 static void on_led_control_evt(void* p_data, uint16_t size)
@@ -287,13 +287,13 @@ static void led_test_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_p
     /* Check that the input button is actually set. */
     if(!nrf_drv_gpiote_in_is_set(pin))
     {
-    	return;
+        return;
     }
 
     /* Kick event to main */
-	uint32_t err_code;
-	err_code = app_sched_event_put(&pin, sizeof(pin), on_button_event);
-	APP_ERROR_CHECK(err_code);
+    uint32_t err_code;
+    err_code = app_sched_event_put(&pin, sizeof(pin), on_button_event);
+    APP_ERROR_CHECK(err_code);
 }
 
 static void on_button_event(void* p_data, uint16_t size)

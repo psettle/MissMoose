@@ -33,15 +33,15 @@ typedef enum
     SENSOR_ROTATION_270,
     SENSOR_ROTATION_315,
 
-    SENSOR_ROTATION_COUNT	
+    SENSOR_ROTATION_COUNT    
 } sensor_rotation_t;
 
 typedef enum
 {
-	SENSOR_TYPE_UNKNOWN,
-	SENSOR_TYPE_PIR,
-	SENSOR_TYPE_LIDAR,
-	SENSOR_TYPE_COUNT
+    SENSOR_TYPE_UNKNOWN,
+    SENSOR_TYPE_PIR,
+    SENSOR_TYPE_LIDAR,
+    SENSOR_TYPE_COUNT
 } sensor_type_t;
 
 /**********************************************************
@@ -55,16 +55,16 @@ typedef enum
 
 typedef struct
 {
-	uint16_t node_id;
-	sensor_rotation_t sensor_rotation;
-	bool detection;
+    uint16_t node_id;
+    sensor_rotation_t sensor_rotation;
+    bool detection;
 } pir_evt_data_t;
 
 typedef struct
 {
-	uint16_t node_id;
-	sensor_rotation_t sensor_rotation;
-	uint16_t distance_measured;
+    uint16_t node_id;
+    sensor_rotation_t sensor_rotation;
+    uint16_t distance_measured;
 } lidar_evt_data_t;
 
 typedef struct
@@ -72,8 +72,8 @@ typedef struct
     sensor_type_t sensor_type;
     union
     {
-    	pir_evt_data_t 		pir_data;
-    	lidar_evt_data_t 	lidar_data;
+        pir_evt_data_t         pir_data;
+        lidar_evt_data_t     lidar_data;
     };
 } sensor_evt_t;
 
@@ -93,16 +93,16 @@ void mm_sensor_transmission_register_sensor_data( sensor_data_evt_handler_t sens
 
 /* Sends a PIR data event to the gateway node for processing. */
 void mm_send_pir_data
-	(
-	sensor_rotation_t sensor_rotation,
-	bool detection
-	);
+    (
+    sensor_rotation_t sensor_rotation,
+    bool detection
+    );
 
 /* Sends a LIDAR data event to the gateway node for processing. */
 void mm_send_lidar_data
-	(
-	sensor_rotation_t sensor_rotation,
-	uint16_t distance_measured
-	);
+    (
+    sensor_rotation_t sensor_rotation,
+    uint16_t distance_measured
+    );
 
 #endif /* MM_SENSOR_TRANSMISSION_H */
