@@ -34,7 +34,7 @@ notes:
    AV(0, 1) = 1.2f;
    AV_TOP_LEFT = 1.2f;
    AV_TOP_LEFT = AV_TOP_RIGHT;
-   
+
    */
 #define AV(x, y)                (*(mm_av_access((x),(y))))
 #define AV_TOP_LEFT             AV(0, 0)

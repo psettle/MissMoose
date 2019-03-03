@@ -285,7 +285,7 @@ static void pir_in_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t a
  */
 static void on_pin_event(void* evt_data, uint16_t evt_size)
 {
-	pir_pin_change_evt_t* pin_evt = (pir_pin_change_evt_t*)evt_data;
+    pir_pin_change_evt_t* pin_evt = (pir_pin_change_evt_t*)evt_data;
 
     /*LEDs are indexed from 0 to 3. LED commands:
      * bsp_board_led_off, bsp_board_led_on, bsp_board_led_invert
@@ -330,18 +330,18 @@ static void on_pin_event(void* evt_data, uint16_t evt_size)
  */
 void pir_evt_handler_register(pir_evt_handler_t pir_evt_handler)
 {
-	uint32_t i;
+    uint32_t i;
 
-	for (i = 0; i < MAX_EVT_HANDLERS; i++)
-	{
-		if (pir_evt_handlers[i] == NULL)
-		{
-			pir_evt_handlers[i] = pir_evt_handler;
-			break;
-		}
-	}
+    for (i = 0; i < MAX_EVT_HANDLERS; i++)
+    {
+        if (pir_evt_handlers[i] == NULL)
+        {
+            pir_evt_handlers[i] = pir_evt_handler;
+            break;
+        }
+    }
 
-	APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
+    APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
 }
 
 /**
@@ -352,17 +352,17 @@ void pir_evt_handler_register(pir_evt_handler_t pir_evt_handler)
 static void pir_event_dispatch(pir_evt_t* evt_data)
 {
     // Forward PIR event to listeners
-	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
-	{
-		if (pir_evt_handlers[i] != NULL)
-		{
-			pir_evt_handlers[i](evt_data);
-		}
-		else
-		{
-			break;
-		}
-	}
+    for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
+    {
+        if (pir_evt_handlers[i] != NULL)
+        {
+            pir_evt_handlers[i](evt_data);
+        }
+        else
+        {
+            break;
+        }
+    }
 }
 
 #if BUTTON_ENABLE_TEST

@@ -182,7 +182,7 @@ static bool sensor_evt_to_pir_detection(pir_evt_data_t const * evt, abstract_pir
     memset(detection, 0, sizeof(abstract_pir_detection_t));
 
     mm_node_position_t const * position = get_position_for_node(evt->node_id);
-    
+
     if(position == NULL)
     {
         /* We don't know where this event came from */

@@ -49,7 +49,7 @@ void mm_activity_variables_init(void)
 {
 	/* Initialize activity variables. */
     memset(&(activity_variables[0]), 0, sizeof(activity_variables));
-    
+
     for(uint16_t i = 0; i < ACTIVITY_VARIABLES_NUM; ++i)
     {
         activity_variables[i] = mm_sensor_algorithm_config()->activity_variable_min;

@@ -321,17 +321,17 @@ void lidar_event_dispatch(uint16_t distance, lidar_event_type_t event)
     lidar_event.distance = distance;
     lidar_event.event = event;
     // Forward LIDAR event to listeners
-	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
-	{
-		if (lidar_evt_handlers[i] != NULL)
-		{
-			lidar_evt_handlers[i](&lidar_event);
-		}
-		else
-		{
-			break;
-		}
-	}
+    for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
+    {
+        if (lidar_evt_handlers[i] != NULL)
+        {
+            lidar_evt_handlers[i](&lidar_event);
+        }
+        else
+        {
+            break;
+        }
+    }
 }
 
 /**
@@ -341,18 +341,18 @@ void lidar_event_dispatch(uint16_t distance, lidar_event_type_t event)
  */
 void lidar_evt_handler_register(lidar_evt_handler_t lidar_evt_handler)
 {
-	uint32_t i;
+    uint32_t i;
 
-	for (i = 0; i < MAX_EVT_HANDLERS; i++)
-	{
-		if (lidar_evt_handlers[i] == NULL)
-		{
-			lidar_evt_handlers[i] = lidar_evt_handler;
-			break;
-		}
-	}
+    for (i = 0; i < MAX_EVT_HANDLERS; i++)
+    {
+        if (lidar_evt_handlers[i] == NULL)
+        {
+            lidar_evt_handlers[i] = lidar_evt_handler;
+            break;
+        }
+    }
 
-	APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
+    APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
 }
 
 /**
@@ -469,9 +469,9 @@ void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
  */
 static void timer_event_handler(void * p_context)
 {
-	uint32_t err_code;
+    uint32_t err_code;
 
-	/* Kick timer event to main, since there's a bunch of little steps to do on timer events. */
+    /* Kick timer event to main, since there's a bunch of little steps to do on timer events. */
     err_code = app_sched_event_put(NULL, 0, on_timer_event);
     APP_ERROR_CHECK(err_code);
 }

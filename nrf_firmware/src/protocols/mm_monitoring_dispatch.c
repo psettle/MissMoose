@@ -170,7 +170,7 @@ void mm_monitoring_dispatch_send_lidar_data
     uint8_t* payload = &lidar_page_payload.data[0];
 
     memset(&lidar_page_payload, 0, sizeof(mm_ant_payload_t));
-    
+
     payload[PAGE_NUM_INDEX] = MONITORING_LIDAR_DATA_PAGE_NUM;
     payload[MESSAGE_ID_INDEX] = message_id;
     memcpy(&payload[NODE_ID_INDEX], &node_id, sizeof(uint16_t));
@@ -247,7 +247,7 @@ static void ant_payload_queue_push(mm_ant_payload_t const * ant_payload)
             CONCURRENT_PAGE_COUNT
             );
     }
-    
+
 }
 
 static mm_ant_payload_t const * ant_payload_queue_peek_tail(void)
@@ -276,8 +276,8 @@ static void process_ant_evt(ant_evt_t * evt)
                 {
                     /* This might acknowledge the current broadcast, kick it to main to check. */
                     uint32_t err_code;
-                	err_code = app_sched_event_put(evt, sizeof(ant_evt_t), on_monitoring_data_acknowledge);
-                	APP_ERROR_CHECK(err_code);
+                    err_code = app_sched_event_put(evt, sizeof(ant_evt_t), on_monitoring_data_acknowledge);
+                    APP_ERROR_CHECK(err_code);
                 }
             }
             break;
