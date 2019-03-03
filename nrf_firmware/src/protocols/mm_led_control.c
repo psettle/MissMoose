@@ -243,7 +243,7 @@ static void update_led_settings(led_function_t led_function, led_colours_t led_c
             APP_ERROR_CHECK(true);
             break;
     }
-    
+
 }
 
 #if TEST_LED_MESSAGES
