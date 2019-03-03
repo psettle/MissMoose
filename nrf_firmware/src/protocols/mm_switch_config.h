@@ -21,9 +21,9 @@
 
 typedef enum
 {
-    HARDWARE_CONFIG_UNKNOWN            = 0x00,
+    HARDWARE_CONFIG_UNKNOWN         = 0x00,
     HARDWARE_CONFIG_PIR_PIR         = 0x01,    /* Switch 0 & 1 off */
-    HARDWARE_CONFIG_PIR_LIDAR         = 0x02, /* Switch 0 on, switch 1 off */
+    HARDWARE_CONFIG_PIR_LIDAR       = 0x02, /* Switch 0 on, switch 1 off */
     HARDWARE_CONFIG_PIR_LIDAR_LED   = 0x03  /* Switch 0 off, switch 1 on */
 } hardware_config_t;
 

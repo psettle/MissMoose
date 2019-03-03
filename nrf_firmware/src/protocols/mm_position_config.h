@@ -48,7 +48,7 @@ typedef struct mm_node_position_struct {
     uint16_t node_id;
 
     uint8_t             node_type;
-    mm_node_rotation_t     node_rotation;
+    mm_node_rotation_t  node_rotation;
 
     int8_t grid_position_x;
     int8_t grid_position_y;

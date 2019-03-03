@@ -72,8 +72,8 @@ typedef struct
     sensor_type_t sensor_type;
     union
     {
-        pir_evt_data_t         pir_data;
-        lidar_evt_data_t     lidar_data;
+        pir_evt_data_t   pir_data;
+        lidar_evt_data_t lidar_data;
     };
 } sensor_evt_t;
 

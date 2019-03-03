@@ -13,9 +13,9 @@
                         CONSTANTS
 **********************************************************/
 
-#define ANT_PAGE_MANAGER_TIMEOUT_INTERVAL          ( ( MM_CHAN_PERIOD * 2000 ) / 32768 )
+#define ANT_PAGE_MANAGER_TIMEOUT_INTERVAL   ( ( MM_CHAN_PERIOD * 2000 ) / 32768 )
 #define TIMER_TICKS APP_TIMER_TICKS(ANT_PAGE_MANAGER_TIMEOUT_INTERVAL)
-#define ANT_PAGE_MANAGER_MAX_QUEUE_SIZE         (10)
+#define ANT_PAGE_MANAGER_MAX_QUEUE_SIZE     (10)
 
 APP_TIMER_DEF(m_timer_id);
 

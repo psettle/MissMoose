@@ -23,7 +23,7 @@ notes:
 
 #define MAX_NUMBER_LISTENERS             ( 4 )
 #define BLAZE_LIDAR_DATA_PAGE_NUMBER     ( 0x01 )
-#define BLAZE_PIR_DATA_PAGE_NUMBER         ( 0x02 )
+#define BLAZE_PIR_DATA_PAGE_NUMBER       ( 0x02 )
 
 /**********************************************************
                         VARIABLES

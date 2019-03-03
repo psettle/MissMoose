@@ -38,14 +38,14 @@ notes:
 #define POSITION_PAGE_GRID_OFFSET_X_INDEX    ( 6 )
 #define POSITION_PAGE_GRID_OFFSET_Y_INDEX    ( 7 )
 
-#define NODE_TYPE_MASK                        ( 0x03 )
-#define NODE_ROTATION_MASK                    ( 0x07 )
+#define NODE_TYPE_MASK                       ( 0x03 )
+#define NODE_ROTATION_MASK                   ( 0x07 )
 
-#define GRID_POSITION_X_MASK                ( 0x0F )
-#define GRID_POSITION_Y_MASK                ( 0xF0 )
+#define GRID_POSITION_X_MASK                 ( 0x0F )
+#define GRID_POSITION_Y_MASK                 ( 0xF0 )
 
 // Number of bits that describe the grid position
-#define GRID_POSITION_SIZE                ( 4 )
+#define GRID_POSITION_SIZE                   ( 4 )
 
 /**********************************************************
                         ENUMS
