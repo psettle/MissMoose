@@ -182,8 +182,15 @@ namespace MissMooseConfigurationApplication
         public ushort DeviceNumber { get; }
 
         public ushort NodeID { get; }
-
-        public Rotation Rotation { get; set; } = new Rotation(Rotation.R0);
+        
+        public Rotation Rotation {
+            get { return rotation; }
+            set
+            {
+                rotation = value;
+                ApplyVisualRotation();
+            }
+        }
 
         public sbyte xpos { get; set; } = -1;
         public sbyte ypos { get; set; } = -1;
@@ -213,6 +220,7 @@ namespace MissMooseConfigurationApplication
         private Brush ledColour;
         private Brush statusColour;
         private bool isGateway;
+        private Rotation rotation;
 
         #endregion
 
@@ -225,7 +233,7 @@ namespace MissMooseConfigurationApplication
             this.DeviceNumber = deviceNumber;
             this.configuration = configuration;
             this.NodeID = NodeID;
-            NodeIDLabel.Content = NodeID;
+            this.Rotation = new Rotation(Rotation.R0);
             isgateway = IsGateway;
 
             switch (configuration)
@@ -358,11 +366,10 @@ namespace MissMooseConfigurationApplication
             Effect = new DropShadowEffect
             {
                 Color = new Color { A = 255, R = 125, G = 125, B = 125 },
-                Direction = 320,
+                Direction = 320 + rotation.Val,
                 ShadowDepth = 10,
                 Opacity = 10
             };
-            NodeIDLabel.Foreground = Brushes.White;
         }
 
         /// <summary>
@@ -372,7 +379,27 @@ namespace MissMooseConfigurationApplication
         {
             InnerCircle.Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#b2b2b2"));
             Effect = null;
-            NodeIDLabel.Foreground = Brushes.DarkSlateGray;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void ApplyVisualRotation()
+        {
+            /* Set shadow rotation */
+            if(Effect != null)
+            {
+                UseActivePalette();
+            }
+
+            /* Set text rotation */
+            NodeGatewayLabel.RenderTransform = new RotateTransform()
+            {
+                Angle = -rotation.Val,
+                CenterX = 225,
+                CenterY = 225
+            };
         }
 
         #endregion
