@@ -10,9 +10,10 @@ notes:
                         INCLUDES
 **********************************************************/
 
-#include "test_runner.hpp"
 #include "mm_sensor_transmission.hpp"
 #include "test_constants.hpp"
+#include "test_output.hpp"
+#include "simulate_time.hpp"
 
 extern "C" {
 #include "mm_sensor_algorithm_config.h"
@@ -23,24 +24,30 @@ extern "C" {
                           TYPES
 **********************************************************/
 
-typedef void(*test_case_cb)(void);
+typedef void(*test_case_cb)(TestOutput& oracle);
+
+struct TestCase
+{
+    test_case_cb test;
+    std::string  test_name;
+};
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
 
-#define ADD_TEST(test_case)  do{ tests.push_back(test_case); test_names.push_back(#test_case); } while(0) 
+#define ADD_TEST(test_case)   do{ tests.push_back(TestCase{ test_case, #test_case }); } while(0)
 
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
 
-void test_demo_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);\
+void test_demo_add_tests(std::vector<TestCase>& tests);
 
 // Adds the 4 tests to be run to the test runner
-void test_basic_sensor_activity_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);
+void test_basic_sensor_activity_add_tests(std::vector<TestCase>& tests);
 
 // Adds the tests related to sensor hyperactiveness or inactiveness
-void test_hyperactive_inactive_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names);
+void test_hyperactive_inactive_add_tests(std::vector<TestCase>& tests);
 
 #endif /* TESTS_HPP */

@@ -57,14 +57,12 @@ static mm_sensor_algorithm_config_t const sensor_algorithm_config_default =
 
 int main()
 {
-    std::vector<test_case_cb> tests;
-    std::vector<std::string> test_names;
+    std::vector<TestCase> tests;
 
-	test_demo_add_tests(tests, test_names);
-    test_basic_sensor_activity_add_tests(tests, test_names);
-    test_hyperactive_inactive_add_tests(tests, test_names);
+    test_basic_sensor_activity_add_tests(tests);
+    test_hyperactive_inactive_add_tests(tests);
 
-    test_runner_init(tests, test_names, "", &sensor_algorithm_config_default);
+    test_runner_init(tests);
 
     return 0;
 }

@@ -1,37 +1,39 @@
 /**
-file: test_runner.hpp
-brief:
+file: mm_led_control.hpp
+brief: Header file for test framework functions used to simulate sensors detecting data
 notes:
+
+Author: Elijah Pennoyer
 */
-#ifndef TEST_RUNNER_HPP
-#define TEST_RUNNER_HPP
+
+#ifndef MM_LED_CONTROL_HPP
+#define MM_LED_CONTROL_HPP
 
 /**********************************************************
                         INCLUDES
 **********************************************************/
 
-#include "tests.hpp"
-#include "simulate_time.hpp"
-
-#include <vector>
-#include <string>
-
-extern "C" {
-#include "mm_sensor_algorithm_config.h"
-}
-
-/**********************************************************
-                          TYPES
-**********************************************************/
+#include "test_output.hpp"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
 
 /**********************************************************
+                          ENUMS
+**********************************************************/
+
+/**********************************************************
                        DECLARATIONS
 **********************************************************/
 
-void test_runner_init(std::vector<TestCase> const & tests);
+/**********************************************************
+                       DEFINITIONS
+**********************************************************/
 
-#endif /* TEST_RUNNER_HPP */
+/**
+ * Get the output log for the current test.
+ */
+TestOutput const & test_led_control_get_output(void);
+
+#endif

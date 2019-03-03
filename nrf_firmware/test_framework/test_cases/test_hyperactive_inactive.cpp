@@ -26,22 +26,23 @@ DECLARATIONS
 **********************************************************/
 
 /* Test that all the sensors will be not flagged as hyperactive after normal activity.*/
-static void test_case_test_sensor_normal_activity(void);
+static void test_case_test_sensor_normal_activity(TestOutput& oracle);
 /* Test that all the sensors will be flagged as hyperactive */
-static void test_case_test_sensor_hyperactivity(void);
+static void test_case_test_sensor_hyperactivity(TestOutput& oracle);
 /* Make sure that hyperactive sensors wouldn't be called hyperactive anymore after a long cooldown period. */
-static void test_case_test_sensor_hyperactivity_cooldown(void);
+static void test_case_test_sensor_hyperactivity_cooldown(TestOutput& oracle);
 /* Test to see if the sensors are marked as inactive after an appropriately long time. */
-static void test_case_test_sensor_inactivity(void);
+static void test_case_test_sensor_inactivity(TestOutput& oracle);
 /* Test to make sure that inactivity flags on different sensors will update as time passes. */
-static void test_case_test_inactive_state_update(void);
+static void test_case_test_inactive_state_update(TestOutput& oracle);
 
 /**********************************************************
 DEFINITIONS
 **********************************************************/
 
-void test_hyperactive_inactive_add_tests(std::vector<test_case_cb>& tests, std::vector<std::string>& test_names)
+void test_hyperactive_inactive_add_tests(std::vector<TestCase>& tests)
 {
+    do { tests.push_back(TestCase{ test_case_test_sensor_normal_activity, "test_case_test_sensor_normal_activity" }); } while (0);
     ADD_TEST(test_case_test_sensor_normal_activity);
     ADD_TEST(test_case_test_sensor_hyperactivity);
     ADD_TEST(test_case_test_sensor_hyperactivity_cooldown);
@@ -49,7 +50,7 @@ void test_hyperactive_inactive_add_tests(std::vector<test_case_cb>& tests, std::
     ADD_TEST(test_case_test_inactive_state_update);
 }
 
-static void test_case_test_sensor_normal_activity(void)
+static void test_case_test_sensor_normal_activity(TestOutput& oracle)
 {
     std::vector<sensor_evt_t> pir_evts;
     std::vector<sensor_evt_t> lidar_evts;
@@ -90,7 +91,7 @@ static void test_case_test_sensor_normal_activity(void)
     }
 }
 
-static void test_case_test_sensor_hyperactivity(void)
+static void test_case_test_sensor_hyperactivity(TestOutput& oracle)
 {
     std::vector<sensor_evt_t> pir_evts;
     std::vector<sensor_evt_t> lidar_evts;
@@ -131,7 +132,7 @@ static void test_case_test_sensor_hyperactivity(void)
     }
 }
 
-static void test_case_test_sensor_hyperactivity_cooldown(void)
+static void test_case_test_sensor_hyperactivity_cooldown(TestOutput& oracle)
 {
     std::vector<sensor_evt_t> pir_evts;
     std::vector<sensor_evt_t> lidar_evts;
@@ -205,7 +206,7 @@ static void test_case_test_sensor_hyperactivity_cooldown(void)
     }
 }
 
-static void test_case_test_sensor_inactivity(void)
+static void test_case_test_sensor_inactivity(TestOutput& oracle)
 {
 
     std::vector<sensor_evt_t> pir_evts;
@@ -267,7 +268,7 @@ static void test_case_test_sensor_inactivity(void)
     }
 }
 
-static void test_case_test_inactive_state_update(void)
+static void test_case_test_inactive_state_update(TestOutput& oracle)
 {
     sensor_evt_t pir_1_evt = create_pir_sensor_evt(1, SENSOR_ROTATION_90, PIR_DETECTION_START);
     sensor_evt_t pir_2_evt = create_pir_sensor_evt(2, SENSOR_ROTATION_90, PIR_DETECTION_START);
