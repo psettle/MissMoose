@@ -29,7 +29,7 @@ static void timer_event(void * p_context);
 typedef struct page_queue_element_struct
 {
     uint8_t             page_number;
-    mm_ant_payload_t     payload;
+    mm_ant_payload_t    payload;
 } page_queue_element_t;
 
 /**********************************************************
