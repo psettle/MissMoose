@@ -47,8 +47,6 @@ namespace MissMooseConfigurationApplication
             // app starts on config screen
             PageSwitchClick(ConfigPageButton);
 
-            LogoImage.Source = new BitmapImage(new Uri(@"/MissMooseConfigurationApplication;component/logo_transparent.png", UriKind.Relative));
-
         }
 
         protected override void OnSourceInitialized(EventArgs e)

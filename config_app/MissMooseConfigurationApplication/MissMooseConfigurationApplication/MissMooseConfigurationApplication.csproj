@@ -55,7 +55,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>logo_transparent.ico</ApplicationIcon>
+    <ApplicationIcon>logoWhiteMs.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ANT_NET">
@@ -246,7 +246,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    </EmbeddedResource>   
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -259,8 +259,8 @@
     <Content Include="ANT_WrappedLib.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Resource Include="logo_transparent.ico" />
-    <Resource Include="logo_transparent.png" />
+    <Resource Include="Fonts\MODERNE SANS.ttf" />
+    <Resource Include="logoWhiteMs.ico" />
     <Resource Include="clockwise_curved_arrow_tranparent.png" />
     <Resource Include="counter_clockwise_curved_arrow_tranparent.png" />
     <Content Include="DSI_CP210xManufacturing_3_1.dll">
