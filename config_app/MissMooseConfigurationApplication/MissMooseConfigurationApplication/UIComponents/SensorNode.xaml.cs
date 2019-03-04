@@ -181,12 +181,55 @@ namespace MissMooseConfigurationApplication
 
         public ushort DeviceNumber { get; }
 
+        public string DisplayID {
+            get
+            {
+                return displayID;
+            }
+            private set
+            {
+                displayID = value;
+                NodeIDLabel.Content = value;
+            }
+        }
+
         public ushort NodeID { get; }
+        
+        public Rotation Rotation
+        {
+            get { return rotation; }
+            set
+            {
+                rotation = value;
+                ApplyVisualRotation();
+            }
+        }
 
-        public Rotation Rotation { get; set; } = new Rotation(Rotation.R0);
+        public sbyte xpos
+        {
+            get
+            {
+                return x;
+            }
+            set
+            {
+                x = value;
+                SetDisplayID();
+            }
+        }
 
-        public sbyte xpos { get; set; } = -1;
-        public sbyte ypos { get; set; } = -1;
+        public sbyte ypos
+        {
+            get
+            {
+                return y;
+            }
+            set
+            {
+                y = value;
+                SetDisplayID();
+            }
+        }
 
         public sbyte xoffset { get; set; } = 0;
         public sbyte yoffset { get; set; } = 0;
@@ -209,10 +252,14 @@ namespace MissMooseConfigurationApplication
 
         #region Private Members
 
+        private string displayID = "";
+        private sbyte x = -1;
+        private sbyte y = -1;
         private LedFunction ledFunction;
         private Brush ledColour;
         private Brush statusColour;
         private bool isGateway;
+        private Rotation rotation;
 
         #endregion
 
@@ -225,7 +272,7 @@ namespace MissMooseConfigurationApplication
             this.DeviceNumber = deviceNumber;
             this.configuration = configuration;
             this.NodeID = NodeID;
-            NodeIDLabel.Content = NodeID;
+            this.Rotation = new Rotation(Rotation.R0);
             isgateway = IsGateway;
 
             switch (configuration)
@@ -358,11 +405,24 @@ namespace MissMooseConfigurationApplication
             Effect = new DropShadowEffect
             {
                 Color = new Color { A = 255, R = 125, G = 125, B = 125 },
-                Direction = 320,
+                Direction = 320 + rotation.Val,
                 ShadowDepth = 10,
                 Opacity = 10
             };
             NodeIDLabel.Foreground = Brushes.White;
+            NodeIDLabel.Effect = new DropShadowEffect
+            {
+                Direction = 320,
+                ShadowDepth = 10,
+                Opacity = 10
+            };
+            NodeGatewayLabel.Foreground = Brushes.White;
+            NodeGatewayLabel.Effect = new DropShadowEffect
+            {
+                Direction = 320,
+                ShadowDepth = 10,
+                Opacity = 10
+            };
         }
 
         /// <summary>
@@ -373,6 +433,42 @@ namespace MissMooseConfigurationApplication
             InnerCircle.Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#b2b2b2"));
             Effect = null;
             NodeIDLabel.Foreground = Brushes.DarkSlateGray;
+            NodeGatewayLabel.Foreground = Brushes.DarkSlateGray;
+            NodeIDLabel.Effect = null;
+            NodeGatewayLabel.Effect = null;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void ApplyVisualRotation()
+        {
+            /* Set shadow rotation */
+            if(Effect != null)
+            {
+                UseActivePalette();
+            }
+
+            NodeIDLabel.RenderTransform = new RotateTransform()
+            {
+                Angle = -rotation.Val,
+                CenterX = 225,
+                CenterY = 225
+            };
+
+            /* Set text rotation */
+            NodeGatewayLabel.RenderTransform = new RotateTransform()
+            {
+                Angle = -rotation.Val,
+                CenterX = 225,
+                CenterY = 40
+            };
+        }
+        
+        private void SetDisplayID()
+        {
+            DisplayID = (char)('A' + y) + (x + 1).ToString();
         }
 
         #endregion
