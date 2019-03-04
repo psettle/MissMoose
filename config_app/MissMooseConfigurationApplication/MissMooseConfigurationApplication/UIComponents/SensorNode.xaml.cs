@@ -181,14 +181,14 @@ namespace MissMooseConfigurationApplication
 
         public ushort DeviceNumber { get; }
 
-        public ushort PositionID {
+        public string DisplayID {
             get
             {
-                return positionID;
+                return displayID;
             }
             private set
             {
-                positionID = value;
+                displayID = value;
                 NodeIDLabel.Content = value;
             }
         }
@@ -214,7 +214,7 @@ namespace MissMooseConfigurationApplication
             set
             {
                 x = value;
-                PositionID = (ushort)(y * gridSize + x + 1);
+                SetDisplayID();
             }
         }
 
@@ -227,7 +227,7 @@ namespace MissMooseConfigurationApplication
             set
             {
                 y = value;
-                PositionID = (ushort)(y * gridSize + x + 1);
+                SetDisplayID();
             }
         }
 
@@ -252,7 +252,7 @@ namespace MissMooseConfigurationApplication
 
         #region Private Members
 
-        private ushort positionID = 0;
+        private string displayID = "";
         private const ushort gridSize = 3;
         private sbyte x = -1;
         private sbyte y = -1;
@@ -465,6 +465,11 @@ namespace MissMooseConfigurationApplication
                 CenterX = 225,
                 CenterY = 40
             };
+        }
+        
+        private void SetDisplayID()
+        {
+            DisplayID = (char)('A' + y) + (x + 1).ToString();
         }
 
         #endregion
