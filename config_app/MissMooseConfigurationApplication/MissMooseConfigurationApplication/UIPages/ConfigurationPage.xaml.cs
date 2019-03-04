@@ -155,7 +155,7 @@ namespace MissMooseConfigurationApplication.UIPages
 
             var node = ActiveViewbox.Child as SensorNode;
 
-            NodeNameLabel.Content = "Node " + node.NodeID;
+            NodeNameLabel.Content = "Node " + node.DisplayID;
             XOffsetText.NumberField.Content = node.xoffset * OffsetScaleCentimeters;
             YOffsetText.NumberField.Content = node.yoffset * OffsetScaleCentimeters;
         }
