@@ -55,7 +55,7 @@ typedef union
 #define SCHEDULER_MAX_EVENT_SIZE sizeof(scheduler_event_t)
 
 
-#define SCHEDULER_MAX_EVENT_COUNT			( 10 )	/* Main should run after every event, so it should be hard to queue up a lot of events. */
+#define SCHEDULER_MAX_EVENT_COUNT            ( 10 )    /* Main should run after every event, so it should be hard to queue up a lot of events. */
 
 
 /* Compiler assert on simulated time, we should never simulate time in production. */
@@ -90,7 +90,7 @@ int main(void)
 
     if(read_hardware_config() == HARDWARE_CONFIG_PIR_LIDAR_LED)
     {
-    	mm_rgb_led_init(false);
+        mm_rgb_led_init(false);
     }
 
     mm_softdevice_init();
@@ -105,20 +105,20 @@ int main(void)
     APP_ERROR_CHECK(true); /* Used to initialize blaze here, that is no longer a supported mode. */
     #endif
 
-	#ifdef MM_BLAZE_GATEWAY
+    #ifdef MM_BLAZE_GATEWAY
 
     mm_monitoring_dispatch_init();
-	mm_position_config_init();
+    mm_position_config_init();
 
-	#endif
+    #endif
 
     // mm_hardware_test_init();
 
     while(true)
     {
-    	app_sched_execute();
-		err_code = sd_app_evt_wait();
-		APP_ERROR_CHECK(err_code);
+        app_sched_execute();
+        err_code = sd_app_evt_wait();
+        APP_ERROR_CHECK(err_code);
     }
 }
 
@@ -142,7 +142,7 @@ int main(void)
 
  static void scheduler_init(void)
  {
-	 APP_SCHED_INIT(SCHEDULER_MAX_EVENT_SIZE, SCHEDULER_MAX_EVENT_COUNT);
+     APP_SCHED_INIT(SCHEDULER_MAX_EVENT_SIZE, SCHEDULER_MAX_EVENT_COUNT);
  }
 
 /**@brief Function for handling an error. Blinks an LED.

@@ -307,19 +307,19 @@ void mm_rgb_set_on_off_cycle(uint16_t on_ticks_ms, uint16_t off_ticks_ms)
     {
         // If we're in the on state, set the timer to change back to the off state,
         // as long as the off state has an actual duration
-    	if(off_cycle_length_ms > 0)
-    	{
-    		err_code = app_timer_start(power_cycle_timer_id, APP_TIMER_TICKS(off_cycle_length_ms), NULL);
-    	}
+        if(off_cycle_length_ms > 0)
+        {
+            err_code = app_timer_start(power_cycle_timer_id, APP_TIMER_TICKS(off_cycle_length_ms), NULL);
+        }
     }
     else
     {
         // If we're in the off state, set the timer to change back to the on state,
         // as long as the on state has an actual duration
-    	if(on_cycle_length_ms > 0)
-    	{
-    		err_code = app_timer_start(power_cycle_timer_id, APP_TIMER_TICKS(on_cycle_length_ms), NULL);
-    	}
+        if(on_cycle_length_ms > 0)
+        {
+            err_code = app_timer_start(power_cycle_timer_id, APP_TIMER_TICKS(on_cycle_length_ms), NULL);
+        }
     }
 
     /* Power bank control */
@@ -358,9 +358,9 @@ static void rgb_led_pwm_handler(void * p_context)
  */
 static void rgb_led_power_cycle_timer_handler(void * p_context)
 {
-	uint32_t err_code;
+    uint32_t err_code;
 
-	/* Kick timer event to main. */
+    /* Kick timer event to main. */
     err_code = app_sched_event_put(NULL, 0, on_cycle_timer_event);
     APP_ERROR_CHECK(err_code);
 }

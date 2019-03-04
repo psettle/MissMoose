@@ -198,8 +198,8 @@ static bool sensor_evt_to_lidar_detection(lidar_evt_data_t const * evt, abstract
             - distance to second node
         keep in mind that either of those nodes may not exist, so we will populate a 'default' position for them in that case */
     mm_node_position_t const * position = get_position_for_node(evt->node_id);
-    
-    
+
+
     if(position == NULL)
     {
         /* Unknown position, therefore invalid event. */

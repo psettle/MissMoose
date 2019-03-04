@@ -34,6 +34,7 @@ namespace MissMooseConfigurationApplication
         private List<List<Path>> shadedRegions;
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
+        private const string timestampFormatString = "yyyy-MMM-dd hh:mm:ss tt";
         #endregion
 
         #region Public Methods
@@ -186,7 +187,7 @@ namespace MissMooseConfigurationApplication
             TextBox textBox = new TextBox();
             textBox.TextWrapping = TextWrapping.Wrap;
             textBox.BorderThickness = new Thickness(0);
-            textBox.Text = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString() + ": " + logString;
+            textBox.Text = DateTimeOffset.UtcNow.ToLocalTime().ToString(timestampFormatString) + ":\n" + logString;
 
             return textBox;
         }

@@ -23,7 +23,7 @@ notes:
 **********************************************************/
 
 typedef struct mm_ant_payload_struct {
-	uint8_t  data[ANT_STANDARD_DATA_PAYLOAD_SIZE];
+    uint8_t  data[ANT_STANDARD_DATA_PAYLOAD_SIZE];
 } mm_ant_payload_t;
 
 typedef ant_evt_handler_t mm_ant_evt_handler_t;
