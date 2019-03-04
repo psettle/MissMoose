@@ -78,7 +78,7 @@ typedef struct
     Initializes the dynamic sensor algorithm configuration
     constants. Should never be used more than once!
 */
-void mm_sensor_algorithm_config_init(mm_sensor_algorithm_config_t const config);
+void mm_sensor_algorithm_config_init(mm_sensor_algorithm_config_t const * config);
 
 /**
     Gets the dynamic sensor algorithm configuration constants. Assumes that

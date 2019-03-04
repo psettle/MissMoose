@@ -63,7 +63,7 @@ int main()
     test_hyperactive_inactive_add_tests(tests);
     test_one_animal_with_one_stop_add_tests(tests);
 
-    test_runner_init(tests);
+    test_runner_init(tests, &sensor_algorithm_config_default);
 
     return 0;
 }

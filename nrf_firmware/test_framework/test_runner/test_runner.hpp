@@ -32,6 +32,6 @@ extern "C" {
                        DECLARATIONS
 **********************************************************/
 
-void test_runner_init(std::vector<TestCase> const & tests);
+void test_runner_init(std::vector<TestCase> const & tests, mm_sensor_algorithm_config_t const * config);
 
 #endif /* TEST_RUNNER_HPP */

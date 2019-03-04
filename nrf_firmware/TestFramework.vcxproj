@@ -127,6 +127,7 @@
     <ClCompile Include="src\sensor_algorithm\mm_activity_variable_drain.c" />
     <ClCompile Include="src\sensor_algorithm\mm_led_strip_states.c" />
     <ClCompile Include="src\sensor_algorithm\mm_sensor_algorithm.c" />
+    <ClCompile Include="src\sensor_algorithm\mm_sensor_algorithm_config.c" />
     <ClCompile Include="src\sensor_algorithm\mm_sensor_error_check.c" />
     <ClCompile Include="test_framework\main.cpp" />
     <ClCompile Include="test_framework\mocked_implementations\mm_av_transmission.cpp" />

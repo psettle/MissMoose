@@ -15,7 +15,7 @@ notes:
 **********************************************************/
 
 /* Singleton container for the dynamic sensor algorithm constants. */
-mm_sensor_algorithm_config_t sensor_algorithm_config;
+mm_sensor_algorithm_config_t const * sensor_algorithm_config;
 
 /**********************************************************
                        DEFINITIONS
@@ -25,7 +25,7 @@ mm_sensor_algorithm_config_t sensor_algorithm_config;
     Initializes the dynamic sensor algorithm configuration
     constants. Should never be used more than once!
 */
-void mm_sensor_algorithm_config_init(mm_sensor_algorithm_config_t const config)
+void mm_sensor_algorithm_config_init(mm_sensor_algorithm_config_t const * config)
 {
     sensor_algorithm_config = config;
 }
@@ -37,5 +37,5 @@ void mm_sensor_algorithm_config_init(mm_sensor_algorithm_config_t const config)
 */
 mm_sensor_algorithm_config_t const * mm_sensor_algorithm_config(void)
 {
-    return &sensor_algorithm_config;
+    return sensor_algorithm_config;
 }

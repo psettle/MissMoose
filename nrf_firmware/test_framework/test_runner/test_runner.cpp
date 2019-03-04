@@ -54,8 +54,10 @@ static void deinit_test_case(void);
                        DEFINITIONS
 **********************************************************/
 
-void test_runner_init(std::vector<TestCase> const & tests)
+void test_runner_init(std::vector<TestCase> const & tests, mm_sensor_algorithm_config_t const * config)
 {
+	sensor_algorithm_config = config;
+	
 	for (int i = 0; i < tests.size(); i++)
     {
         run_test_case(tests[i]);

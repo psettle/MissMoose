@@ -245,8 +245,7 @@ static void external_init(void)
     mm_led_control_init();
 #ifdef MM_BLAZE_GATEWAY
     /* Init sensor data processing now that data can be transmitted. */
-    mm_sensor_algorithm_config_init(sensor_algorithm_config_default);
-    mm_sensor_algorithm_init();
+    mm_sensor_algorithm_init(&sensor_algorithm_config_default);
     /* Init AV output transmission over blaze now that the sensor algorithm is up and running. */
     mm_av_transmission_init();
 #endif
