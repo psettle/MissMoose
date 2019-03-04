@@ -97,8 +97,8 @@ void mm_sensor_algorithm_init(mm_sensor_algorithm_config_t const * config)
     minute_counter = 0;
     hour_counter = 0;
 
-	/* Initialize dynamic algorithm constants. */
-	mm_sensor_algorithm_config_init(config);
+    /* Initialize dynamic algorithm constants. */
+    mm_sensor_algorithm_config_init(config);
 
     /* Initialize algorithm components. */
     mm_sensor_error_init();
