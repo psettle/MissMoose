@@ -7,13 +7,13 @@ notes:
 #define MM_SENSOR_ALGORITHM_CONFIG_H
 
 /**********************************************************
-					    INCLUDES
+                        INCLUDES
 **********************************************************/
 
 #include "stdint.h"
 
 /**********************************************************
-					ALGORITHM CONSTANTS
+                    ALGORITHM CONSTANTS
 **********************************************************/
 
 /**
@@ -56,17 +56,17 @@ typedef struct
     float road_trickle_proximity_factor_2;
 
     float activity_variable_decay_factor;
-	uint16_t activity_decay_period_ms;
+    uint16_t activity_decay_period_ms;
 
     /* Road-side (RS), non-road-side (NRS) */
-	float possible_detection_threshold_rs;
-	float possible_detection_threshold_nrs;
+    float possible_detection_threshold_rs;
+    float possible_detection_threshold_nrs;
 
     float detection_threshold_rs;
     float detection_threshold_nrs;
 
-	uint16_t minimum_concern_signal_duration_s;
-	uint16_t minimum_alarm_signal_duration_s;
+    uint16_t minimum_concern_signal_duration_s;
+    uint16_t minimum_alarm_signal_duration_s;
 } mm_sensor_algorithm_config_t;
 
 

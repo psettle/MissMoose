@@ -47,7 +47,7 @@ static mm_activity_variable_t activity_variables[ACTIVITY_VARIABLES_NUM];
 
 void mm_activity_variables_init(void)
 {
-	/* Initialize activity variables. */
+    /* Initialize activity variables. */
     memset(&(activity_variables[0]), 0, sizeof(activity_variables));
 
     for(uint16_t i = 0; i < ACTIVITY_VARIABLES_NUM; ++i)

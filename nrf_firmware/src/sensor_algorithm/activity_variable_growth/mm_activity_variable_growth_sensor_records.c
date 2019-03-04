@@ -44,7 +44,7 @@ static sensor_record_t      sensor_records[MAX_SENSOR_COUNT];
  */
 void init_sensor_records(void)
 {
-	memset(&(sensor_records[0]), 0, sizeof(sensor_records));
+    memset(&(sensor_records[0]), 0, sizeof(sensor_records));
 }
 
 /**

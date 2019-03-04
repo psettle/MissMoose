@@ -42,7 +42,7 @@ typedef enum
 
 typedef struct
 {
-	led_signalling_state_t states[MAX_GRID_SIZE_X];
+    led_signalling_state_t states[MAX_GRID_SIZE_X];
 }  output_set_t;
 
 typedef struct
@@ -122,67 +122,67 @@ static led_signalling_state_record_t led_signalling_state_records [MAX_GRID_SIZE
 
 static output_table_t const top_left_output =
 {
-	{
-		{ IDLE, IDLE, IDLE }
-	},
-	{
-		{ ALARM, CONCERN, IDLE }
-	},
-	{
-		{ ALARM, ALARM, CONCERN }
-	}
+    {
+        { IDLE, IDLE, IDLE }
+    },
+    {
+        { ALARM, CONCERN, IDLE }
+    },
+    {
+        { ALARM, ALARM, CONCERN }
+    }
 };
 
 static output_table_t const top_right_output =
 {
-	{
-		{ IDLE, IDLE, IDLE }
-	},
-	{
-		{ ALARM, ALARM, CONCERN }
-	},
-	{
-		{ ALARM, ALARM, ALARM }
-	}
+    {
+        { IDLE, IDLE, IDLE }
+    },
+    {
+        { ALARM, ALARM, CONCERN }
+    },
+    {
+        { ALARM, ALARM, ALARM }
+    }
 };
 
 static output_table_t const bottom_left_output =
 {
-	{
-		{ IDLE, IDLE, IDLE }
-	},
-	{
-		{ CONCERN, IDLE, IDLE }
-	},
-	{
-		{ ALARM, CONCERN, IDLE }
-	}
+    {
+        { IDLE, IDLE, IDLE }
+    },
+    {
+        { CONCERN, IDLE, IDLE }
+    },
+    {
+        { ALARM, CONCERN, IDLE }
+    }
 };
 
 static output_table_t const bottom_right_output =
 {
-	{
-		{ IDLE, IDLE, IDLE }
-	},
-	{
-		{ ALARM, CONCERN, IDLE }
-	},
-	{
-		{ ALARM, ALARM, CONCERN }
-	}
+    {
+        { IDLE, IDLE, IDLE }
+    },
+    {
+        { ALARM, CONCERN, IDLE }
+    },
+    {
+        { ALARM, ALARM, CONCERN }
+    }
 };
 
 static output_table_t const default_output =
 {
-	{
-		{ IDLE, IDLE, IDLE }
-	},
-	{
-		{ IDLE, IDLE, IDLE }
-	},
-	{
-		{ IDLE, IDLE, IDLE }
-	}
+    {
+        { IDLE, IDLE, IDLE }
+    },
+    {
+        { IDLE, IDLE, IDLE }
+    },
+    {
+        { IDLE, IDLE, IDLE }
+    }
 };
 
 /**********************************************************
@@ -191,7 +191,7 @@ static output_table_t const default_output =
 
 void mm_led_strip_states_init(void)
 {
-	/* Initialize LED signalling states */
+    /* Initialize LED signalling states */
     memset( &led_signalling_state_records[0], 0, sizeof(led_signalling_state_records) );
 }
 

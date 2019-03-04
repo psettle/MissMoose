@@ -74,7 +74,7 @@ static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set);
  */
 void mm_activity_variable_growth_init(void)
 {
-	init_sensor_records();
+    init_sensor_records();
 }
 
 /**
@@ -223,7 +223,7 @@ static void find_adjacent_activity_variables(int8_t xpos, int8_t ypos, total_rot
 static void check_add_av(uint8_t x, uint8_t y, activity_variable_set_t* av_set)
 {
     /* Check bounds on input */
-	if(x >= MAX_AV_SIZE_X)
+    if(x >= MAX_AV_SIZE_X)
     {
         return;
     }

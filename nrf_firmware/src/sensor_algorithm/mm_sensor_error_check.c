@@ -42,7 +42,7 @@ typedef struct
 typedef struct
 {
     sensor_def_t      sensor;
-	uint32_t          activity_timestamps[SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE];
+    uint32_t          activity_timestamps[SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE];
     uint16_t          activity_timestamp_index;
     bool              sensor_hyperactive;
     bool              is_valid;
@@ -115,7 +115,7 @@ static sensor_hyperactivity_record_t    sensor_hyperactivity_records[MAX_SENSOR_
 
 void mm_sensor_error_init(void)
 {
-	memset(&sensor_inactivity_records[0], 0, sizeof(sensor_inactivity_records));
+    memset(&sensor_inactivity_records[0], 0, sizeof(sensor_inactivity_records));
     memset(&sensor_hyperactivity_records[0], 0, sizeof(sensor_hyperactivity_records));
 }
 
@@ -342,10 +342,10 @@ static sensor_hyperactivity_record_t* get_sensor_hyperactivity_record(sensor_evt
         }
 
         /* Initialize the new record. */
-		memset(new_record, 0, sizeof(sensor_hyperactivity_record_t));
-		memcpy(&new_record->sensor, &sensor, sizeof(sensor_def_t));
-		new_record->sensor_hyperactive = false;
-		new_record->is_valid = true;
+        memset(new_record, 0, sizeof(sensor_hyperactivity_record_t));
+        memcpy(&new_record->sensor, &sensor, sizeof(sensor_def_t));
+        new_record->sensor_hyperactive = false;
+        new_record->is_valid = true;
 
         return new_record;
     }
