@@ -181,9 +181,22 @@ namespace MissMooseConfigurationApplication
 
         public ushort DeviceNumber { get; }
 
+        public ushort PositionID {
+            get
+            {
+                return positionID;
+            }
+            private set
+            {
+                positionID = value;
+                NodeIDLabel.Content = value;
+            }
+        }
+
         public ushort NodeID { get; }
         
-        public Rotation Rotation {
+        public Rotation Rotation
+        {
             get { return rotation; }
             set
             {
@@ -192,8 +205,31 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public sbyte xpos { get; set; } = -1;
-        public sbyte ypos { get; set; } = -1;
+        public sbyte xpos
+        {
+            get
+            {
+                return x;
+            }
+            set
+            {
+                x = value;
+                PositionID = (ushort)(y * gridSize + x + 1);
+            }
+        }
+
+        public sbyte ypos
+        {
+            get
+            {
+                return y;
+            }
+            set
+            {
+                y = value;
+                PositionID = (ushort)(y * gridSize + x + 1);
+            }
+        }
 
         public sbyte xoffset { get; set; } = 0;
         public sbyte yoffset { get; set; } = 0;
@@ -216,6 +252,10 @@ namespace MissMooseConfigurationApplication
 
         #region Private Members
 
+        private ushort positionID = 0;
+        private const ushort gridSize = 3;
+        private sbyte x = -1;
+        private sbyte y = -1;
         private LedFunction ledFunction;
         private Brush ledColour;
         private Brush statusColour;
@@ -393,12 +433,19 @@ namespace MissMooseConfigurationApplication
                 UseActivePalette();
             }
 
+            NodeIDLabel.RenderTransform = new RotateTransform()
+            {
+                Angle = -rotation.Val,
+                CenterX = 225,
+                CenterY = 225
+            };
+
             /* Set text rotation */
             NodeGatewayLabel.RenderTransform = new RotateTransform()
             {
                 Angle = -rotation.Val,
                 CenterX = 225,
-                CenterY = 225
+                CenterY = 40
             };
         }
 
