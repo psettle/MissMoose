@@ -34,7 +34,7 @@ notes:
 /**
     Initialize activity variable state transmission over ANT.
 */
-void mm_av_transmission_init(void) 
+void mm_av_transmission_init(void)
 {
     /**
      * TODO: Actual implementation! Adding this for

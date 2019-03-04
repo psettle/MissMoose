@@ -9,6 +9,7 @@ notes:
 **********************************************************/
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "app_error.h"
 

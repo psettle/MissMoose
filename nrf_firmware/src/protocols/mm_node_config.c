@@ -21,6 +21,7 @@ notes:
 #include "mm_sensor_algorithm.h"
 #include "mm_led_control.h"
 #include "mm_av_transmission.h"
+#include "mm_sensor_algorithm_config.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -91,6 +92,42 @@ static uint16_t node_id;
 static uint16_t network_id;
 
 APP_TIMER_DEF(m_timer_id);
+
+/**
+    Default sensor algorithm configuration constants.
+*/
+static mm_sensor_algorithm_config_t const sensor_algorithm_config_default =
+{
+    1.0f,   // activity_variable_min
+    12.0f,  // activity_variable_max
+
+    1.0f, // common_sensor_weight_factor
+    3.0f, // base_sensor_weight_factor_pir
+    3.5f, // base_sensor_weight_factor_lidar
+    1.4f, // road_proximity_factor_0
+    1.2f, // road_proximity_factor_1
+    1.0f, // road_proximity_factor_2
+
+    1.0f,       // common_sensor_trickle_factor
+    1.003f,     // base_sensor_trickle_factor_pir
+    1.0035f,    // base_sensor_trickle_factor_lidar
+    1.004f,     // road_trickle_proximity_factor_0
+    1.002f,     // road_trickle_proximity_factor_1
+    1.0f,       // road_trickle_proximity_factor_2
+
+    0.99f, // activity_variable_decay_factor
+    1000,  // activity_decay_period_ms
+
+    3.0f, // possible_detection_threshold_rs
+    4.0f, // possible_detection_threshold_nrs
+
+    6.0f, // detection_threshold_rs
+    7.0f, // detection_threshold_nrs
+
+    30, // minimum_concern_signal_duration_s
+    60 // minimum_alarm_signal_duration_s
+};
+
 
 /**********************************************************
                        DEFINITIONS
@@ -220,7 +257,7 @@ static void external_init(void)
     mm_led_control_init();
 #ifdef MM_BLAZE_GATEWAY
     /* Init sensor data processing now that data can be transmitted. */
-    mm_sensor_algorithm_init();
+    mm_sensor_algorithm_init(&sensor_algorithm_config_default);
     /* Init AV output transmission over blaze now that the sensor algorithm is up and running. */
     mm_av_transmission_init();
 #endif

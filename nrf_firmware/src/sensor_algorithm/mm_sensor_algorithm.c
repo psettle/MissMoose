@@ -91,11 +91,14 @@ static uint32_t hour_counter = 0;
 /**
     Initialize algorithm intermediates, register with external interfaces.
 */
-void mm_sensor_algorithm_init(void)
+void mm_sensor_algorithm_init(mm_sensor_algorithm_config_t const * config)
 {
     second_counter = 0;
     minute_counter = 0;
     hour_counter = 0;
+
+    /* Initialize dynamic algorithm constants. */
+    mm_sensor_algorithm_config_init(config);
 
     /* Initialize algorithm components. */
     mm_sensor_error_init();

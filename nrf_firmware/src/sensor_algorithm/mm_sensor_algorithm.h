@@ -10,6 +10,8 @@ notes:
                         INCLUDES
 **********************************************************/
 
+#include "mm_sensor_algorithm_config.h"
+
 /**********************************************************
                         CONSTANTS
 **********************************************************/
@@ -23,7 +25,7 @@ notes:
  *
  * Note: Requires sensor_transmission.h is initialized.
  */
-void mm_sensor_algorithm_init(void);
+void mm_sensor_algorithm_init(mm_sensor_algorithm_config_t const * config);
 
 #ifdef MM_ALLOW_SIMULATED_TIME
     /**

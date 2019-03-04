@@ -16,7 +16,6 @@ notes:
 #include "mm_activity_variable_growth.h"
 #include "mm_activity_variable_growth_prv.h"
 #include "mm_activity_variables.h"
-#include "mm_sensor_algorithm_config.h"
 
 #include "mm_activity_variable_growth_prv.h"
 #include "mm_activity_variable_growth_pir_prv.h"
@@ -44,10 +43,6 @@ typedef struct
     mm_activity_variable_t* avs[MAX_ADJACENT_ACTIVITY_VARIABLES];
     uint8_t                 av_count;
 } activity_variable_set_t;
-
-/**********************************************************
-                       VARIABLES
-**********************************************************/
 
 /**********************************************************
                        DECLARATIONS
@@ -171,9 +166,9 @@ static void grow_activity_variables(activity_variable_set_t* av_set, activity_va
         *(av_set->avs[i]) *= factor;
 
         /* Check if max exceeded */
-        if(*(av_set->avs[i]) > ACTIVITY_VARIABLE_MAX)
+        if(*(av_set->avs[i]) > mm_sensor_algorithm_config()->activity_variable_max)
         {
-            *(av_set->avs[i]) = ACTIVITY_VARIABLE_MAX;
+            *(av_set->avs[i]) = mm_sensor_algorithm_config()->activity_variable_max;
         }
     }
 }

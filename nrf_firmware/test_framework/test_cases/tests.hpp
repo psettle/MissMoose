@@ -15,6 +15,11 @@ notes:
 #include "test_output.hpp"
 #include "simulate_time.hpp"
 
+extern "C" {
+#include "mm_sensor_algorithm_config.h"
+}
+
+
 /**********************************************************
                           TYPES
 **********************************************************/
