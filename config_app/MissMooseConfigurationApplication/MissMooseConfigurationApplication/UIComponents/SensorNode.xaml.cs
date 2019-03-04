@@ -410,6 +410,20 @@ namespace MissMooseConfigurationApplication
                 ShadowDepth = 10,
                 Opacity = 10
             };
+            NodeIDLabel.Foreground = Brushes.White;
+            NodeIDLabel.Effect = new DropShadowEffect
+            {
+                Direction = 320,
+                ShadowDepth = 10,
+                Opacity = 10
+            };
+            NodeGatewayLabel.Foreground = Brushes.White;
+            NodeGatewayLabel.Effect = new DropShadowEffect
+            {
+                Direction = 320,
+                ShadowDepth = 10,
+                Opacity = 10
+            };
         }
 
         /// <summary>
@@ -419,6 +433,10 @@ namespace MissMooseConfigurationApplication
         {
             InnerCircle.Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#b2b2b2"));
             Effect = null;
+            NodeIDLabel.Foreground = Brushes.DarkSlateGray;
+            NodeGatewayLabel.Foreground = Brushes.DarkSlateGray;
+            NodeIDLabel.Effect = null;
+            NodeGatewayLabel.Effect = null;
         }
 
         #endregion
