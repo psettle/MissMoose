@@ -59,6 +59,7 @@ namespace MissMooseConfigurationApplication
             RemoveNode(node);
 
             node = node.Clone();
+            node.UseActivePalette();
 
             node.Button.Click += NodeClick;
 

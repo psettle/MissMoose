@@ -253,7 +253,6 @@ namespace MissMooseConfigurationApplication
         #region Private Members
 
         private string displayID = "";
-        private const ushort gridSize = 3;
         private sbyte x = -1;
         private sbyte y = -1;
         private LedFunction ledFunction;
