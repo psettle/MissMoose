@@ -12,7 +12,6 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="6*"></ColumnDefinition>
             <ColumnDefinition Width="2*" MaxWidth="400"></ColumnDefinition>
-            <ColumnDefinition Width="0.03*" MaxWidth="20"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*" MaxHeight="60"></RowDefinition>
