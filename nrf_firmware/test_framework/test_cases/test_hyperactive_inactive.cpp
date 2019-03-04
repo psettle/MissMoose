@@ -15,11 +15,10 @@ INCLUDES
 #include <iostream>
 extern "C" {
 #include "mm_sensor_error_check.h"
-#include "mm_sensor_algorithm_config.h"
 }
 
 /**********************************************************
-CONSTANTS
+VARIABLES
 **********************************************************/
 
 /**********************************************************
@@ -43,7 +42,6 @@ DEFINITIONS
 
 void test_hyperactive_inactive_add_tests(std::vector<TestCase>& tests)
 {
-    do { tests.push_back(TestCase{ test_case_test_sensor_normal_activity, "test_case_test_sensor_normal_activity" }); } while (0);
     ADD_TEST(test_case_test_sensor_normal_activity);
     ADD_TEST(test_case_test_sensor_hyperactivity);
     ADD_TEST(test_case_test_sensor_hyperactivity_cooldown);

@@ -15,6 +15,11 @@ notes:
 #include "test_output.hpp"
 #include "simulate_time.hpp"
 
+extern "C" {
+#include "mm_sensor_algorithm_config.h"
+}
+
+
 /**********************************************************
                           TYPES
 **********************************************************/
@@ -44,6 +49,12 @@ void test_basic_sensor_activity_add_tests(std::vector<TestCase>& tests);
 
 // Adds the tests related to sensor hyperactiveness or inactiveness
 void test_hyperactive_inactive_add_tests(std::vector<TestCase>& tests);
+
+// Add the tests for one animal moving through the network at a constant speed
+void test_one_animal_constant_speed_add_tests(std::vector<TestCase>& tests);
+
+// Add the tests for one animal barely entering and quickly exiting the network
+void test_one_animal_in_out_add_tests(std::vector<TestCase>& tests);
 
 // Add the tests for one animal moving through the network and stopping once
 void test_one_animal_with_one_stop_add_tests(std::vector<TestCase>& tests);

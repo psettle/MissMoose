@@ -107,7 +107,7 @@ static uint8_t message_id = 0;
 /**
     Initialize activity variable state transmission over ANT.
 */
-void mm_av_transmission_init(void) 
+void mm_av_transmission_init(void)
 {
     memset(&av_page_broadcasts[0], 0, sizeof(av_page_broadcasts));
 

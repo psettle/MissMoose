@@ -3,6 +3,7 @@
 **********************************************************/
 
 #include "test_output_logger.hpp"
+#include <stdlib.h>
 
 extern "C" {
 #include "mm_av_transmission.h"
@@ -42,7 +43,7 @@ static void log_av_ouput
  */
 void mm_av_transmission_init(void)
 {
-    memset(av_cache, 0, sizeof(av_cache));
+	memset(av_cache, 0, sizeof(av_cache));
 }
 
 /**

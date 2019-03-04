@@ -15,6 +15,7 @@ notes:
 #include "mm_led_control.hpp"
 
 extern "C" {
+#include "mm_sensor_algorithm_config.h"
 #include "mm_sensor_algorithm.h"
 #include "mm_sensor_transmission.h"
 #include "mm_monitoring_dispatch.h"
@@ -22,6 +23,13 @@ extern "C" {
 #include "mm_led_control.h"
 #include "mm_av_transmission.h"
 }
+
+
+/**********************************************************
+					   VARIABLES
+**********************************************************/
+
+static mm_sensor_algorithm_config_t const * sensor_algorithm_config;
 
 /**********************************************************
                        DECLARATIONS
@@ -46,9 +54,11 @@ static void deinit_test_case(void);
                        DEFINITIONS
 **********************************************************/
 
-void test_runner_init(std::vector<TestCase> const & tests)
+void test_runner_init(std::vector<TestCase> const & tests, mm_sensor_algorithm_config_t const * config)
 {
-    for (int i = 0; i < tests.size(); i++)
+	sensor_algorithm_config = config;
+	
+	for (int i = 0; i < tests.size(); i++)
     {
         run_test_case(tests[i]);
     }
@@ -87,7 +97,7 @@ static void init_test_case(std::string const & test_name)
     mm_led_control_init();
     mm_monitoring_dispatch_init();
     mm_sensor_transmission_init();
-    mm_sensor_algorithm_init();
+    mm_sensor_algorithm_init(sensor_algorithm_config);
     mm_av_transmission_init();
 
     /* Initialize the logger for this test. */

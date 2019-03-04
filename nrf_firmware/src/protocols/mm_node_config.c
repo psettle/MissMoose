@@ -23,6 +23,7 @@ notes:
 #include "mm_av_transmission.h"
 #include "mm_led_transmission.h"
 #include "mm_sensor_error_transmission.h"
+#include "mm_sensor_algorithm_config.h"
 
 #include "bsp.h"
 #include "nrf_drv_gpiote.h"
@@ -41,7 +42,7 @@ notes:
 #define CONTROL_PIN (BSP_BUTTON_1)
 
 #ifdef MM_BLAZE_GATEWAY
-    #define TIMEOUT_PERIOD_S        ( 600 )
+    #define TIMEOUT_PERIOD_S        ( 3600 )
 #else
     #define TIMEOUT_PERIOD_S        ( 60 )
 #endif
@@ -79,6 +80,12 @@ static void encode_node_status_page(mm_ant_payload_t * status_page);
 /* Run external initialization of blaze and things that depend on blaze. */
 static void external_init(void);
 
+/* Pauses the ANT broadcast and turns off LED 2 */
+static void pause_ant_broadcast(void);
+
+/* Resumes the ANT broadcast and turns on LED 2 */
+static void resume_ant_broadcast(void);
+
 /**********************************************************
                        VARIABLES
 **********************************************************/
@@ -87,6 +94,42 @@ static uint16_t node_id;
 static uint16_t network_id;
 
 APP_TIMER_DEF(m_timer_id);
+
+/**
+    Default sensor algorithm configuration constants.
+*/
+static mm_sensor_algorithm_config_t const sensor_algorithm_config_default =
+{
+    1.0f,   // activity_variable_min
+    12.0f,  // activity_variable_max
+
+    1.0f, // common_sensor_weight_factor
+    3.0f, // base_sensor_weight_factor_pir
+    3.5f, // base_sensor_weight_factor_lidar
+    1.4f, // road_proximity_factor_0
+    1.2f, // road_proximity_factor_1
+    1.0f, // road_proximity_factor_2
+
+    1.0f,       // common_sensor_trickle_factor
+    1.003f,     // base_sensor_trickle_factor_pir
+    1.0035f,    // base_sensor_trickle_factor_lidar
+    1.004f,     // road_trickle_proximity_factor_0
+    1.002f,     // road_trickle_proximity_factor_1
+    1.0f,       // road_trickle_proximity_factor_2
+
+    0.99f, // activity_variable_decay_factor
+    1000,  // activity_decay_period_ms
+
+    3.0f, // possible_detection_threshold_rs
+    4.0f, // possible_detection_threshold_nrs
+
+    6.0f, // detection_threshold_rs
+    7.0f, // detection_threshold_nrs
+
+    30, // minimum_concern_signal_duration_s
+    60 // minimum_alarm_signal_duration_s
+};
+
 
 /**********************************************************
                        DEFINITIONS
@@ -139,6 +182,12 @@ static void on_config_command_page(void* evt_data, uint16_t evt_size)
         mm_ant_payload_t payload;
         encode_node_status_page(&payload);
         mm_ant_page_manager_replace_all_pages(NODE_STATUS_PAGE, &payload);
+
+    #ifdef MM_BLAZE_NODE
+        // Automatically stop ANT broadcast after non-gateway node
+        // is configured.
+        pause_ant_broadcast();
+    #endif
     }
 }
 
@@ -172,7 +221,7 @@ static void on_button_press(void* evt_data, uint16_t evt_size)
     /* If broadcast is on, pause it and stop the timer. */
     if(mm_ant_get_broadcast_state())
     {
-        mm_ant_pause_broadcast();
+        pause_ant_broadcast();
 
         //stop timeout timer
         err_code = app_timer_stop(m_timer_id);
@@ -181,7 +230,7 @@ static void on_button_press(void* evt_data, uint16_t evt_size)
     /* If broadcast is off, start it and launch the timer. */
     else
     {
-        mm_ant_resume_broadcast();
+        resume_ant_broadcast();
 
         //launch timeout timer
         err_code = app_timer_start(m_timer_id, TIMER_TICKS, NULL);
@@ -194,7 +243,7 @@ static void on_timer_event(void* evt_data, uint16_t evt_size)
     /* When the timer times out, if the broadcast is on, pause it. */
     if(mm_ant_get_broadcast_state())
     {
-        mm_ant_pause_broadcast();
+        pause_ant_broadcast();
     }
 }
 
@@ -214,8 +263,8 @@ static void external_init(void)
     /* Init sensor error transmission over ant. */
     mm_sensor_error_transmission_init();
     /* Init sensor data processing now that data can be transmitted. */
-    mm_sensor_algorithm_init();
-    /* Init AV output transmission over ant now that the sensor algorithm is up and running. */
+    mm_sensor_algorithm_init(&sensor_algorithm_config_default);
+    /* Init AV output transmission over ANT now that the sensor algorithm is up and running. */
     mm_av_transmission_init();
 #endif
 }
@@ -274,4 +323,18 @@ static void timer_handler(void * p_context)
     /* Kick timer event to main. */
     err_code = app_sched_event_put(NULL, 0, on_timer_event);
     APP_ERROR_CHECK(err_code);
+}
+
+/* Pauses the ANT broadcast and turns off LED 2 */
+static void pause_ant_broadcast(void)
+{
+    mm_ant_pause_broadcast();
+    bsp_board_led_off(2);
+}
+
+/* Resumes the ANT broadcast and turns on LED 2 */
+static void resume_ant_broadcast(void)
+{
+    mm_ant_resume_broadcast();
+    bsp_board_led_on(2);
 }

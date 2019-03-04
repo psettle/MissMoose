@@ -9,6 +9,7 @@ notes:
 **********************************************************/
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "app_error.h"
 
@@ -237,6 +238,9 @@ static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t min
             return;
         }
     }
+
+    /* If we got here, it means we got sensor data before the node that caused it has had it's position configured.
+       Which can happen, but it doesn't leave us any reasonable way to process it. */
 }
 
 /**
