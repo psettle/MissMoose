@@ -237,7 +237,7 @@ static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t min
 static void force_exist_inactive_sensor_records(mm_node_position_t const * position, uint32_t minute_count)
 {
     /* Which sensors does this node have? */
-    sensor_rotation_t * node_sensor_rotations = malloc(MAX_SENSORS_PER_NODE * sizeof(sensor_rotation_t));
+    sensor_rotation_t node_sensor_rotations[MAX_SENSORS_PER_NODE];
     get_sensor_rotations(position->node_type, MAX_SENSORS_PER_NODE, node_sensor_rotations);
 
     /* Create a record for each one. */
