@@ -10,11 +10,11 @@
 **********************************************************/
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "app_error.h"
 
 #include "mm_led_strip_states.h"
-#include "mm_sensor_algorithm_config.h"
 #include "mm_activity_variables.h"
 #include "mm_led_control.h"
 #include "mm_position_config.h"
@@ -57,7 +57,7 @@ typedef struct
     led_signalling_state_t      current_av_state;
     led_signalling_state_t      current_output_state;
     bool                        timeout_active;
-    uint16_t                    second_counter;
+    uint32_t                    second_counter;
 } led_signalling_state_record_t;
 
 /**********************************************************
@@ -272,8 +272,12 @@ static void update_current_output_states(void)
             if (has_current_output_state_timed_out(&(led_signalling_state_records[i])))
             {
                 /* ...if it has, turn off timeout and update current_output_state. */
-                led_signalling_state_records[i].second_counter = 0;
-                led_signalling_state_records[i].timeout_active = false;
+                if (led_signalling_state_records[i].current_av_state == IDLE)
+                {
+                    led_signalling_state_records[i].second_counter = 0;
+                    led_signalling_state_records[i].timeout_active = false;
+                }
+
                 led_signalling_state_records[i].current_output_state = led_signalling_state_records[i].current_av_state;
 
                 /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
@@ -335,7 +339,7 @@ static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t stat
 */
 static void escalate_set(led_signalling_state_record_t * p_record, output_set_t const * escalate_to)
 {
-    for(uint8_t i = 0; i < MAX_AV_SIZE_X; ++i)
+    for(uint8_t i = 0; i < MAX_GRID_SIZE_X; ++i)
     {
         escalate_output(&(p_record[i].current_av_state), escalate_to->states[i]);
     }
@@ -420,8 +424,8 @@ static bool has_current_output_state_timed_out(led_signalling_state_record_t con
     APP_ERROR_CHECK(!p_record->timeout_active);
 
     return (
-            (p_record->current_output_state == CONCERN && p_record->second_counter >= MINIMUM_CONCERN_SIGNAL_DURATION_S) ||
-            (p_record->current_output_state == ALARM && p_record->second_counter >= MINIMUM_ALARM_SIGNAL_DURATION_S)
+            (p_record->current_output_state == CONCERN && p_record->second_counter >= mm_sensor_algorithm_config()->minimum_concern_signal_duration_s) ||
+            (p_record->current_output_state == ALARM && p_record->second_counter >= mm_sensor_algorithm_config()->minimum_alarm_signal_duration_s)
            );
 }
 

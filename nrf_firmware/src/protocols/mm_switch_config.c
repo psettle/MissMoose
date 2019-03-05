@@ -39,19 +39,19 @@
 
 void mm_switch_config_init(void)
 {
-	//Initializes the battery board switches as inputs.
-	 for (uint32_t pin = 0; pin < 32; pin++)
-	 {
-		 if((SWITCHES_MASK) & (1 << pin))
-		 {
-			 nrf_gpio_cfg_input(pin, SWITCH_PULL);
-		 }
-	 }
+    //Initializes the battery board switches as inputs.
+     for (uint32_t pin = 0; pin < 32; pin++)
+     {
+         if((SWITCHES_MASK) & (1 << pin))
+         {
+             nrf_gpio_cfg_input(pin, SWITCH_PULL);
+         }
+     }
 }
 
 hardware_config_t read_hardware_config(void)
 {
-	hardware_config_t config = HARDWARE_CONFIG_UNKNOWN;
+    hardware_config_t config = HARDWARE_CONFIG_UNKNOWN;
 
     config = (nrf_gpio_pin_read(SWITCH_1) << 0) |
              (nrf_gpio_pin_read(SWITCH_2) << 1);
@@ -62,10 +62,10 @@ hardware_config_t read_hardware_config(void)
     case HARDWARE_CONFIG_PIR_PIR:
     case HARDWARE_CONFIG_PIR_LIDAR:
     case HARDWARE_CONFIG_PIR_LIDAR_LED:
-    	break;
+        break;
     case HARDWARE_CONFIG_UNKNOWN:
     default:
-    	APP_ERROR_CHECK(true);
+        APP_ERROR_CHECK(true);
     }
 
     return config;

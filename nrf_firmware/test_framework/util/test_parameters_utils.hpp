@@ -12,6 +12,8 @@ INCLUDES
 
 #include <string>
 #include <vector>
+#include "test_runner.hpp"
+#include "tests.hpp"
 
 /**********************************************************
 CONSTANTS
@@ -25,7 +27,7 @@ DECLARATIONS
 /**
 * Parses the parameters for the algorithm out of a binary file.
 */
-void test_demo_parse_parameters(std::vector<float> & parameters, const std::string executable_path, std::string individual_index);
+void test_demo_parse_parameters(mm_sensor_algorithm_config_t* config, const std::string executable_path, std::string individual_index);
 
 /**
 * Writes the score for testing to a binary file.

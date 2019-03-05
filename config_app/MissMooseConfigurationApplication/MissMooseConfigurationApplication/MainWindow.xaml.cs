@@ -1,23 +1,13 @@
-﻿using ANT_Managed_Library;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using MissMooseConfigurationApplication.UIPages;
 using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
+using MissMooseConfigurationApplication.Utils;
 
 namespace MissMooseConfigurationApplication
 {
@@ -42,14 +32,12 @@ namespace MissMooseConfigurationApplication
         {
             InitializeComponent();
 
-            SetSystemStatusLabel(SystemStatusEnum.SystemStatus_OK);
-
             // main window owns all these pages so that state is maintained when switching between them
             navigationItems = new Dictionary<PageSwitcherButton, Page>()
             {
                 { ConfigPageButton, new ConfigurationPage() },
-                { EventLogPageButton, new EventLogPage() },
-                { SystemProblemsPageButton, new SystemProblemsPage()},
+                //{ EventLogPageButton, new EventLogPage() },
+                //{ SystemProblemsPageButton, new SystemProblemsPage()},
                 { SystemOverviewPageButton, new SystemOverviewPage()}
             };
             if(File.Exists(ConfigurationSaveFileName))
@@ -58,6 +46,12 @@ namespace MissMooseConfigurationApplication
             }
             // app starts on config screen
             PageSwitchClick(ConfigPageButton);
+
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            IconHelper.RemoveIcon(this);
         }
 
         public void PageSwitchClick(PageSwitcherButton sender)
@@ -79,20 +73,6 @@ namespace MissMooseConfigurationApplication
         #endregion
 
         #region Private Methods
-
-        void SetSystemStatusLabel(SystemStatusEnum status)
-        {
-            string content = "System Status: ";
-
-            switch (status)
-            {
-                case SystemStatusEnum.SystemStatus_OK:
-                    content += "OK";
-                    break;
-            }
-
-            label_SystemStatusBar.Content = content;
-        }
 
         /// <summary>
         /// Container class used to convert SensorNode information into a serializable format

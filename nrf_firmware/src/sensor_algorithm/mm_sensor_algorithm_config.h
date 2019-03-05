@@ -8,53 +8,85 @@ notes:
 #define MM_SENSOR_ALGORITHM_CONFIG_H
 
 /**********************************************************
-                    ALGORITHM TUNING
+                        INCLUDES
 **********************************************************/
 
+#include "stdint.h"
+
+/**********************************************************
+                    ALGORITHM CONSTANTS
+**********************************************************/
+
+/**
+    Static sensor algorithm constants.
+*/
 #define MAX_GRID_SIZE_X                     ( 3 )
 #define MAX_GRID_SIZE_Y                     ( 3 )
 #define MAX_NUMBER_NODES                    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
 #define MAX_SENSORS_PER_NODE                ( 2 )
-#define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )     
-
-#define MAX_NUMBER_NODES                    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
-#define MAX_SENSORS_PER_NODE                ( 2 )
-#define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )  
-
-#define ACTIVITY_VARIABLE_MIN               ( 1.0f )
-#define ACTIVITY_VARIABLE_MAX               ( 12.0f )
+#define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )
 
 #define SENSOR_INACTIVITY_THRESHOLD_MIN         ( 60 * 24 )
 #define SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE  ( 120 )
 #define SENSOR_HYPERACTIVITY_FREQUENCY_THRES    ( 1.0 ) // events / SENSOR_HYPERACTIVITY_DETECTION_PERIOD
 
-#define ACTIVITY_DECAY_PERIOD_MS            ( ONE_SECOND_MS )
+/**********************************************************
+                    ALGORITHM TUNING
+**********************************************************/
 
-#define ACTIVITY_VARIABLE_DECAY_FACTOR      ( 0.99f )
+/**
+    Dynamic sensor algorithm constants container.
+*/
+typedef struct
+{
+    float activity_variable_min;
+    float activity_variable_max;
 
-/* Road-side (RS), non-road-side (NRS) */
-#define POSSIBLE_DETECTION_THRESHOLD_RS     ( 3.0f )
-#define POSSIBLE_DETECTION_THRESHOLD_NRS    ( 4.0f )
+    float common_sensor_weight_factor;
+    float base_sensor_weight_factor_pir;
+    float base_sensor_weight_factor_lidar;
+    float road_proximity_factor_0;
+    float road_proximity_factor_1;
+    float road_proximity_factor_2;
 
-#define DETECTION_THRESHOLD_RS              ( 6.0f )
-#define DETECTION_THRESHOLD_NRS             ( 7.0f )
+    float common_sensor_trickle_factor;
+    float base_sensor_trickle_factor_pir;
+    float base_sensor_trickle_factor_lidar;
+    float road_trickle_proximity_factor_0;
+    float road_trickle_proximity_factor_1;
+    float road_trickle_proximity_factor_2;
 
-#define COMMON_SENSOR_WEIGHT_FACTOR         ( 1.0f )
-#define BASE_SENSOR_WEIGHT_FACTOR_PIR       ( 3.0f )
-#define BASE_SENSOR_WEIGHT_FACTOR_LIDAR     ( 3.5f )
-#define ROAD_PROXIMITY_FACTOR_0             ( 1.4f )
-#define ROAD_PROXIMITY_FACTOR_1             ( 1.2f )
-#define ROAD_PROXIMITY_FACTOR_2             ( 1.0f )
+    float activity_variable_decay_factor;
+    uint16_t activity_decay_period_ms;
 
-#define COMMON_SENSOR_TRICKLE_FACTOR        ( 1.0f )
-#define BASE_SENSOR_TRICKLE_FACTOR_PIR      ( 1.003f )
-#define BASE_SENSOR_TRICKLE_FACTOR_LIDAR    ( 1.0035f )
-#define ROAD_TRICKLE_PROXIMITY_FACTOR_0     ( 1.004f )
-#define ROAD_TRICKLE_PROXIMITY_FACTOR_1     ( 1.002f )
-#define ROAD_TRICKLE_PROXIMITY_FACTOR_2     ( 1.0f )
+    /* Road-side (RS), non-road-side (NRS) */
+    float possible_detection_threshold_rs;
+    float possible_detection_threshold_nrs;
 
-#define MINIMUM_CONCERN_SIGNAL_DURATION_S ( 30 )
-#define MINIMUM_ALARM_SIGNAL_DURATION_S   ( 60 )
+    float detection_threshold_rs;
+    float detection_threshold_nrs;
+
+    uint16_t minimum_concern_signal_duration_s;
+    uint16_t minimum_alarm_signal_duration_s;
+} mm_sensor_algorithm_config_t;
+
+
+/**********************************************************
+                     DECLARATIONS
+**********************************************************/
+
+/**
+    Initializes the dynamic sensor algorithm configuration
+    constants. Should never be used more than once!
+*/
+void mm_sensor_algorithm_config_init(mm_sensor_algorithm_config_t const * config);
+
+/**
+    Gets the dynamic sensor algorithm configuration constants. Assumes that
+    they have been previously configured using mm_sensor_algorithm_config_init
+    once before!
+*/
+mm_sensor_algorithm_config_t const * mm_sensor_algorithm_config(void);
 
 #endif /* MM_SENSOR_ALGORITHM_CONFIG_H */
 

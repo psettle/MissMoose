@@ -219,9 +219,9 @@ class GeneticAlgorithm(object):
 
         for _ in range(1, self.generations):
             self.generation_index += 1
+            self.create_next_generation()
             if(self.generation_callback is not None):
                 self.generation_callback(self.current_generation, self.generation_index)
-            self.create_next_generation()
 
     def best_individual(self):
         """Return the individual with the best fitness in the current
@@ -242,7 +242,7 @@ class Chromosome(object):
     """
     def __init__(self, genes):
         """Initialise the Chromosome."""
-        self.genes = genes
+        self.genes = copy.deepcopy(genes)
         self.fitness = 0
 
     def __repr__(self):

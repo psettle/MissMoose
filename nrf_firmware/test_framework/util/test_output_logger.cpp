@@ -20,6 +20,7 @@ notes:
 
 #define LOG_FILE_FOLDER                 ( std::string("test_framework/logging/"))
 #define LOG_FILE_NAME_EXTENSION         ( std::string(".csv") )
+#define ENABLE_LOGGING                  ( false )
 
 /**********************************************************
                         VARIABLES
@@ -37,28 +38,32 @@ std::ofstream test_output_file;
  */
 void init_test_output_logger(std::string const & test_name)
 {
-    test_output_file.open(LOG_FILE_FOLDER + test_name + LOG_FILE_NAME_EXTENSION);
+    #if(ENABLE_LOGGING)
+        test_output_file.open(LOG_FILE_FOLDER + test_name + LOG_FILE_NAME_EXTENSION);
 
-    /* Check that the log file was able to be succesfully opened. */
-    if (!test_output_file.is_open())
-    {
-        std::cout << std::string("Unable to open test output log file: ") + test_name + LOG_FILE_NAME_EXTENSION << std::endl;
-    }
+        /* Check that the log file was able to be succesfully opened. */
+        if (!test_output_file.is_open())
+        {
+            std::cout << std::string("Unable to open test output log file: ") + test_name + LOG_FILE_NAME_EXTENSION << std::endl;
+        }
+    #endif
 }
 
 /**
- * De-initializes the test output logger. Closes the 
+ * De-initializes the test output logger. Closes the
  * current output stream.
  */
 void deinit_test_output_logger(void)
 {
-    log_message("END");
+    #if(ENABLE_LOGGING)
+        log_message("END");
 
-    /* If the file wasn't successfully opened, we don't need to close it. */
-    if (test_output_file.is_open())
-    {
-        test_output_file.close();
-    }
+        /* If the file wasn't successfully opened, we don't need to close it. */
+        if (test_output_file.is_open())
+        {
+            test_output_file.close();
+        }
+    #endif
 }
 
 /**
@@ -68,8 +73,10 @@ void deinit_test_output_logger(void)
  */
 void log_message(std::string const & message)
 {
-    if (test_output_file.is_open())
-    {
-        test_output_file << get_simulated_time_elapsed() << "," << message << "\n";
-    }
+    #if(ENABLE_LOGGING)
+        if (test_output_file.is_open())
+        {
+            test_output_file << get_simulated_time_elapsed() << "," << message << "\n";
+        }
+    #endif
 }
