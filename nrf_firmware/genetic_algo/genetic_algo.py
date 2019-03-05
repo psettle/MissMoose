@@ -12,25 +12,25 @@ testframework_path = os.path.join(root_dir, "..\\x64\\Debug\\TestFramework.exe")
 
 # setup seed data
 data = [{'name': 'activity_variable_min',             'value': 1.0,     'min': 1.0, 'max': 10.0},
-        {'name': 'activity_variable_max',             'value': 12.0,    'min': 1.0, 'max': 100.0},
+        {'name': 'activity_variable_max',             'value': 12.0,    'min': 1.0, 'max': 300.0},
         {'name': 'common_sensor_weight_factor',       'value': 1.0,     'min': 1.0, 'max': 10.0},
         {'name': 'base_sensor_weight_factor_pir',     'value': 3.0,     'min': 1.0, 'max': 10.0},
         {'name': 'base_sensor_weight_factor_lidar',   'value': 3.5,     'min': 1.0, 'max': 10.0},
-        {'name': 'road_proximity_factor_0',           'value': 1.4,     'min': 1.0, 'max': 5.0},
-        {'name': 'road_proximity_factor_1',           'value': 1.2,     'min': 1.0, 'max': 5.0},
-        {'name': 'road_proximity_factor_2',           'value': 1.0,     'min': 1.0, 'max': 5.0},
-        {'name': 'common_sensor_trickle_factor',      'value': 1.0,     'min': 1.0, 'max': 5.0},
-        {'name': 'base_sensor_trickle_factor_pir',    'value': 1.003,   'min': 1.0, 'max': 5.0},
-        {'name': 'base_sensor_trickle_factor_lidar',  'value': 1.0035,  'min': 1.0, 'max': 5.0},
-        {'name': 'road_trickle_proximity_factor_0',   'value': 1.004,   'min': 1.0, 'max': 5.0},
-        {'name': 'road_trickle_proximity_factor_1',   'value': 1.002,   'min': 1.0, 'max': 5.0},
-        {'name': 'road_trickle_proximity_factor_2',   'value': 1.0,     'min': 1.0, 'max': 5.0},
-        {'name': 'activity_variable_decay_factor',    'value': 0.99,    'min': 0.7, 'max': 0.9999999999999},
-        {'name': 'activity_decay_period_ms',          'value': 3.0,     'min': 1.0, 'max': 20.0},
-        {'name': 'possible_detection_threshold_rs',   'value': 3.0,     'min': 1.0, 'max': 20.0},
-        {'name': 'possible_detection_threshold_nrs',  'value': 4.0,     'min': 1.0, 'max': 20.0},
-        {'name': 'detection_threshold_rs',            'value': 6.0,     'min': 1.0, 'max': 20.0},
-        {'name': 'detection_threshold_nrs',           'value': 7.0,     'min': 1.0, 'max': 20.0},
+        {'name': 'road_proximity_factor_0',           'value': 1.4,     'min': 1.0, 'max': 10.0},
+        {'name': 'road_proximity_factor_1',           'value': 1.2,     'min': 1.0, 'max': 10.0},
+        {'name': 'road_proximity_factor_2',           'value': 1.0,     'min': 1.0, 'max': 10.0},
+        {'name': 'common_sensor_trickle_factor',      'value': 1.0,     'min': 1.0, 'max': 10.0},
+        {'name': 'base_sensor_trickle_factor_pir',    'value': 1.003,   'min': 1.0, 'max': 10.0},
+        {'name': 'base_sensor_trickle_factor_lidar',  'value': 1.0035,  'min': 1.0, 'max': 10.0},
+        {'name': 'road_trickle_proximity_factor_0',   'value': 1.004,   'min': 1.0, 'max': 10.0},
+        {'name': 'road_trickle_proximity_factor_1',   'value': 1.002,   'min': 1.0, 'max': 10.0},
+        {'name': 'road_trickle_proximity_factor_2',   'value': 1.0,     'min': 1.0, 'max': 10.0},
+        {'name': 'activity_variable_decay_factor',    'value': 0.99,    'min': 0.8, 'max': 0.9999999999999},
+        {'name': 'activity_decay_period_ms',          'value': 3.0,     'min': 1.0, 'max': 50.0},
+        {'name': 'possible_detection_threshold_rs',   'value': 3.0,     'min': 1.0, 'max': 50.0},
+        {'name': 'possible_detection_threshold_nrs',  'value': 4.0,     'min': 1.0, 'max': 50.0},
+        {'name': 'detection_threshold_rs',            'value': 6.0,     'min': 1.0, 'max': 50.0},
+        {'name': 'detection_threshold_nrs',           'value': 7.0,     'min': 1.0, 'max': 50.0},
         {'name': 'minimum_concern_signal_duration_s', 'value': 30.0,    'min': 10.0, 'max': 100.0},
         {'name': 'minimum_alarm_signal_duration_s',   'value': 60.0,    'min': 10.0, 'max': 100.0}]
 
@@ -43,9 +43,9 @@ class Genetic_Algo:
     def __init__(self):
         # initialise the GA
         self.ga = GeneticAlgorithm(data,
-                            population_size=100,
-                            generations=50,
-                            crossover_probability=0.6,
+                            population_size=150,
+                            generations=200,
+                            crossover_probability=0.8,
                             mutation_probability=0.2,
                             elitism=True,
                             maximise_fitness=True,
@@ -73,36 +73,41 @@ class Genetic_Algo:
 
     # define and set the GA's crossover operation
     def crossover(self, parent_1, parent_2):
-        crossover_index = random.randrange(1, len(parent_1))
-        child_1a = parent_1[:crossover_index]
-        child_1b = [i for i in parent_2 if i not in child_1a]
-        child_1 = child_1a + child_1b
-
-        child_2a = parent_2[crossover_index:]
-        child_2b = [i for i in parent_1 if i not in child_2a]
-        child_2 = child_2a + child_2b
+        ''' Make 2 children. coin toss every one of their values to see if it comes from parent 1 or 2.
+        '''
+        child_1 = copy.deepcopy(parent_1)
+        child_2 = copy.deepcopy(parent_2)
+        for idx in range(len(child_1)):
+            child_1[idx]['value'] = child_1[idx]['value'] if random.random() > 0.5 else parent_2[idx]['value']
+            child_2[idx]['value'] = child_2[idx]['value'] if random.random() > 0.5 else parent_1[idx]['value']
 
         return child_1, child_2
 
     # define and set the GA's mutation operation
     def mutate(self, individual):
-        """ Change a couple values in an individual by up to +/- 5%
+        """ 50% chance of changing each value in an individual by up to +/- 20%
         """
-        mutate_index1 = random.randrange(len(individual))
-        mutate_index2 = random.randrange(len(individual))
-        individual[mutate_index1]['value'] = (random.random() - 0.5) * 0.1 * individual[mutate_index1]['value']
-        individual[mutate_index1]['value'] = individual[mutate_index1]['min'] if individual[mutate_index1]['value'] < individual[mutate_index1]['min'] else individual[mutate_index1]['value']
-        individual[mutate_index1]['value'] = individual[mutate_index1]['max'] if individual[mutate_index1]['value'] > individual[mutate_index1]['max'] else individual[mutate_index1]['value']
-
-        individual[mutate_index2]['value'] = (random.random() - 0.5) * 0.1 * individual[mutate_index2]['value']
-        individual[mutate_index2]['value'] = individual[mutate_index2]['min'] if individual[mutate_index2]['value'] < individual[mutate_index2]['min'] else individual[mutate_index2]['value']
-        individual[mutate_index2]['value'] = individual[mutate_index2]['max'] if individual[mutate_index2]['value'] > individual[mutate_index2]['max'] else individual[mutate_index2]['value']
+        for item in individual:
+            if (random.random() > 0.5):
+                # Change by a random value
+                item['value'] = (random.random() - 0.5) * 0.4 * item['value']
+                # Constrain by the min and max
+                item['value'] = item['min'] if item['value'] < item['min'] else item['value']
+                item['value'] = item['max'] if item['value'] > item['max'] else item['value']
 
     def generation_callback(self, current_generation, generation_index):
         """ Callback to handle information that's generated after an individual
         is processed.
         """
         print( 'best individual score gen {0}: '.format(generation_index) + str(self.ga.best_individual()[0]) )
+        # Write the score and individual to a log file
+        logfile_path = os.path.join(root_dir, 'output', 'logfile.txt')
+        if os.path.exists(logfile_path):
+            append_write = 'a' # append if already exists
+        else:
+            append_write = 'w' # make a new file if not
+        with open(logfile_path, append_write) as logfile:
+            logfile.write("gen {0} score: {1} values: {2} ".format(generation_index, self.ga.best_individual()[0], self.ga.best_individual()[1]) + '\n')
 
     # define a fitness function
     def fitness(self, individual, individual_id, data):
