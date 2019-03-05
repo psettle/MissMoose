@@ -100,7 +100,7 @@ static uint8_t sample_readings = 0;
 static lidar_error_code_type_t error_code;
 
 static uint16_t sample_buffer[MEDIAN_FILTER_SIZE];
-static uint16_t median_filtered_distance;
+static uint16_t median_filtered_distance = 0;
 static uint8_t  median_filter_index;
 static bool     median_filter_warmup;
 static bool     distance_changed_warning_flag;

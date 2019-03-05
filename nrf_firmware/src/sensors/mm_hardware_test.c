@@ -227,27 +227,27 @@ static void state_transition_update(detection_test_states_t new_state)
     {
         state = new_state;
     }
-    // switch(state)
-    // {
-    //     case NO_DETECTION:
-    //         /* Change the LEDs to be off */
-    //         mm_rgb_led_set_colour(MM_RGB_LED_DUTY_0);
-    //         mm_rgb_set_on_off_cycle(0, 500);
-    //         break;
-    //     case PIR_DETECTION:
-    //         /* Change the LEDs to flashing yellow */
-    //         mm_rgb_led_set_colour(MM_RGB_COLOUR_YELLOW);
-    //         mm_rgb_set_on_off_cycle(500, 500);
-    //         break;
-    //     case LIDAR_DETECTION:
-    //         /* Change the LEDs to flashing purple */
-    //         mm_rgb_led_set_colour(MM_RGB_COLOUR_PURPLE);
-    //         mm_rgb_set_on_off_cycle(500, 500);
-    //         break;
-    //     case LIDAR_PIR_DETECTION:
-    //         /* Change the LEDs to solid red. */
-    //         mm_rgb_led_set_colour(MM_RGB_COLOUR_RED);
-    //         mm_rgb_set_on_off_cycle(500, 0);
-    //         break;
-    // }
+    switch(state)
+    {
+        case NO_DETECTION:
+            /* Change the LEDs to be off */
+            mm_rgb_led_set_colour(MM_RGB_LED_DUTY_0);
+            mm_rgb_set_on_off_cycle(0, 500);
+            break;
+        case PIR_DETECTION:
+            /* Change the LEDs to flashing yellow */
+            mm_rgb_led_set_colour(MM_RGB_COLOUR_YELLOW);
+            mm_rgb_set_on_off_cycle(500, 500);
+            break;
+        case LIDAR_DETECTION:
+            /* Change the LEDs to flashing purple */
+            mm_rgb_led_set_colour(MM_RGB_COLOUR_PURPLE);
+            mm_rgb_set_on_off_cycle(500, 500);
+            break;
+        case LIDAR_PIR_DETECTION:
+            /* Change the LEDs to solid red. */
+            mm_rgb_led_set_colour(MM_RGB_COLOUR_RED);
+            mm_rgb_set_on_off_cycle(500, 0);
+            break;
+    }
 }

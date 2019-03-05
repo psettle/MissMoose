@@ -31,7 +31,7 @@ notes:
 #define RGB_LED_GREEN_MASK  (1<<RGB_LED_GREEN)
 #define RGB_LED_BLUE_MASK   (1<<RGB_LED_BLUE)
 
-#define BUTTON_CONTROL   true          ///< Allow using the on-board buttons to change the LED colour and on-off cycle
+#define BUTTON_CONTROL   false          ///< Allow using the on-board buttons to change the LED colour and on-off cycle
 #define LED_DEBUG        false
 #define LED_STARTUP_TEST true           ///< Whether or not to have a brief period of 5s on startup with the LEDs set to WHTE.
 
