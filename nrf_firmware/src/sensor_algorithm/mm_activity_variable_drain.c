@@ -11,23 +11,6 @@
 
 #include "mm_activity_variable_drain.h"
 #include "mm_activity_variables.h"
-#include "mm_sensor_algorithm_config.h"
-
-/**********************************************************
-                        CONSTANTS
-**********************************************************/
-
-/**********************************************************
-                          TYPES
-**********************************************************/
-
-/**********************************************************
-                       DEFINITIONS
-**********************************************************/
-
-/**********************************************************
-                       VARIABLES
-**********************************************************/
 
 /**********************************************************
                        DECLARATIONS
@@ -42,14 +25,14 @@ void mm_apply_activity_variable_drain_factor(void)
     {
         for ( uint8_t y = 0; y < MAX_AV_SIZE_Y; y++ )
         {
-            if ( AV(x, y) >  ACTIVITY_VARIABLE_MIN )
+            if ( AV(x, y) > mm_sensor_algorithm_config()->activity_variable_min )
             {
-                AV(x, y) *= ACTIVITY_VARIABLE_DECAY_FACTOR;
+                AV(x, y) *= mm_sensor_algorithm_config()->activity_variable_decay_factor;
 
                 /* Enforce ACTIVITY_VARIABLE_MIN */
-                if ( AV(x, y) < ACTIVITY_VARIABLE_MIN )
+                if ( AV(x, y) < mm_sensor_algorithm_config()->activity_variable_min )
                 {
-                    AV(x, y) = ACTIVITY_VARIABLE_MIN;
+                    AV(x, y) = mm_sensor_algorithm_config()->activity_variable_min;
                 }
             }
         }

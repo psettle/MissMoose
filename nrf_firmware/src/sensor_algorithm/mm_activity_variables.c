@@ -11,8 +11,8 @@ notes:
 
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
-#include "mm_sensor_algorithm_config.h"
 #include "mm_activity_variables.h"
 
 /**********************************************************
@@ -49,12 +49,13 @@ void mm_activity_variables_init(void)
 {
     /* Initialize activity variables. */
     memset(&(activity_variables[0]), 0, sizeof(activity_variables));
-    
+
     for(uint16_t i = 0; i < ACTIVITY_VARIABLES_NUM; ++i)
     {
-        activity_variables[i] = ACTIVITY_VARIABLE_MIN;
+        activity_variables[i] = mm_sensor_algorithm_config()->activity_variable_min;
     }
 }
+
 
 mm_activity_variable_t* mm_av_access(uint8_t x, uint8_t y)
 {
@@ -79,8 +80,8 @@ activity_variable_state_t mm_get_status_for_av(mm_activity_variable_t const * av
     }
 
     /* Collect the correct thresholds. */
-    float low_thresh = is_roadside ? POSSIBLE_DETECTION_THRESHOLD_RS : POSSIBLE_DETECTION_THRESHOLD_NRS;
-    float high_thresh = is_roadside ? DETECTION_THRESHOLD_RS : DETECTION_THRESHOLD_NRS;
+    float low_thresh = is_roadside ? mm_sensor_algorithm_config()->possible_detection_threshold_rs : mm_sensor_algorithm_config()->possible_detection_threshold_nrs;
+    float high_thresh = is_roadside ? mm_sensor_algorithm_config()->detection_threshold_rs : mm_sensor_algorithm_config()->detection_threshold_nrs;
 
     /* Check against the thresholds. */
     if (*av < low_thresh)

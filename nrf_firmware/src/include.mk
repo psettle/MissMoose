@@ -65,13 +65,16 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sensor_algorithm/mm_sensor_error_check.c \
   $(PROJ_DIR)/src/sensor_algorithm/mm_activity_variable_drain.c \
   $(PROJ_DIR)/src/sensor_algorithm/mm_led_strip_states.c \
+  $(PROJ_DIR)/src/sensor_algorithm/mm_sensor_algorithm_config.c \
   $(PROJ_DIR)/src/sensor_algorithm/activity_variable_growth/mm_activity_variable_growth.c \
   $(PROJ_DIR)/src/sensor_algorithm/activity_variable_growth/mm_activity_variable_growth_lidar.c \
   $(PROJ_DIR)/src/sensor_algorithm/activity_variable_growth/mm_activity_variable_growth_pir.c \
   $(PROJ_DIR)/src/sensor_algorithm/activity_variable_growth/mm_activity_variable_growth_sensor_records.c \
   $(PROJ_DIR)/src/protocols/mm_monitoring_dispatch.c \
   $(PROJ_DIR)/src/protocols/mm_position_config.c \
-  $(PROJ_DIR)/src/protocols/mm_av_transmission.c
+  $(PROJ_DIR)/src/protocols/mm_av_transmission.c \
+  $(PROJ_DIR)/src/protocols/mm_led_transmission.c \
+  $(PROJ_DIR)/src/protocols/mm_sensor_error_transmission.c 
 endif
 
 # Include folders common to all targets
