@@ -35,7 +35,7 @@ DECLARATIONS
 /**
 * Parses the parameters for the algorithm out of a binary file.
 */
-void test_demo_parse_parameters(mm_sensor_algorithm_config_t* parameters, const std::string executable_path, const std::string individual_index)
+void test_demo_parse_parameters(mm_sensor_algorithm_config_t* parameters, std::string const & executable_path, std::string const & individual_index)
 {
     std::vector<float> file_values;
     std::string path = executable_path.substr(0, executable_path.find_last_of("\\/")) + PARAMETER_FILE + individual_index + PARAMETER_FILE_NAME_EXTENSION;
@@ -76,7 +76,7 @@ void test_demo_parse_parameters(mm_sensor_algorithm_config_t* parameters, const 
 /**
 * Writes the score for testing to a binary file.
 */
-void test_demo_write_score(float score, const std::string executable_path, std::string individual_index)
+void test_demo_write_score(float score, std::string const & executable_path, std::string const & individual_index)
 {
     std::string path = executable_path.substr(0, executable_path.find_last_of("\\/")) + SCORE_FILE + individual_index + PARAMETER_FILE_NAME_EXTENSION;
 

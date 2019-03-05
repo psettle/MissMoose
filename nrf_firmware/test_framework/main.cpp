@@ -60,14 +60,11 @@ int main(int argc, char* argv[])
 {
     std::vector<TestCase> tests;
 
-    test_basic_sensor_activity_add_tests(tests);
-    test_hyperactive_inactive_add_tests(tests);
-    test_one_animal_constant_speed_add_tests(tests);
-    test_one_animal_in_out_add_tests(tests);
-    test_one_animal_with_one_stop_add_tests(tests);
-
     if (argc > 1)
     {
+        test_one_animal_constant_speed_add_tests(tests);
+        test_one_animal_in_out_add_tests(tests);
+        test_one_animal_with_one_stop_add_tests(tests);
         // We're getting some arguments from the genetic algorithm :D
         mm_sensor_algorithm_config_t parameters;
         test_demo_parse_parameters(&parameters, std::string(argv[0]), std::string(argv[1]));
@@ -76,6 +73,11 @@ int main(int argc, char* argv[])
     }
     else
     {
+        test_basic_sensor_activity_add_tests(tests);
+        test_hyperactive_inactive_add_tests(tests);
+        test_one_animal_constant_speed_add_tests(tests);
+        test_one_animal_in_out_add_tests(tests);
+        test_one_animal_with_one_stop_add_tests(tests);
         test_runner_init(tests, &sensor_algorithm_config_default);
     }
 

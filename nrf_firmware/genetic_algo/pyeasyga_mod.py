@@ -163,6 +163,7 @@ class GeneticAlgorithm(object):
         crossover, and mutation) supplied.
         """
         new_population = []
+        new_population_genes_hashes = []
         elite = copy.deepcopy(self.current_generation[0])
         selection = self.selection_function
 
@@ -173,8 +174,18 @@ class GeneticAlgorithm(object):
             child_1, child_2 = parent_1, parent_2
             child_1.fitness, child_2.fitness = 0, 0
 
-            can_crossover = random.random() < self.crossover_probability
-            can_mutate = random.random() < self.mutation_probability
+            if((make_hash(child_1.genes) in new_population_genes_hashes) or
+               (make_hash(child_2.genes) in new_population_genes_hashes)):
+                # If we've already seen either of these individuals, mutate them.
+                can_mutate = True
+                if(child_1.genes == child_2.genes):
+                    # If they're the same, don't bother crossing them over.
+                    can_crossover = False
+                else:
+                    can_crossover = random.random() < self.crossover_probability
+            else:
+                can_crossover = random.random() < self.crossover_probability
+                can_mutate = random.random() < self.mutation_probability
 
             if can_crossover:
                 child_1.genes, child_2.genes = self.crossover_function(
@@ -185,8 +196,10 @@ class GeneticAlgorithm(object):
                 self.mutate_function(child_2.genes)
 
             new_population.append(child_1)
+            new_population_genes_hashes.append(make_hash(child_1.genes))
             if len(new_population) < self.population_size:
                 new_population.append(child_2)
+                new_population_genes_hashes.append(make_hash(child_2.genes))
 
         if self.elitism:
             new_population[0] = elite
@@ -249,3 +262,42 @@ class Chromosome(object):
         """Return initialised Chromosome representation in human readable form.
         """
         return repr((self.fitness, self.genes))
+
+DictProxyType = type(object.__dict__)
+
+def make_hash(o):
+  """
+  https://stackoverflow.com/questions/5884066/hashing-a-dictionary
+  Makes a hash from a dictionary, list, tuple or set to any level, that
+  contains only other hashable types (including any lists, tuples, sets, and
+  dictionaries). In the case where other kinds of objects (like classes) need
+  to be hashed, pass in a collection of object attributes that are pertinent.
+  For example, a class can be hashed in this fashion:
+
+    make_hash([cls.__dict__, cls.__name__])
+
+  A function can be hashed like so:
+
+    make_hash([fn.__dict__, fn.__code__])
+  """
+
+  if type(o) == DictProxyType:
+    o2 = {}
+    for k, v in o.items():
+      if not k.startswith("__"):
+        o2[k] = v
+    o = o2
+
+  if isinstance(o, (set, tuple, list)):
+
+    return tuple([make_hash(e) for e in o])
+
+  elif not isinstance(o, dict):
+
+    return hash(o)
+
+  new_o = copy.deepcopy(o)
+  for k, v in new_o.items():
+    new_o[k] = make_hash(v)
+
+  return hash(tuple(frozenset(sorted(new_o.items()))))
