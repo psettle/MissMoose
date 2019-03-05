@@ -42,5 +42,15 @@ namespace MissMooseConfigurationApplication
             falseSender.Name = Regex.Replace(title, @"\s+", "");
             parentWindow.PageSwitchClick(falseSender);
         }
+
+        public void UpdateScrollBar()
+        {
+            if (VisualTreeHelper.GetChildrenCount(TextList) > 0)
+            {
+                Border border = (Border)VisualTreeHelper.GetChild(TextList, 0);
+                ScrollViewer scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild(border, 0);
+                scrollViewer.ScrollToBottom();
+            }
+        }
     }
 }

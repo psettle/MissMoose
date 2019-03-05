@@ -31,6 +31,7 @@ namespace MissMooseConfigurationApplication
         private List<List<Viewbox>> sensorViewboxes;
         private List<SensorNode> nodes = new List<SensorNode>();
         private List<List<Dictionary<LineDirection, LineWithBorder>>> lineSegmentAssociations;
+        private List<List<Path>> shadedRegions;
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
         #endregion
@@ -41,6 +42,7 @@ namespace MissMooseConfigurationApplication
             InitializeComponent();
             InitializeViewboxes();
             InitializeLineSegments();
+            InitializeShadedRegions();
 
             AntControl.Instance.AddMonitoringUI(this);
         }
@@ -139,36 +141,56 @@ namespace MissMooseConfigurationApplication
         public void MarkSensorDetection(SensorNode node, LineDirection direction, Brush colour)
         {
             MarkSensorDetection(node.xpos, node.ypos, direction, colour);
-
-            if(colour.Equals(StatusColour.Disabled))
-            {
-                return;
-            }
-
-            if(colour.Equals(StatusColour.Blue))
-            {
-                /* Colour is being set to blue, check that no other line segemnts are active. */
-                foreach(var segment in lineSegmentAssociations[node.xpos][node.ypos])
-                {
-                    if(!segment.Value.ColoredLine.Stroke.Equals(StatusColour.Blue) && !segment.Value.ColoredLine.Stroke.Equals(StatusColour.Disabled))
-                    {
-                        /* Another segment is still active, so we can't turn the node off yet. */
-                        return;
-                    }
-                }
-            } /* Else, colour is being set to red or yellow, so there is no concern about setting it */
-
-            /* Which node to set? */ 
-            SensorNode nodeToSet = nodes.Where(x => x.NodeID == node.NodeID).FirstOrDefault();
-
-            if (nodeToSet != null)
-            {
-                nodeToSet.SetStatusColour(colour);
-            }
         }
+
+
+        public void SetRegionActivityVariable(byte xCoordinate, byte yCoordinate, RegionStatus regionStatus)
+        {
+            Brush colour;
+            switch (regionStatus)
+            {
+                case RegionStatus.NoDetection:
+                    colour = Brushes.Transparent;
+                    break;
+                case RegionStatus.ProbableDetection:
+                    colour = StatusColour.Yellow;
+                    break;
+                case RegionStatus.DefiniteDetection:
+                    colour = StatusColour.Red;
+                    break;
+                default:
+                    colour = Brushes.Transparent;
+                    break;
+            }
+            shadedRegions[xCoordinate][yCoordinate].Fill = colour;
+        }
+
+        public void LogSystemProblem(String logString)
+        {
+            SystemProblems.TextList.Items.Add(CreateLogItem(logString));
+            SystemProblems.UpdateScrollBar();
+        }
+
+        public void LogEvent(String logString)
+        {
+            EventLog.TextList.Items.Add(CreateLogItem(logString));
+            EventLog.UpdateScrollBar();
+        }
+
         #endregion
 
         #region Private Methods
+
+        private TextBox CreateLogItem(String logString)
+        {
+            TextBox textBox = new TextBox();
+            textBox.TextWrapping = TextWrapping.Wrap;
+            textBox.BorderThickness = new Thickness(0);
+            textBox.Text = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString() + ": " + logString;
+
+            return textBox;
+        }
+
         private void NodeClick(object sender, RoutedEventArgs e)
         {
             foreach(var node in nodes)
@@ -273,6 +295,23 @@ namespace MissMooseConfigurationApplication
                         { LineDirection.Up, MonitGrid.Line_2_2_Up },
                     },
                 }
+            };
+        }
+
+        private void InitializeShadedRegions()
+        {
+            shadedRegions = new List<List<Path>>
+            {
+                new List<Path>
+                {
+                    MonitGrid.Rectangle_0_0,
+                    MonitGrid.Rectangle_0_1,
+                },
+                new List<Path>
+                {
+                    MonitGrid.Rectangle_1_0,
+                    MonitGrid.Rectangle_1_1,
+                },
             };
         }
 
