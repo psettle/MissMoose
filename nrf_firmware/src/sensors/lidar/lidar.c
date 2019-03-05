@@ -20,8 +20,8 @@
 #define MEDIAN(a,b,c) ((a > b) ? (b > c) ? b : (a > c) ? c : a : \
                        (b > c) ? (a > c) ? a : c : b)
 
-#define ANT_BROADCAST_DEBUG         true // If true, broadcast the most recent filtered sample over ANT.
-#define USE_POWER_CYCLING           false  // Whether or not we should try and turn the lidar off between samplings.
+#define ANT_BROADCAST_DEBUG         false // If true, broadcast the most recent filtered sample over ANT.
+#define USE_POWER_CYCLING           true  // Whether or not we should try and turn the lidar off between samplings.
 
 /* Register definitions for the LIDAR. */
 #define DISTANCE_VALUE_REGISTER     (0x8FU)
@@ -67,10 +67,11 @@ typedef enum
     ROLLING_OUT_ZEROS,  ///< In this state after first turning on the lidar, and trying to get rid of 0 measurements
     WARMUP_WAITING,     ///< In this state after getting rid of the zero measurements, but waiting for the full warmup period as
                         ///< recommended in the LIDAR datasheets. No measurements are done during this time, to save power.
-    SAMPLING            ///< In this state until we get a successful non-0 reading after deliberately trying to roll the 0s out. and
+    SAMPLING,           ///< In this state until we get a successful non-0 reading after deliberately trying to roll the 0s out. and
                         ///< waiting the warmup period.
                         ///< If we transition back to ROLLING_OUT_ZEROS in order to start taking the next measurement while still
                         ///< In this phase, that should cause some flag that the most recent lidar measurement failed.
+    SAMPLE_ERROR        ///< Indicates there's been an error in sampling.
 }lidar_sampling_states_t;
 
 /**********************************************************
@@ -82,6 +83,7 @@ static void lidar_process_distance(void);
 static ret_code_t set_register_value(uint8_t reg, uint8_t val);
 static ret_code_t write_register(uint8_t reg);
 void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context);
+void twi_reset(void);
 /* Processes timer timeout */
 static void on_timer_event(void* evt_data, uint16_t evt_size);
 
@@ -120,6 +122,14 @@ static uint8_t       rx_buffer[BUFFER_LENGTH];
 
 /* TWI instance. */
 static const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(TWI_INSTANCE_ID);
+/* TWI config */
+static const nrf_drv_twi_config_t twi_lidar_config = {
+            .scl                = LIDAR_TWI_SCL_PIN,
+            .sda                = LIDAR_TWI_SDA_PIN,
+            .frequency          = NRF_TWI_FREQ_400K,
+            .interrupt_priority = APP_IRQ_PRIORITY_HIGH,
+            .clear_bus_init     = false
+            };
 
 /* Timer instance. */
 APP_TIMER_DEF(m_lidar_timer);
@@ -145,9 +155,9 @@ static void lidar_update_process(void* evt_data, uint16_t evt_size)
                 err_code = set_register_value( MEASUREMENT_TYPE_REGISTER, RECEIVER_BIAS_CORRECTION );
                 if(err_code == NRF_ERROR_BUSY)
                 {
-                    /* The TWI driver is busy. Try kicking off another update to try again. */
-                    lidar_twi_state = READING_START_FLAG;
-                    err_code = app_sched_event_put(NULL, 0, lidar_update_process);
+                    /* The TWI driver is busy. Let's miss this measurement and try again next time. */
+                    err_code = NRF_SUCCESS; // Excuse this particular error.
+                    twi_reset();
                 }
                 APP_ERROR_CHECK(err_code);
                 break;
@@ -158,9 +168,9 @@ static void lidar_update_process(void* evt_data, uint16_t evt_size)
                 err_code = write_register(DISTANCE_VALUE_REGISTER);
                 if(err_code == NRF_ERROR_BUSY)
                 {
-                    /* The TWI driver is busy. Try kicking off another update to try again. */
-                    lidar_twi_state = WAITING_FOR_WRITE;
-                    err_code = app_sched_event_put(NULL, 0, lidar_update_process);
+                    /* The TWI driver is busy. Let's miss this measurement and try again next time. */
+                    err_code = NRF_SUCCESS; // Excuse this particular error.
+                    twi_reset();
                 }
                 APP_ERROR_CHECK(err_code);
                 break;
@@ -171,9 +181,9 @@ static void lidar_update_process(void* evt_data, uint16_t evt_size)
                 err_code = nrf_drv_twi_rx(&m_twi, LIDAR_ADDR, rx_buffer, sizeof(rx_buffer));
                 if(err_code == NRF_ERROR_BUSY)
                 {
-                    /* The TWI driver is busy. Try kicking off another update to try again. */
-                    lidar_twi_state = INITIATE_DISTANCE_READ;
-                    err_code = app_sched_event_put(NULL, 0, lidar_update_process);
+                    /* The TWI driver is busy. Let's miss this measurement and try again next time. */
+                    err_code = NRF_SUCCESS; // Excuse this particular error.
+                    twi_reset();
                 }
                 APP_ERROR_CHECK(err_code);
                 break;
@@ -193,19 +203,27 @@ static void lidar_update_process(void* evt_data, uint16_t evt_size)
 }
 
 /**
+ * @brief Reset the TWI instance, this should be done after
+ * hitting a BUSY error in the twi interface.
+ */
+void twi_reset(void)
+{
+    ret_code_t err_code;
+    lidar_twi_state = READING_DONE;
+    lidar_sampling_state = SAMPLE_ERROR;
+    nrf_drv_twi_uninit(&m_twi);
+    err_code = nrf_drv_twi_init(&m_twi, &twi_lidar_config, twi_handler, NULL);
+    APP_ERROR_CHECK(err_code);
+
+    nrf_drv_twi_enable(&m_twi);
+}
+
+/**
  * @brief UART initialization.
  */
 void twi_init(void)
 {
     ret_code_t err_code;
-
-    const nrf_drv_twi_config_t twi_lidar_config = {
-       .scl                = LIDAR_TWI_SCL_PIN,
-       .sda                = LIDAR_TWI_SDA_PIN,
-       .frequency          = NRF_TWI_FREQ_400K,
-       .interrupt_priority = APP_IRQ_PRIORITY_HIGH,
-       .clear_bus_init     = false
-    };
 
     err_code = nrf_drv_twi_init(&m_twi, &twi_lidar_config, twi_handler, NULL);
     APP_ERROR_CHECK(err_code);
@@ -241,10 +259,13 @@ static void lidar_process_distance(void)
 
     if(lidar_sampling_state == SAMPLING)
     {
-        // If the distance is exactly zero even after rolling out the zeros, assume the lidar is just reading maximum distance.
+        // If the distance is exactly zero even after rolling out the zeros
+        // The lidar may be reading a very close distance or a very far distance,
+        // but it's more likely that the reading is not correct. To mitigate, just
+        // continue to output the last filtered distance.
         if (distance == 0)
         {
-            distance = LIDAR_MAX_DISTANCE;
+            distance = median_filtered_distance;
         }
         // Add the measurement to the median filter sample buffer
         sample_buffer[median_filter_index] = distance;
@@ -496,9 +517,17 @@ static void on_timer_event(void* evt_data, uint16_t evt_size)
             {
                 bsp_board_led_on(3);
             }
-            lidar_sampling_state = NOT_SAMPLING;
-            xfer_done = true;
         }
+        else
+        {
+            // The error has been resolved.
+            error_code = LIDAR_ERROR_NONE;
+            if(led_debug)
+            {
+                bsp_board_led_off(3);
+            }
+        }
+
         #if(USE_POWER_CYCLING)
             lidar_sampling_state = ROLLING_OUT_ZEROS;
         #else
@@ -512,6 +541,7 @@ static void on_timer_event(void* evt_data, uint16_t evt_size)
     switch(lidar_sampling_state)
     {
         case NOT_SAMPLING:
+        case SAMPLE_ERROR:
             // do nothing.
             break;
 
