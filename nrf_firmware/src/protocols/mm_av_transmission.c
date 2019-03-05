@@ -155,6 +155,8 @@ void mm_av_transmission_send_av_update
 
     memset(&(av_broadcast->page), 0, sizeof(mm_ant_payload_t));
 
+    av_broadcast->av_status = av_status;
+
     payload[PAGE_NUM_INDEX] = REGION_ACTIVITY_VARIABLE_PAGE_NUM;
     payload[MESSAGE_ID_INDEX] = message_id;
     /* next - X and Y coordinates. 1 byte, x coordinate is the first half, y coordinate is the second half
