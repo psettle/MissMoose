@@ -13,6 +13,11 @@ Author: Elijah Pennoyer
 #include <vector>
 #include <string.h>
 
+extern "C" {
+#include "mm_position_config.h"
+}
+
+
 /**********************************************************
                         VARIABLES
 **********************************************************/
@@ -84,6 +89,37 @@ void test_send_lidar_data
     sensor_data_evt_message_dispatch(&sensor_evt); 
 }
 
+void test_send_pir_data
+(
+    int8_t              x_pos,
+    int8_t              y_pos,
+    sensor_rotation_t   total_rotation,
+    bool detection
+)
+{
+    auto node = get_node_for_position(x_pos, y_pos);
+    sensor_rotation_t rotation = (sensor_rotation_t)((NODE_ROTATION_COUNT + total_rotation - node->node_rotation) % NODE_ROTATION_COUNT);
+
+    uint16_t node_id = node->node_id;
+
+    test_send_pir_data(node_id, rotation, detection);
+}
+
+void test_send_lidar_data
+(
+    int8_t              x_pos,
+    int8_t              y_pos,
+    sensor_rotation_t   total_rotation,
+    uint16_t distance_measured
+)
+{
+    auto node = get_node_for_position(x_pos, y_pos);
+    sensor_rotation_t rotation = (sensor_rotation_t)((NODE_ROTATION_COUNT + total_rotation - node->node_rotation) % NODE_ROTATION_COUNT);
+
+    uint16_t node_id = node->node_id;
+
+    test_send_lidar_data(node_id, rotation, distance_measured);
+}
 
 static void sensor_data_evt_message_dispatch(sensor_evt_t const * sensor_evt)
 {

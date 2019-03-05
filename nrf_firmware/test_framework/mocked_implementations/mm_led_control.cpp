@@ -3,10 +3,14 @@
 **********************************************************/
 
 #include "test_output_logger.hpp"
+#include "test_output.hpp"
+#include "simulate_time.hpp"
 
 extern "C" {
 #include "mm_led_control.h"
 }
+
+static TestOutput testOutput;
 
 /**********************************************************
                        DECLARATIONS
@@ -35,7 +39,10 @@ static void log_led_ouput
 /**
  * Initialize led control over blaze.
  */
-void mm_led_control_init(void) {}
+void mm_led_control_init(void)
+{
+    testOutput = TestOutput();
+}
 
 /**
  * Set led state for target node.
@@ -49,6 +56,24 @@ void mm_led_control_update_node_leds
 {
     /* Log the event details. */
     log_led_ouput(target_node_id, led_function, led_colour);
+
+    /* Save event details to the output struct */
+    testOutput.logLedUpdate(
+        LedUpdate{
+            get_simulated_time_elapsed(),
+            target_node_id,
+            led_function,
+            led_colour
+        }
+    );
+}
+
+/**
+ * Get the output log for the current test.
+ */
+TestOutput const & test_led_control_get_output(void)
+{
+    return testOutput;
 }
 
 /**

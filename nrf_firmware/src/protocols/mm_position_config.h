@@ -40,23 +40,23 @@ typedef enum
     NODE_ROTATION_270,
     NODE_ROTATION_315,
 
-	NODE_ROTATION_COUNT
+    NODE_ROTATION_COUNT
 } mm_node_rotation_t;
 
 
 typedef struct mm_node_position_struct {
-	uint16_t node_id;
+    uint16_t node_id;
 
-	uint8_t 			node_type;
-	mm_node_rotation_t 	node_rotation;
+    uint8_t             node_type;
+    mm_node_rotation_t  node_rotation;
 
-	int8_t grid_position_x;
-	int8_t grid_position_y;
+    int8_t grid_position_x;
+    int8_t grid_position_y;
 
-	int8_t grid_offset_x;
-	int8_t grid_offset_y;
+    int8_t grid_offset_x;
+    int8_t grid_offset_y;
 
-	bool is_valid;
+    bool is_valid;
 } mm_node_position_t;
 
 /**********************************************************

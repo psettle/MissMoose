@@ -52,4 +52,21 @@ void test_send_lidar_data
 );
 
 
+void test_send_pir_data
+(
+    int8_t              x_pos,
+    int8_t              y_pos,
+    sensor_rotation_t   total_rotation,
+    bool detection
+);
+
+void test_send_lidar_data
+(
+    int8_t              x_pos,
+    int8_t              y_pos,
+    sensor_rotation_t   total_rotation,
+    uint16_t distance_measured
+);
+
+
 #endif

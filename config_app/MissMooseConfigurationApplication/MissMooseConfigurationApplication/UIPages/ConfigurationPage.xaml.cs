@@ -155,7 +155,7 @@ namespace MissMooseConfigurationApplication.UIPages
 
             var node = ActiveViewbox.Child as SensorNode;
 
-            NodeNameLabel.Content = "Node " + node.NodeID;
+            NodeNameLabel.Content = "Node " + node.DisplayID;
             XOffsetText.NumberField.Content = node.xoffset * OffsetScaleCentimeters;
             YOffsetText.NumberField.Content = node.yoffset * OffsetScaleCentimeters;
         }
@@ -172,7 +172,7 @@ namespace MissMooseConfigurationApplication.UIPages
 
             if(source == NewSensorViewbox)
             {
-                NewNodeLabel.Content = "";
+                NewNodeLabel.Content = "New Node!";
                 nodes.Add(node);
             }
 
@@ -248,7 +248,7 @@ namespace MissMooseConfigurationApplication.UIPages
                 {
                     if (sensorViewboxes[row][column].Child == null)
                     {
-                        pulses[row][column].Configure(10, 20, 3);
+                        pulses[row][column].Configure(10, 20, 1.5);
                     }
                     else
                     {
