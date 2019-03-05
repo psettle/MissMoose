@@ -21,6 +21,8 @@ notes:
 #include "mm_sensor_algorithm.h"
 #include "mm_led_control.h"
 #include "mm_av_transmission.h"
+#include "mm_led_transmission.h"
+#include "mm_sensor_error_transmission.h"
 #include "mm_sensor_algorithm_config.h"
 
 #include "bsp.h"
@@ -93,6 +95,7 @@ static uint16_t network_id;
 
 APP_TIMER_DEF(m_timer_id);
 
+#ifdef MM_BLAZE_GATEWAY
 /**
     Default sensor algorithm configuration constants.
 */
@@ -127,6 +130,7 @@ static mm_sensor_algorithm_config_t const sensor_algorithm_config_default =
     30, // minimum_concern_signal_duration_s
     60 // minimum_alarm_signal_duration_s
 };
+#endif
 
 
 /**********************************************************
@@ -256,9 +260,13 @@ static void external_init(void)
     /* Init LED control transmission over blaze. Placed before algorithm init so it can use LED control. */
     mm_led_control_init();
 #ifdef MM_BLAZE_GATEWAY
+    /* Init LED output transmission over ant. */
+    mm_led_transmission_init();
+    /* Init sensor error transmission over ant. */
+    mm_sensor_error_transmission_init();
     /* Init sensor data processing now that data can be transmitted. */
     mm_sensor_algorithm_init(&sensor_algorithm_config_default);
-    /* Init AV output transmission over blaze now that the sensor algorithm is up and running. */
+    /* Init AV output transmission over ANT now that the sensor algorithm is up and running. */
     mm_av_transmission_init();
 #endif
 }

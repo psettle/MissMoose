@@ -16,6 +16,7 @@ notes:
 #include "mm_sensor_error_check.h"
 #include "mm_sensor_algorithm_config.h"
 #include "mm_position_config.h"
+#include "mm_sensor_error_transmission.h"
 
 /**********************************************************
                         CONSTANTS
@@ -152,7 +153,6 @@ bool mm_sensor_error_is_sensor_hyperactive(sensor_evt_t const * evt)
 */
 bool mm_sensor_error_is_sensor_inactive(sensor_evt_t const * evt)
 {
-
     sensor_inactivity_record_t const* record = get_sensor_inactivity_record(evt);
 
     /* Records should always exist. */
@@ -221,8 +221,20 @@ static void on_sensor_evt_inactive_update(sensor_evt_t const * evt, uint32_t min
             sensor.sensor_rotation == record->sensor.sensor_rotation &&
             record->is_valid)
         {
-            record->t_last_detection = minute_count;
-            record->is_inactive = false;
+            if(record->is_inactive)
+            {
+                /*Send update to the monitoring application if it is becoming inactive */ 
+                record->is_inactive = false;
+                mm_sensor_error_transmission_send_inactivity_update
+                (
+                    record->sensor.node_id,
+                    SENSOR_TYPE_UNKNOWN,
+                    record->sensor.sensor_rotation,
+                    record->is_inactive
+                );
+            }
+
+            record->t_last_detection = minute_count;        
             return;
         }
     }
@@ -414,6 +426,14 @@ static void evaluate_sensor_inactivity(uint32_t minute_count)
         {
             record->is_inactive = true;
             /* Note: will be set is_inactive = false when a sensor event occurs for that sensor. */
+            /* Inactivity detected, send an update to the monitoring application. */
+            mm_sensor_error_transmission_send_inactivity_update
+                (
+                    record->sensor.node_id,
+                    SENSOR_TYPE_UNKNOWN,
+                    record->sensor.sensor_rotation,
+                    record->is_inactive
+                );
         }
     }
 }
@@ -461,32 +481,44 @@ static void evaluate_sensor_hyperactivity_record(sensor_hyperactivity_record_t *
         }
     }
 
+    bool hyperactive_initial_value = record->sensor_hyperactive;
+
     if (tmin == 0)
     {
         /* The detection buffer is not full, so the frequency cannot be too high. */
         record->sensor_hyperactive = false;
-        return;
     }
-
-    if (tmin == tmax)
+    else if (tmin == tmax)
     {
         /* Detections all occured within the same minute, so the sensor is definitely hyperactive. */
-        record->sensor_hyperactive = true;
-        return;
-    }
-
-    /* Edge condition checks passed, so the buffer is full and the events occured over more than a minute. */
-
-    float dt = (float)(tmax - tmin);
-
-    float detection_frequency = SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE / dt; /* In detection/minute */
-
-    if (detection_frequency >= SENSOR_HYPERACTIVITY_FREQUENCY_THRES)
-    {
         record->sensor_hyperactive = true;
     }
     else
     {
-        record->sensor_hyperactive = false;
+        /* Edge condition checks passed, so the buffer is full and the events occured over more than a minute. */
+        float dt = (float)(tmax - tmin);
+
+        float detection_frequency = SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE / dt; /* In detection/minute */
+
+        if (detection_frequency >= SENSOR_HYPERACTIVITY_FREQUENCY_THRES)
+        {
+            record->sensor_hyperactive = true;
+        }
+        else
+        {
+            record->sensor_hyperactive = false;
+        }
+    }
+
+    /* Send transmission with hyperactivity update */
+    if(hyperactive_initial_value != record->sensor_hyperactive)
+    {
+        mm_sensor_error_transmission_send_hyperactivity_update
+            (
+            record->sensor.node_id,
+            SENSOR_TYPE_UNKNOWN,
+            record->sensor.sensor_rotation,
+            record->sensor_hyperactive
+            );
     }
 }
