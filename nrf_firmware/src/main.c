@@ -84,6 +84,8 @@ static void scheduler_init(void);
 int main(void)
 {
     uint32_t err_code;
+    // Provide time for power to stabilize
+    nrf_delay_ms(100);
 
     scheduler_init();
     utils_init();
