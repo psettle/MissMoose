@@ -93,6 +93,7 @@ static uint16_t network_id;
 
 APP_TIMER_DEF(m_timer_id);
 
+#ifdef MM_BLAZE_GATEWAY
 /**
     Default sensor algorithm configuration constants.
 */
@@ -127,6 +128,7 @@ static mm_sensor_algorithm_config_t const sensor_algorithm_config_default =
     30, // minimum_concern_signal_duration_s
     60 // minimum_alarm_signal_duration_s
 };
+#endif
 
 
 /**********************************************************
