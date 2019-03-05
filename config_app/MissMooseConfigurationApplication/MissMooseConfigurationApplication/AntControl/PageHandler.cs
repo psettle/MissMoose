@@ -96,7 +96,7 @@ namespace MissMooseConfigurationApplication
                     }
 
                     String logString = GetStringFromRotation(totalRotation)
-                        + " LIDAR sensor on node " + dataPage.NodeId;
+                        + " LIDAR sensor on node " + node.DisplayID;
 
                     switch (dataPage.Region)
                     {
@@ -161,7 +161,7 @@ namespace MissMooseConfigurationApplication
                     }
 
                     String logString = GetStringFromRotation(totalRotation)
-                        + " PIR sensor on node " + dataPage.NodeId;
+                        + " PIR sensor on node " + node.DisplayID;
 
                     if (dataPage.Detection)
                     {
@@ -219,12 +219,12 @@ namespace MissMooseConfigurationApplication
                 {
                     if (dataPage.LedFunction == LedFunction.Off)
                     {
-                        MonitoringUI.LogEvent("LED turned off on node " + dataPage.NodeId);
+                        MonitoringUI.LogEvent("LED turned off on node " + node.DisplayID);
                     }
                     else
                     {
                         MonitoringUI.LogEvent("LED changed to " + dataPage.LedColour + " and " + dataPage.LedFunction
-                        + " on node " + dataPage.NodeId);
+                        + " on node " + node.DisplayID);
                     }
                 });
             }
@@ -313,7 +313,7 @@ namespace MissMooseConfigurationApplication
                         totalRotation.Add(dataPage.SensorRotation);
 
                         String logString = GetStringFromRotation(totalRotation)
-                            + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + dataPage.NodeId;
+                        + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + node.DisplayID;
 
                         if (dataPage.ErrorOccurring)
                         {
@@ -366,7 +366,7 @@ namespace MissMooseConfigurationApplication
                         totalRotation.Add(dataPage.SensorRotation);
 
                         String logString = GetStringFromRotation(totalRotation)
-                            + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + dataPage.NodeId;
+                        + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + node.DisplayID;
 
                         if (dataPage.ErrorOccurring)
                         {
@@ -464,24 +464,23 @@ namespace MissMooseConfigurationApplication
                     nodeId = GetNextNodeId();
                 }
 
-                SendNetworkConfiguration(nodeId, responder);
-            }
-            else if (dataPage.NodeId != 0 && dataPage.NodeType != HardwareConfiguration.Unknown)
-            {
-                if (ConfigUI.nodes.Count(x => x.DeviceNumber == deviceNum) == 0)
+                if(SendNetworkConfiguration(nodeId, responder))
                 {
-                    // Add a new node to the UI for the user
-                    Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
-                        if (!ConfigUI.NewNodeBoxFull)
-                        {
-                            ConfigUI.AddNewNode(new SensorNode(deviceNum, dataPage.NodeType, dataPage.NodeId, false));
-                        }
-                    });
+                    if (ConfigUI.nodes.Count(x => x.DeviceNumber == deviceNum) == 0)
+                    {
+                        // Add a new node to the UI for the user
+                        Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate {
+                            if (!ConfigUI.NewNodeBoxFull)
+                            {
+                                ConfigUI.AddNewNode(new SensorNode(deviceNum, dataPage.NodeType, nodeId, false));
+                            }
+                        });
+                    }
                 }
             }
         }
 
-        private void SendNetworkConfiguration(ushort nodeId, PageSender responder)
+        private bool SendNetworkConfiguration(ushort nodeId, PageSender responder)
         {
             NetworkConfigurationCommandPage configPage = new NetworkConfigurationCommandPage
             {
@@ -489,9 +488,11 @@ namespace MissMooseConfigurationApplication
                 NetworkId = networkId
             };
 
-            responder.SendAcknowledged(configPage, true, 5);
+            bool result = responder.SendAcknowledged(configPage, true, 5);
 
-            Console.Out.WriteLine("Device" +  configPage.NodeId  + "config started.");
+            Console.Out.WriteLine("Device" +  configPage.NodeId  + "config: " + result);
+
+            return result;
         }
 
         private void SendNodeConfigurationToGateway(ushort deviceNum, PageSender responder)

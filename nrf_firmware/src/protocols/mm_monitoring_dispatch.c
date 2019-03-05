@@ -36,6 +36,8 @@ notes:
 #define LIDAR_REGION_DETECTED_INDEX             ( 7 )
 #define PIR_DETECTION_INDEX                     ( 5 )
 
+#define ACKED_PAGE_NUM_INDEX                    ( 2 )
+
 #define TEST_MODE                               ( false )
 #define TEST_MODE_PERIOD_MS                     ( 200 )
 #define TEST_MODE_TICKS                         ( APP_TIMER_TICKS(TEST_MODE_PERIOD_MS) )
@@ -170,7 +172,7 @@ void mm_monitoring_dispatch_send_lidar_data
     uint8_t* payload = &lidar_page_payload.data[0];
 
     memset(&lidar_page_payload, 0, sizeof(mm_ant_payload_t));
-    
+
     payload[PAGE_NUM_INDEX] = MONITORING_LIDAR_DATA_PAGE_NUM;
     payload[MESSAGE_ID_INDEX] = message_id;
     memcpy(&payload[NODE_ID_INDEX], &node_id, sizeof(uint16_t));
@@ -247,7 +249,7 @@ static void ant_payload_queue_push(mm_ant_payload_t const * ant_payload)
             CONCURRENT_PAGE_COUNT
             );
     }
-    
+
 }
 
 static mm_ant_payload_t const * ant_payload_queue_peek_tail(void)
@@ -276,8 +278,8 @@ static void process_ant_evt(ant_evt_t * evt)
                 {
                     /* This might acknowledge the current broadcast, kick it to main to check. */
                     uint32_t err_code;
-                	err_code = app_sched_event_put(evt, sizeof(ant_evt_t), on_monitoring_data_acknowledge);
-                	APP_ERROR_CHECK(err_code);
+                    err_code = app_sched_event_put(evt, sizeof(ant_evt_t), on_monitoring_data_acknowledge);
+                    APP_ERROR_CHECK(err_code);
                 }
             }
             break;
@@ -295,15 +297,18 @@ static void on_monitoring_data_acknowledge(void* evt_data, uint16_t evt_size)
 
     if(QUEUE_EMPTY())
     {
-        /* Nothing to acknowledge, likely
-           received an extra ack. */
+        /* Nothing to acknowledge,
+         likely received an extra ack, or ack for a different message */
         return;
     }
-
-    if(current_msg_id() == payload[MESSAGE_ID_INDEX])
+    //If the ack is for the message type that was being broadcast, then it's an ack for the right message.
+    if(payload[ACKED_PAGE_NUM_INDEX] == current_page_id())
     {
-        /* If the message is acknowledging the current broadcast, switch to the next page. */
-        broadcast_new_page();
+        if(current_msg_id() == payload[MESSAGE_ID_INDEX])
+        {
+            /* If the message is acknowledging the current broadcast, switch to the next page. */
+            broadcast_new_page();
+        }
     }
 }
 

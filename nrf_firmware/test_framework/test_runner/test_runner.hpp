@@ -10,16 +10,19 @@ notes:
                         INCLUDES
 **********************************************************/
 
+#include "tests.hpp"
 #include "simulate_time.hpp"
 
 #include <vector>
 #include <string>
 
+extern "C" {
+#include "mm_sensor_algorithm_config.h"
+}
+
 /**********************************************************
                           TYPES
 **********************************************************/
-
-typedef void(*test_case_cb)(void);
 
 /**********************************************************
                         CONSTANTS
@@ -29,6 +32,6 @@ typedef void(*test_case_cb)(void);
                        DECLARATIONS
 **********************************************************/
 
-void test_runner_init(std::vector<test_case_cb> const & tests, std::vector<std::string> test_names, std::string const & output_destination);
+void test_runner_init(std::vector<TestCase> const & tests, mm_sensor_algorithm_config_t const * config);
 
 #endif /* TEST_RUNNER_HPP */

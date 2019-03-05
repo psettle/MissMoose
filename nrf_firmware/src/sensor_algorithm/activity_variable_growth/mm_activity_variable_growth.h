@@ -12,6 +12,7 @@ notes:
 
 #include "mm_sensor_transmission.h"
 #include "mm_position_config.h"
+#include "mm_sensor_algorithm_config.h"
 
 /**********************************************************
                         TYPES
