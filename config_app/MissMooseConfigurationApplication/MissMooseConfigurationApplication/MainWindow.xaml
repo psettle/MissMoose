@@ -21,7 +21,15 @@
                 <ColumnDefinition Width="8*" MaxWidth="160"/>
                 <ColumnDefinition Width="*"  MaxWidth="20"/>
             </Grid.ColumnDefinitions>
-            <Label Content="Miss Moose" Grid.Column="0" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="20" FontWeight="Bold"/>
+
+            <Canvas Margin="10,5,10,15" Grid.Row="0" Grid.Column="0" Name="LogoCanvas">
+                <Canvas.RenderTransform>
+                    <ScaleTransform ScaleX="0.15" ScaleY="0.15" />
+                </Canvas.RenderTransform>
+                <Path Style="{StaticResource LogoPath}"/>
+                <TextBlock Text="MISSMOOSE" Foreground="#FFFFFFFF" FontSize="192" FontWeight="Normal" FontFamily="{StaticResource ModerneSans}" Canvas.Left="1000" Canvas.Top="200"/>
+            </Canvas>
+
             <local:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="2" x:Name="ConfigPageButton" Margin="2,16,2,16" >Configure Nodes</local:PageSwitcherButton>
             <local:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="3" x:Name="SystemOverviewPageButton"  Margin="2,16,2,16" >System Overview</local:PageSwitcherButton>
 

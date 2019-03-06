@@ -105,15 +105,15 @@ static void test_case_roadside_parallel_fast(TestOutput& oracle)
     /* PIR's take a little more time to cool off */
     simulate_time(12);
 
-    /* End pir detection from top-left of network (No expected output) */
+    /* End pir detection from top-left of network */
     test_send_pir_data(-1, 1, SENSOR_ROTATION_180, PIR_DETECTION_END);
     simulate_time(1);
 
-    /* End pir detection from middle of network (No expected output) */
+    /* End pir detection from middle of network */
     test_send_pir_data(0, 0, SENSOR_ROTATION_0, PIR_DETECTION_END);
     simulate_time(1);
 
-    /* End pir detection from right (No expected output) */
+    /* End pir detection from right */
     test_send_pir_data(1, 0, SENSOR_ROTATION_0, PIR_DETECTION_END);
     simulate_time(1);
 
@@ -138,23 +138,23 @@ static void test_case_nonroadside_parallel_fast(TestOutput& oracle)
 
     /* Start lidar detection from left of network  */
     test_send_lidar_data(-1, -1, SENSOR_ROTATION_0, 423);
+    oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
+    simulate_time(2);
+
+    /* Start pir detection from left */
+    test_send_pir_data(-1, 0, SENSOR_ROTATION_180, PIR_DETECTION_START);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     simulate_time(2);
 
-    /* Start pir detection from bottom-left */
-    test_send_pir_data(-1, 0, SENSOR_ROTATION_180, PIR_DETECTION_START);
-    oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
-    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
-    simulate_time(2);
-
     /* Start PIR detection from bottom */
     test_send_pir_data(0, -1, SENSOR_ROTATION_0, PIR_DETECTION_START);
-    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
     simulate_time(1);
 
     /* Start lidar detection from top-middle */
     test_send_lidar_data(0, 1, SENSOR_ROTATION_180, 913);
+    oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
+    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     simulate_time(1);
 
     /* Start PIR detection from right */
@@ -187,7 +187,7 @@ static void test_case_nonroadside_parallel_fast(TestOutput& oracle)
     test_send_pir_data(0, -1, SENSOR_ROTATION_0, PIR_DETECTION_END);
     simulate_time(1);
 
-    /* End pir detection from right (No expected output) */
+    /* End pir detection from right */
     test_send_pir_data(1, -1, SENSOR_ROTATION_0, PIR_DETECTION_END);
     simulate_time(1);
 
@@ -195,11 +195,10 @@ static void test_case_nonroadside_parallel_fast(TestOutput& oracle)
     simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
-    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
+    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_OFF);
     simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_OFF);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_OFF);
-    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_OFF);
 
     /* Let everything cool off */
     simulate_time(MINUTES(10));
@@ -230,7 +229,6 @@ static void test_case_left_towards_road_fast(TestOutput& oracle)
     /* Start lidar detection from left */
     test_send_lidar_data(-1, 0, SENSOR_ROTATION_90, 113);
     simulate_time(1);
-    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 
     /* Start PIR detection from top-middle */
     test_send_pir_data(0, 1, SENSOR_ROTATION_270, PIR_DETECTION_START);
@@ -270,11 +268,10 @@ static void test_case_left_towards_road_fast(TestOutput& oracle)
     simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
-    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
+    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_OFF);
     simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_OFF);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_OFF);
-    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_OFF);
 
     /* Let everything cool off */
     simulate_time(MINUTES(10));
@@ -376,7 +373,7 @@ static void test_case_roadside_parallel_slow(TestOutput& oracle)
     test_send_lidar_data(1, 1, SENSOR_ROTATION_180, 1800);
     simulate_time(17);
 
-    /* End pir detection from right (No expected output) */
+    /* End pir detection from right */
     test_send_pir_data(1, 0, SENSOR_ROTATION_0, PIR_DETECTION_END);
 
     simulate_time(30);
@@ -401,7 +398,7 @@ static void test_case_roadside_parallel_slow(TestOutput& oracle)
     test_send_lidar_data(0, 1, SENSOR_ROTATION_180, 2000);
     simulate_time(22);
 
-    /* End pir detection from middle of network (No expected output) */
+    /* End pir detection from middle of network */
     test_send_pir_data(0, 0, SENSOR_ROTATION_0, PIR_DETECTION_END);
 
     simulate_time(30);
@@ -426,7 +423,7 @@ static void test_case_roadside_parallel_slow(TestOutput& oracle)
     test_send_lidar_data(-1, -1, SENSOR_ROTATION_0, 2100);
     simulate_time(20);
 
-    /* End pir detection from top-left of network (No expected output) */
+    /* End pir detection from top-left of network */
     test_send_pir_data(-1, 1, SENSOR_ROTATION_180, PIR_DETECTION_END);
 
     simulate_time(30);
@@ -463,7 +460,7 @@ static void test_case_nonroadside_parallel_slow(TestOutput& oracle)
     test_send_lidar_data(1, 1, SENSOR_ROTATION_180, 1800);
     simulate_time(5);
 
-    /* End pir detection from right (No expected output) */
+    /* End pir detection from right */
     test_send_pir_data(1, -1, SENSOR_ROTATION_0, PIR_DETECTION_END);
 
     simulate_time(30);
@@ -475,7 +472,6 @@ static void test_case_nonroadside_parallel_slow(TestOutput& oracle)
     /* Start PIR detection from middle */
     test_send_pir_data(0, -1, SENSOR_ROTATION_0, PIR_DETECTION_START);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
-    oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     simulate_time(8);
 
     /* Start lidar detection from top-middle */
@@ -488,7 +484,7 @@ static void test_case_nonroadside_parallel_slow(TestOutput& oracle)
     test_send_lidar_data(0, 1, SENSOR_ROTATION_180, 2000);
     simulate_time(17);
 
-    /* End pir detection from middle of network (No expected output) */
+    /* End pir detection from middle of network */
     test_send_pir_data(0, -1, SENSOR_ROTATION_0, PIR_DETECTION_END);
 
     simulate_time(30);
@@ -512,7 +508,7 @@ static void test_case_nonroadside_parallel_slow(TestOutput& oracle)
     test_send_lidar_data(-1, -1, SENSOR_ROTATION_0, 2100);
     simulate_time(23);
 
-    /* End pir detection from top-left of network (No expected output) */
+    /* End pir detection from left of network */
     test_send_pir_data(-1, 0, SENSOR_ROTATION_180, PIR_DETECTION_END);
 
     simulate_time(30);
@@ -601,7 +597,6 @@ static void test_case_left_away_road_slow(TestOutput& oracle)
     simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_OFF);
-    oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_OFF);
     simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_OFF);
 

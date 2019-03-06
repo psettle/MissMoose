@@ -10,11 +10,11 @@
 **********************************************************/
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "app_error.h"
 
 #include "mm_led_strip_states.h"
-#include "mm_sensor_algorithm_config.h"
 #include "mm_activity_variables.h"
 #include "mm_led_control.h"
 #include "mm_position_config.h"
@@ -424,8 +424,8 @@ static bool has_current_output_state_timed_out(led_signalling_state_record_t con
     APP_ERROR_CHECK(!p_record->timeout_active);
 
     return (
-            (p_record->current_output_state == CONCERN && p_record->second_counter >= MINIMUM_CONCERN_SIGNAL_DURATION_S) ||
-            (p_record->current_output_state == ALARM && p_record->second_counter >= MINIMUM_ALARM_SIGNAL_DURATION_S)
+            (p_record->current_output_state == CONCERN && p_record->second_counter >= mm_sensor_algorithm_config()->minimum_concern_signal_duration_s) ||
+            (p_record->current_output_state == ALARM && p_record->second_counter >= mm_sensor_algorithm_config()->minimum_alarm_signal_duration_s)
            );
 }
 

@@ -84,6 +84,12 @@
     <ClCompile Include="test_framework\mocked_implementations\mm_av_transmission.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_framework\mocked_implementations\mm_led_transmission.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_framework\mocked_implementations\mm_sensor_error_transmission.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="test_framework\test_runner\test_output.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -100,6 +106,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="test_framework\test_cases\test_two_animals_through_network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sensor_algorithm\mm_sensor_algorithm_config.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

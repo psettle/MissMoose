@@ -92,7 +92,7 @@ static low_power_pwm_t low_power_pwm_green;
 static low_power_pwm_t low_power_pwm_blue;
 
 #if BUTTON_CONTROL
-    static uint32_t colour_cycle[9] = {MM_RGB_COLOUR_RED, 0xFF8800, 0x88FF00, MM_RGB_COLOUR_GREEN, 0x00FF88, 0x0088FF, MM_RGB_COLOUR_BLUE, 0x8800FF, 0xFF0088};
+    static uint32_t colour_cycle[10] = {MM_RGB_COLOUR_RED, 0xFF8800, 0x88FF00, MM_RGB_COLOUR_GREEN, 0x00FF88, 0x0088FF, MM_RGB_COLOUR_BLUE, 0x8800FF, 0xFF0088, MM_RGB_COLOUR_WHITE};
     static uint8_t  colour_cycle_index = 0;
 
     /* Some sets of numbers that make for an interesting demonstration */
@@ -307,19 +307,19 @@ void mm_rgb_set_on_off_cycle(uint16_t on_ticks_ms, uint16_t off_ticks_ms)
     {
         // If we're in the on state, set the timer to change back to the off state,
         // as long as the off state has an actual duration
-    	if(off_cycle_length_ms > 0)
-    	{
-    		err_code = app_timer_start(power_cycle_timer_id, APP_TIMER_TICKS(off_cycle_length_ms), NULL);
-    	}
+        if(off_cycle_length_ms > 0)
+        {
+            err_code = app_timer_start(power_cycle_timer_id, APP_TIMER_TICKS(off_cycle_length_ms), NULL);
+        }
     }
     else
     {
         // If we're in the off state, set the timer to change back to the on state,
         // as long as the on state has an actual duration
-    	if(on_cycle_length_ms > 0)
-    	{
-    		err_code = app_timer_start(power_cycle_timer_id, APP_TIMER_TICKS(on_cycle_length_ms), NULL);
-    	}
+        if(on_cycle_length_ms > 0)
+        {
+            err_code = app_timer_start(power_cycle_timer_id, APP_TIMER_TICKS(on_cycle_length_ms), NULL);
+        }
     }
 
     /* Power bank control */
@@ -358,9 +358,9 @@ static void rgb_led_pwm_handler(void * p_context)
  */
 static void rgb_led_power_cycle_timer_handler(void * p_context)
 {
-	uint32_t err_code;
+    uint32_t err_code;
 
-	/* Kick timer event to main. */
+    /* Kick timer event to main. */
     err_code = app_sched_event_put(NULL, 0, on_cycle_timer_event);
     APP_ERROR_CHECK(err_code);
 }
@@ -419,7 +419,7 @@ static void on_cycle_timer_event(void* evt_data, uint16_t evt_size)
      */
     static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
     {
-        uint32_t err_code;
+        uint32_t err_code = NRF_SUCCESS;
 
         /* Kick button event to main. */
         switch(pin)
@@ -440,7 +440,7 @@ static void on_cycle_timer_event(void* evt_data, uint16_t evt_size)
         #if(LED_DEBUG)
             bsp_board_led_invert(0);
         #endif
-        colour_cycle_index = colour_cycle_index == 8 ? 0 : colour_cycle_index + 1;
+        colour_cycle_index = colour_cycle_index == 9 ? 0 : colour_cycle_index + 1;
         mm_rgb_led_set_colour(colour_cycle[colour_cycle_index]);
     }
 

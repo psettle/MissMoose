@@ -98,18 +98,18 @@ void mm_ant_init(void)
 
 void mm_ant_evt_handler_set(mm_ant_evt_handler_t mm_ant_evt_handler)
 {
-	uint32_t i;
+    uint32_t i;
 
-	for (i = 0; i < MAX_EVT_HANDLERS; i++)
-	{
-		if (ant_evt_handlers[i] == NULL)
-		{
-			ant_evt_handlers[i] = mm_ant_evt_handler;
-			break;
-		}
-	}
+    for (i = 0; i < MAX_EVT_HANDLERS; i++)
+    {
+        if (ant_evt_handlers[i] == NULL)
+        {
+            ant_evt_handlers[i] = mm_ant_evt_handler;
+            break;
+        }
+    }
 
-	APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
+    APP_ERROR_CHECK(i == MAX_EVT_HANDLERS);
 }
 
 void mm_ant_set_payload(mm_ant_payload_t const * payload)
@@ -120,8 +120,8 @@ void mm_ant_set_payload(mm_ant_payload_t const * payload)
 
     // Broadcast the data.
     err_code = sd_ant_broadcast_message_tx(MM_CHANNEL_NUMBER,
-    											ANT_STANDARD_DATA_PAYLOAD_SIZE,
-												local_payload.data);
+                                                ANT_STANDARD_DATA_PAYLOAD_SIZE,
+                                                local_payload.data);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -152,16 +152,16 @@ bool mm_ant_get_broadcast_state(void)
 static void ant_evt_dispatch(ant_evt_t * p_ant_evt)
 {
     // Forward ANT event to listeners
-	for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
-	{
-		if (ant_evt_handlers[i] != NULL)
-		{
-			ant_evt_handlers[i](p_ant_evt);
-		}
-		else
-		{
-			break;
-		}
-	}
+    for (uint32_t i = 0; i < MAX_EVT_HANDLERS; i++)
+    {
+        if (ant_evt_handlers[i] != NULL)
+        {
+            ant_evt_handlers[i](p_ant_evt);
+        }
+        else
+        {
+            break;
+        }
+    }
 }
 

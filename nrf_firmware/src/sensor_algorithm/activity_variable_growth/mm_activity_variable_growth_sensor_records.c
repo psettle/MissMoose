@@ -10,11 +10,11 @@ notes:
 **********************************************************/
 
 #include "string.h"
+#include "stdlib.h"
 
 #include "app_error.h"
 
 #include "mm_activity_variable_growth_sensor_records_prv.h"
-#include "mm_sensor_algorithm_config.h"
 
 /**********************************************************
                         MACROS
@@ -28,11 +28,12 @@ notes:
                        VARIABLES
 **********************************************************/
 
+static sensor_record_t      sensor_records[MAX_SENSOR_COUNT];
+
+
 /**********************************************************
                        DECLARATIONS
 **********************************************************/
-
-static sensor_record_t      sensor_records[MAX_SENSOR_COUNT];
 
 /**********************************************************
                        DEFINITIONS

@@ -15,11 +15,10 @@ INCLUDES
 #include <iostream>
 extern "C" {
 #include "mm_sensor_error_check.h"
-#include "mm_sensor_algorithm_config.h"
 }
 
 /**********************************************************
-CONSTANTS
+VARIABLES
 **********************************************************/
 
 /**********************************************************

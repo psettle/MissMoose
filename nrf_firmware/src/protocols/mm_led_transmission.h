@@ -1,17 +1,20 @@
 /*
-file: mm_av_transmission.h
-brief: Methods for transmitting activity variable data to the monitoring application over ANT
+file: mm_led_transmission.h
+brief: Methods for transmitting led data to the monitoring application over ANT
 notes:
+
+Author: Elijah Pennoyer
+
 */
-#ifndef MM_AV_TRANSMISSION_H
-#define MM_AV_TRANSMISSION_H
+#ifndef MM_LED_TRANSMISSION_H
+#define MM_LED_TRANSMISSION_H
 
 /**********************************************************
                         INCLUDES
 **********************************************************/
 
 #include <stdint.h>
-#include "mm_activity_variables.h"
+#include <mm_led_control.h> // For enums
 
 /**********************************************************
                         CONSTANTS
@@ -26,13 +29,18 @@ notes:
 **********************************************************/
 
 /**
-    Initialize activity variable state transmission over ANT.
+    Initialize LED state transmission over ANT.
 */
-void mm_av_transmission_init(void);
+void mm_led_transmission_init(void);
 
 /**
- * Broadcast all activity variable state over ANT.
- */
-void mm_av_transmission_send_all_avs(void);
+    Broadcast latest LED state over ANT.
+*/
+void mm_led_transmission_send_led_update
+    (
+    uint16_t node_id,
+    led_function_t current_led_function,
+    led_colours_t current_led_colour
+    );
 
-#endif /* MM_AV_TRANSMISSION_H */
+#endif // MM_LED_TRANSMISSION_H
