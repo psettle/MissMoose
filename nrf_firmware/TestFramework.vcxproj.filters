@@ -105,6 +105,9 @@
     <ClCompile Include="src\sensor_algorithm\mm_sensor_algorithm_config.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_framework\util\test_parameters_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_framework\mocked_interfaces\app_error.h">
@@ -177,6 +180,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="test_framework\mocked_implementations\mm_led_control.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test_framework\util\test_parameters_utils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -239,18 +239,18 @@ class GeneticAlgorithm(object):
         """Create subsequent populations, calculate the population fitness and
         rank the population by fitness in the order specified.
         """
-        start = time.time()
+        # start = time.time()
         self.create_new_population()
-        end = time.time()
-        print("Generation made: {}".format(end - start))
-        start = time.time()
+        # end = time.time()
+        # print("Generation made: {}".format(end - start))
+        # start = time.time()
         self.calculate_population_fitness()
-        end = time.time()
-        print("Generation processed: {}".format(end - start))
-        start = time.time()
+        # end = time.time()
+        # print("Generation processed: {}".format(end - start))
+        # start = time.time()
         self.rank_population()
-        end = time.time()
-        print("Generation ranked: {}".format(end - start))
+        # end = time.time()
+        # print("Generation ranked: {}".format(end - start))
 
     def run(self):
         self.generation_index = 0

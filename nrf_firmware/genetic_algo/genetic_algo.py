@@ -6,6 +6,7 @@ from array import array
 import subprocess
 import os
 import traceback, sys
+import time
 
 # setup seed data
 data = [{'name': 'activity_variable_min',             'value': 1.0,     'min': 1.0, 'max': 10.0},
@@ -28,8 +29,8 @@ data = [{'name': 'activity_variable_min',             'value': 1.0,     'min': 1
         {'name': 'possible_detection_threshold_nrs',  'value': 4.0,     'min': 1.0, 'max': 50.0},
         {'name': 'detection_threshold_rs',            'value': 6.0,     'min': 1.0, 'max': 50.0},
         {'name': 'detection_threshold_nrs',           'value': 7.0,     'min': 1.0, 'max': 50.0},
-        {'name': 'minimum_concern_signal_duration_s', 'value': 30.0,    'min': 10.0, 'max': 100.0},
-        {'name': 'minimum_alarm_signal_duration_s',   'value': 60.0,    'min': 10.0, 'max': 100.0}]
+        {'name': 'minimum_concern_signal_duration_s', 'value': 30.0,    'min': 1.0, 'max': 100.0},
+        {'name': 'minimum_alarm_signal_duration_s',   'value': 60.0,    'min': 1.0, 'max': 10.0}]
 
 class Genetic_Algo:
     '''
@@ -58,7 +59,8 @@ class Genetic_Algo:
         self.ga.run()
 
         print(self.ga.best_individual()[0])
-        print(self.ga.best_individual()[1])
+        print("\r\n")
+        print(self.individual_to_config_struct(self.ga.best_individual()[1], time.time()))
 
     # define and set function to create a candidate solution representation
     def create_individual(self, data):
@@ -116,6 +118,13 @@ class Genetic_Algo:
             append_write = 'w' # make a new file if not
         with open(logfile_path, append_write) as logfile:
             logfile.write("gen {0} score: {1} values: {2} ".format(generation_index, self.ga.best_individual()[0], self.ga.best_individual()[1]) + '\n')
+
+    def individual_to_config_struct(self, individual, name):
+        struct = "static mm_sensor_algorithm_config_t const sensor_algorithm_config_" + str(int(name)) + " =\r\n{\r\n"
+        for item in individual:
+            struct += "    " + "{:10.10f}".format((item['value'])) + ", /* " + item['name'] + " */\r\n"
+        struct += "};\r\n"
+        return struct
 
 class Custom_Fitness:
     ''' Class for holding our fitness function. I think it needs to be pickle-able
