@@ -229,6 +229,7 @@ static void two_animals_both_bottom_left(TestOutput& oracle)
 
     // After 30 further seconds, the AVs should decay a step. The bottom left AV shows no detection, the bottom right AV decays.
     // Output becomes concern, concern, idle
+    simulate_time(25);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_OFF);

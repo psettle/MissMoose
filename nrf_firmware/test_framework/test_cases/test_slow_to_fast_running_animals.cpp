@@ -74,8 +74,8 @@ static void slow_to_fast_bottom_left_sprint_up(TestOutput& oracle)
     // Animal moves slowly, takes a minute in that AV region. After about 30 seconds, the concern LED decays, 
     // and after a minute the alarm LED decays
     simulate_time(30);
-    oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_OFF);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
+    oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_OFF);
     simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_OFF);
 
@@ -117,6 +117,7 @@ static void slow_to_fast_bottom_left_sprint_up(TestOutput& oracle)
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_OFF);
     // Decay should finish after a further 30 seconds
+    simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_OFF);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_OFF);
 
@@ -174,10 +175,10 @@ static void slow_to_fast_top_left_sprint_up(TestOutput& oracle)
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
     oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 
-    // Animal has exited the network. Lidar stops detecting 8 seconds later, PIR stops detecting 10 seconds after that
-    simulate_time(8);
+    // Animal has exited the network. Lidar stops detecting 2 seconds later, PIR stops detecting 16 seconds after that
+    simulate_time(2);
     test_send_lidar_data(-1, 1, SENSOR_ROTATION_90, 2500);
-    simulate_time(10);
+    simulate_time(16);
     test_send_pir_data(0, 1, SENSOR_ROTATION_270, PIR_DETECTION_END);
 
     // LED Statuses start to decay after about 30 seconds, then finish decaying
@@ -455,7 +456,7 @@ static void slow_to_fast_top_right_sprint_down(TestOutput& oracle)
 
     // After 5 and 12 seconds, the Lidar and PIR sensors stop detecting
     simulate_time(5);
-    test_send_lidar_data(1, 1, SENSOR_ROTATION_180, 1700); //TODO - Make sure this is outside of range. 800 CM + 800 CM = 1600 CM?
+    test_send_lidar_data(1, 1, SENSOR_ROTATION_180, 1700);
     simulate_time(7);
     test_send_pir_data(1, 0, SENSOR_ROTATION_0, PIR_DETECTION_END);
 
@@ -535,6 +536,7 @@ static void slow_to_fast_bottom_left_sprint_down(TestOutput& oracle)
 
 
     // 2 seconds later - -1, -1 Lidar detects the same animal
+    simulate_time(2);
     test_send_lidar_data(-1, -1, SENSOR_ROTATION_0, 150);
     simulate_time(2);
     // Detection in bottom left. Output: Alarm, concern, idle
@@ -551,8 +553,8 @@ static void slow_to_fast_bottom_left_sprint_down(TestOutput& oracle)
     // Animal moves slowly, takes a minute in that AV region. After about 30 seconds, the alert statuses start decaying
     // and after a minute they finish decaying
     simulate_time(30);
-    oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_OFF);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
+    oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_OFF);
     simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_OFF);
 
@@ -645,10 +647,12 @@ static void slow_to_fast_bottom_right_sprint_down(TestOutput& oracle)
     test_send_pir_data(0, -1, SENSOR_ROTATION_90, PIR_DETECTION_END);
 
     // After 30 seconds, LED indications start to decay
+    simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_OFF);
     // After a 30 further seconds, LED indications finish decaying
+    simulate_time(30);
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_OFF);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_OFF);
 
