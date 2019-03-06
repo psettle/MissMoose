@@ -1,5 +1,5 @@
 extern "C" {
-    #include "mm_monitoring_dispatch.h"
+#include "mm_monitoring_dispatch.h"
 }
 
 void mm_monitoring_dispatch_init(void) {}

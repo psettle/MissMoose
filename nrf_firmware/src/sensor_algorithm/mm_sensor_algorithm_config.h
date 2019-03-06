@@ -1,3 +1,4 @@
+
 /**
 file: mm_sensor_algorithm_config.h
 brief:
@@ -23,7 +24,7 @@ notes:
 #define MAX_GRID_SIZE_Y                     ( 3 )
 #define MAX_NUMBER_NODES                    ( MAX_GRID_SIZE_X * MAX_GRID_SIZE_Y )
 #define MAX_SENSORS_PER_NODE                ( 2 )
-#define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )     
+#define MAX_SENSOR_COUNT                    ( MAX_NUMBER_NODES * MAX_SENSORS_PER_NODE )
 
 #define SENSOR_INACTIVITY_THRESHOLD_MIN         ( 60 * 24 )
 #define SENSOR_HYPERACTIVITY_EVENT_WINDOW_SIZE  ( 120 )
@@ -38,8 +39,8 @@ notes:
 */
 typedef struct
 {
-    float activity_variable_min;    
-    float activity_variable_max;  
+    float activity_variable_min;
+    float activity_variable_max;
 
     float common_sensor_weight_factor;
     float base_sensor_weight_factor_pir;

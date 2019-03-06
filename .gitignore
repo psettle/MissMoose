@@ -12,3 +12,7 @@ nrf_firmware/test_framework/logging
 /config_app/MissMooseConfigurationApplication/MissMooseConfigurationApplication/bin
 /config_app/MissMooseConfigurationApplication/MissMooseConfigurationApplication/obj
 /nrf_firmware/.vscode/settings.json
+nrf_firmware/genetic_algo/output/
+nrf_firmware/genetic_algo/__pycache__/
+nrf_firmware/genetic_algo/__pycache__/pyeasyga_mod.cpython-36.pyc
+nrf_firmware/genetic_algo/pyeasyga_mod.pyc
