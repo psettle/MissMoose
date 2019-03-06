@@ -6,6 +6,7 @@ from array import array
 import subprocess
 import os
 import traceback, sys
+import time
 
 root_dir = os.path.dirname(os.path.realpath(__file__))
 testframework_path = os.path.join(root_dir, "..\\x64\\Release\\TestFramework.exe")
@@ -31,8 +32,8 @@ data = [{'name': 'activity_variable_min',             'value': 1.0,     'min': 1
         {'name': 'possible_detection_threshold_nrs',  'value': 4.0,     'min': 1.0, 'max': 50.0},
         {'name': 'detection_threshold_rs',            'value': 6.0,     'min': 1.0, 'max': 50.0},
         {'name': 'detection_threshold_nrs',           'value': 7.0,     'min': 1.0, 'max': 50.0},
-        {'name': 'minimum_concern_signal_duration_s', 'value': 30.0,    'min': 10.0, 'max': 100.0},
-        {'name': 'minimum_alarm_signal_duration_s',   'value': 60.0,    'min': 10.0, 'max': 100.0}]
+        {'name': 'minimum_concern_signal_duration_s', 'value': 30.0,    'min': 1.0, 'max': 100.0},
+        {'name': 'minimum_alarm_signal_duration_s',   'value': 60.0,    'min': 1.0, 'max': 10.0}]
 
 class Genetic_Algo:
     '''
@@ -61,7 +62,8 @@ class Genetic_Algo:
         self.ga.run()
 
         print(self.ga.best_individual()[0])
-        print(self.ga.best_individual()[1])
+        print("\r\n")
+        print(self.individual_to_config_struct(self.ga.best_individual()[1], time.time()))
 
 
 
@@ -153,6 +155,13 @@ class Genetic_Algo:
         for item in individual:
             arr.append(item['value'])
         return array('f', arr)
+
+    def individual_to_config_struct(self, individual, name):
+        struct = "static mm_sensor_algorithm_config_t const sensor_algorithm_config_" + str(int(name)) + " =\r\n{\r\n"
+        for item in individual:
+            struct += "    " + "{:10.10f}".format((item['value'])) + ", /* " + item['name'] + " */\r\n"
+        struct += "};\r\n"
+        return struct
 
 
 if __name__ == '__main__':
