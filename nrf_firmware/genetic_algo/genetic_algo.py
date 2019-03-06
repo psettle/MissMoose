@@ -42,10 +42,10 @@ class Genetic_Algo:
         random.seed()
         # initialise the GA
         self.ga = GeneticAlgorithm(data,
-                            population_size=1000,
-                            generations=200,
-                            crossover_probability=0.8,
-                            mutation_probability=0.2,
+                            population_size=2000,
+                            generations=15,
+                            crossover_probability=1.0,
+                            mutation_probability=1.0,
                             elitism=True,
                             maximise_fitness=True,
                             parallel_process=True)
@@ -53,9 +53,9 @@ class Genetic_Algo:
         # print the GA's best solution; a solution is valid only if there are no collisions
         self.ga.generation_callback = self.generation_callback
         self.ga.fitness_function = Custom_Fitness().fitness       # set the GA's fitness function
-        self.ga.mutate_function = self.mutate
+        self.ga.mutate_function = self.sparse_mutate
         self.ga.create_individual = self.create_individual
-        self.ga.crossover_function = self.mutate_cross
+        self.ga.crossover_function = self.crossover
         self.ga.run()
 
         print(self.ga.best_individual()[0])
@@ -103,6 +103,17 @@ class Genetic_Algo:
                 # Constrain by the min and max
                 item['value'] = item['min'] if item['value'] < item['min'] else item['value']
                 item['value'] = item['max'] if item['value'] > item['max'] else item['value']
+
+    def sparse_mutate(self, individual):
+        count = 1
+        for x in range(0, count):
+            #get random element
+            i = random.randint(0, len(individual) - 1)
+            # Change by a random value
+            individual[i]['value'] = (random.random() - 0.5) * 0.4 * individual[i]['value']
+            # Constrain by the min and max
+            individual[i]['value'] = individual[i]['min'] if individual[i]['value'] < individual[i]['min'] else individual[i]['value']
+            individual[i]['value'] = individual[i]['max'] if individual[i]['value'] > individual[i]['max'] else individual[i]['value']
 
     def generation_callback(self, current_generation, generation_index):
         """ Callback to handle information that's generated after an individual
