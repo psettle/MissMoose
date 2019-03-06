@@ -8,7 +8,7 @@ import os
 import traceback, sys
 
 root_dir = os.path.dirname(os.path.realpath(__file__))
-testframework_path = os.path.join(root_dir, "..\\x64\\Debug\\TestFramework.exe")
+testframework_path = os.path.join(root_dir, "..\\x64\\Release\\TestFramework.exe")
 
 # setup seed data
 data = [{'name': 'activity_variable_min',             'value': 1.0,     'min': 1.0, 'max': 10.0},
@@ -41,15 +41,16 @@ class Genetic_Algo:
     '''
 
     def __init__(self):
+        random.seed()
         # initialise the GA
         self.ga = GeneticAlgorithm(data,
-                            population_size=150,
-                            generations=200,
+                            population_size=500,
+                            generations=30,
                             crossover_probability=0.8,
                             mutation_probability=0.2,
                             elitism=True,
                             maximise_fitness=True,
-                            parallel_process=True)
+                            parallel_process=False)
 
         # print the GA's best solution; a solution is valid only if there are no collisions
         self.ga.generation_callback = self.generation_callback
@@ -80,6 +81,17 @@ class Genetic_Algo:
         for idx in range(len(child_1)):
             child_1[idx]['value'] = child_1[idx]['value'] if random.random() > 0.5 else parent_2[idx]['value']
             child_2[idx]['value'] = child_2[idx]['value'] if random.random() > 0.5 else parent_1[idx]['value']
+
+        return child_1, child_2
+
+    def mutate_cross(self, parent_1, parent_2):
+        child_1 = copy.deepcopy(parent_1)
+        child_2 = copy.deepcopy(parent_2)
+        for idx in range(len(child_1)):
+            r = random.random()
+            child_1[idx]['value'] = child_1[idx]['value'] * r + (1 - r) * parent_2[idx]['value']
+            r = random.random()
+            child_2[idx]['value'] = child_1[idx]['value'] * r + (1 - r) * parent_2[idx]['value']
 
         return child_1, child_2
 
@@ -129,7 +141,7 @@ class Genetic_Algo:
                 score_bin_path = os.path.join(root_dir, 'output', 'individual_score{}.bin')
                 score_file = open(score_bin_path.format(individual_id), 'rb')
                 data.fromfile(score_file, 1)
-                print('Score for individual {}: {}'.format(individual_id, data[0]))
+                #print('Score for individual {}: {}'.format(individual_id, data[0]))
                 return data[0]
             except Exception:
                 print('Error in processing individual {}.'.format(individual_id))
@@ -144,7 +156,6 @@ class Genetic_Algo:
 
 
 if __name__ == '__main__':
-    application = Genetic_Algo()
     try:
         application = Genetic_Algo()
     except Exception:
