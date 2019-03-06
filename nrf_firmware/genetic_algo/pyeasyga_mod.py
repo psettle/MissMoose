@@ -7,11 +7,24 @@
 import random
 import copy
 from operator import attrgetter
-from joblib import Parallel, delayed
-import multiprocessing
+from multiprocessing.pool import Pool
+from functools import partial
+import time
 
 from six.moves import range
 
+class Parallel_Fitness(object):
+    ''' Pickle-able class for containing a fitness function. It has to be pickle-able
+    so that it can be used by the multiprocessing libraries.
+    '''
+    def __init__(self, fitness_function):
+        self.fitness_function = fitness_function
+    def work(self, args):
+        '''This function needs to be called with an array of 3 elements, containing
+        individual, individual_id, seed_data in that order.
+        '''
+        if(self.fitness_function is not None):
+            return self.fitness_function(args[0], args[1], args[2])
 
 class GeneticAlgorithm(object):
     """Genetic Algorithm class.
@@ -55,7 +68,6 @@ class GeneticAlgorithm(object):
         :param function generation_callback: function called when a generation completes
 
         """
-
         self.seed_data = seed_data
         self.population_size = population_size
         self.generations = generations
@@ -124,6 +136,9 @@ class GeneticAlgorithm(object):
         self.mutate_function = mutate
         self.selection_function = self.tournament_selection
 
+        if(parallel_process):
+            self.p = Pool(8)
+
     def create_initial_population(self):
         """Create members of the first population randomly.
         """
@@ -139,9 +154,15 @@ class GeneticAlgorithm(object):
         the supplied fitness_function.
         """
         if(self.parallel_process):
-            num_cores = multiprocessing.cpu_count() - 1
+            t = Parallel_Fitness(self.fitness_function)
+            args = []
+            for ind in range(len(self.current_generation)):
+                args.append([])
+                args[ind].append(self.current_generation[ind].genes)
+                args[ind].append(ind)
+                args[ind].append(self.seed_data)
 
-            individual_fitnesses = Parallel(n_jobs=num_cores)(delayed(self.fitness_function)(individual.genes, self.current_generation.index(individual), self.seed_data) for individual in self.current_generation)
+            individual_fitnesses = self.p.map(t.work, args)
 
             for i in range(len(self.current_generation)):
                 self.current_generation[i].fitness = individual_fitnesses[i]
@@ -163,7 +184,7 @@ class GeneticAlgorithm(object):
         crossover, and mutation) supplied.
         """
         new_population = []
-        new_population_genes_hashes = []
+        new_population_genes = []
         elite = copy.deepcopy(self.current_generation[0])
         selection = self.selection_function
 
@@ -174,8 +195,8 @@ class GeneticAlgorithm(object):
             child_1, child_2 = parent_1, parent_2
             child_1.fitness, child_2.fitness = 0, 0
 
-            if((make_hash(child_1.genes) in new_population_genes_hashes) or
-               (make_hash(child_2.genes) in new_population_genes_hashes)):
+            if((child_1.genes in new_population_genes) or
+               (child_2.genes in new_population_genes)):
                 # If we've already seen either of these individuals, mutate them.
                 can_mutate = True
                 if(child_1.genes == child_2.genes):
@@ -196,10 +217,10 @@ class GeneticAlgorithm(object):
                 self.mutate_function(child_2.genes)
 
             new_population.append(child_1)
-            new_population_genes_hashes.append(make_hash(child_1.genes))
+            new_population_genes.append(child_1.genes)
             if len(new_population) < self.population_size:
                 new_population.append(child_2)
-                new_population_genes_hashes.append(make_hash(child_2.genes))
+                new_population_genes.append(child_2.genes)
 
         if self.elitism:
             new_population[0] = elite
@@ -218,9 +239,18 @@ class GeneticAlgorithm(object):
         """Create subsequent populations, calculate the population fitness and
         rank the population by fitness in the order specified.
         """
+        start = time.time()
         self.create_new_population()
+        end = time.time()
+        print("Generation made: {}".format(end - start))
+        start = time.time()
         self.calculate_population_fitness()
+        end = time.time()
+        print("Generation processed: {}".format(end - start))
+        start = time.time()
         self.rank_population()
+        end = time.time()
+        print("Generation ranked: {}".format(end - start))
 
     def run(self):
         self.generation_index = 0
@@ -262,42 +292,3 @@ class Chromosome(object):
         """Return initialised Chromosome representation in human readable form.
         """
         return repr((self.fitness, self.genes))
-
-DictProxyType = type(object.__dict__)
-
-def make_hash(o):
-  """
-  https://stackoverflow.com/questions/5884066/hashing-a-dictionary
-  Makes a hash from a dictionary, list, tuple or set to any level, that
-  contains only other hashable types (including any lists, tuples, sets, and
-  dictionaries). In the case where other kinds of objects (like classes) need
-  to be hashed, pass in a collection of object attributes that are pertinent.
-  For example, a class can be hashed in this fashion:
-
-    make_hash([cls.__dict__, cls.__name__])
-
-  A function can be hashed like so:
-
-    make_hash([fn.__dict__, fn.__code__])
-  """
-
-  if type(o) == DictProxyType:
-    o2 = {}
-    for k, v in o.items():
-      if not k.startswith("__"):
-        o2[k] = v
-    o = o2
-
-  if isinstance(o, (set, tuple, list)):
-
-    return tuple([make_hash(e) for e in o])
-
-  elif not isinstance(o, dict):
-
-    return hash(o)
-
-  new_o = copy.deepcopy(o)
-  for k, v in new_o.items():
-    new_o[k] = make_hash(v)
-
-  return hash(tuple(frozenset(sorted(new_o.items()))))

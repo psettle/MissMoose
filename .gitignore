@@ -15,3 +15,4 @@ nrf_firmware/test_framework/logging
 nrf_firmware/genetic_algo/output/
 nrf_firmware/genetic_algo/__pycache__/
 nrf_firmware/genetic_algo/__pycache__/pyeasyga_mod.cpython-36.pyc
+nrf_firmware/genetic_algo/pyeasyga_mod.pyc
