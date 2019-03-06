@@ -3,8 +3,6 @@ file: test_basic_sensor_activity.cpp
 brief: Testing basic sensor features - Testing detections from all PIR sensors, all Lidar sensor, and
 allowing activity variables to drain after messages are sent
 notes:
-
-Author: Elijah Pennoyer
 */
 
 
@@ -27,7 +25,7 @@ static void test_case_pir_on_let_drain_to_1(TestOutput& oracle);
 static void test_case_lidar_on_let_drain_to_1(TestOutput& oracle);
 
 /**********************************************************
-					   DEFINITIONS
+                       DEFINITIONS
 **********************************************************/
 
 void test_basic_sensor_activity_add_tests(std::vector<TestCase>& tests)

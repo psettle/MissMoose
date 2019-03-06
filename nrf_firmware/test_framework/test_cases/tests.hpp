@@ -59,4 +59,10 @@ void test_one_animal_in_out_add_tests(std::vector<TestCase>& tests);
 // Add the tests for one animal moving through the network and stopping once
 void test_one_animal_with_one_stop_add_tests(std::vector<TestCase>& tests);
 
+// Add the tests for animals starting slowly then suddenly changing direction and running
+void test_slow_to_fast_running_animals(std::vector<TestCase>& tests);
+
+// Add the tests for two animals moving through the network
+void test_two_animals_through_network(std::vector<TestCase>& tests);
+
 #endif /* TESTS_HPP */
