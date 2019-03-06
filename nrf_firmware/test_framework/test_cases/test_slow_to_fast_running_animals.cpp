@@ -2,7 +2,7 @@
 file: test_slow_to_fast_running_animals.cpp
 brief:
 notes: Idea is to test the behaviour of animals that start moving slowly, then suddenly start moving quickly
-(For example - They are suddenly startled)
+(For example - They are suddenly startled) in a different direction
 */
 
 /**********************************************************
@@ -51,14 +51,14 @@ static void slow_to_fast_bottom_left_sprint_up(TestOutput& oracle)
 
     // Start detection from left end of network. First the PIR sensor
     test_send_pir_data(-1, 0, SENSOR_ROTATION_180, PIR_DETECTION_START);
-    // Possible detection in bottom-left. This causes a concern output in the top left (-1,1) LED
+    // Possible detection in bottom left. This causes a concern output in the top left (-1,1) LED
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 
 
     // 4 seconds later - Lidar detects the same animal
     simulate_time(4);
     test_send_lidar_data(-1, -1, SENSOR_ROTATION_0, 400);
-    // Detection in bottom-left. Alarm in top-left (-1, 1), concern in middle-left (0,1) 
+    // Detection in bottom left. Alarm in top left (-1, 1), concern in middle-left (0,1) 
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 
@@ -530,14 +530,14 @@ static void slow_to_fast_bottom_left_sprint_down(TestOutput& oracle)
 
     // Start detection from left end of network. First the -1,0 PIR sensor at rotation 180
     test_send_pir_data(-1, 0, SENSOR_ROTATION_180, PIR_DETECTION_START);
-    // Possible detection in bottom-left. Output: Concern, idle, idle
+    // Possible detection in bottom left. Output: Concern, idle, idle
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 
 
     // 2 seconds later - -1, -1 Lidar detects the same animal
     test_send_lidar_data(-1, -1, SENSOR_ROTATION_0, 150);
     simulate_time(2);
-    // Detection in bottom-left. Output: Alarm, concern, idle
+    // Detection in bottom left. Output: Alarm, concern, idle
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 
@@ -560,11 +560,11 @@ static void slow_to_fast_bottom_left_sprint_down(TestOutput& oracle)
     simulate_time(5);
     // Detected by the -1, -1 PIR
     test_send_pir_data(-1, -1, SENSOR_ROTATION_90, PIR_DETECTION_START);
-    // Possible detection in bottom-left. Output: Concern, idle, idle
+    // Possible detection in bottom left. Output: Concern, idle, idle
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
     // After 2 seconds, the lidar at 1, -1 detects the animal.
     test_send_lidar_data(1, -1, SENSOR_ROTATION_270, 1387);
-    // Detection in bottom-left. Output: Alarm, concern, idle
+    // Detection in bottom left. Output: Alarm, concern, idle
     oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
     oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 
