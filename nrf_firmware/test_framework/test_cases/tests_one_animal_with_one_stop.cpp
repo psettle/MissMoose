@@ -63,14 +63,14 @@ void test_one_animal_with_one_stop_add_tests(std::vector<TestCase>& tests)
 	ADD_TEST(test_case_stop_outside_sight_nonroadside_right);
 	ADD_TEST(test_case_stop_within_sight_roadside_left);
 	ADD_TEST(test_case_stop_within_sight_roadside_right);
-	ADD_TEST(test_case_stop_within_sight_top_left);
-	ADD_TEST(test_case_stop_within_sight_top_middle);
-	ADD_TEST(test_case_stop_within_sight_top_right);
+	//ADD_TEST(test_case_stop_within_sight_top_left);
+	//ADD_TEST(test_case_stop_within_sight_top_middle);
+	//ADD_TEST(test_case_stop_within_sight_top_right);
 	ADD_TEST(test_case_stop_within_sight_middle_left);
 	ADD_TEST(test_case_stop_within_sight_middle_right);
-	ADD_TEST(test_case_stop_within_sight_bottom_left);
-	ADD_TEST(test_case_stop_within_sight_bottom_middle);
-	ADD_TEST(test_case_stop_within_sight_bottom_right);
+	//ADD_TEST(test_case_stop_within_sight_bottom_left);
+	//ADD_TEST(test_case_stop_within_sight_bottom_middle);
+	//ADD_TEST(test_case_stop_within_sight_bottom_right);
 	ADD_TEST(test_case_stop_within_sight_nonroadside_left);
 	ADD_TEST(test_case_stop_within_sight_nonroadside_right);
 }
