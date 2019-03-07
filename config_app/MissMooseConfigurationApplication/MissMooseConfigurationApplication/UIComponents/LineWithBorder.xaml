@@ -7,7 +7,25 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <Line Name="BorderLine" X1="0" X2="0" Y1="0" Y2="0" Stroke="Black" StrokeEndLineCap="Round" StrokeStartLineCap="Round"/>
-        <Line Name="ColoredLine" X1="0" X2="0" Y1="0" Y2="0" Stroke="Black" StrokeEndLineCap="Round" StrokeStartLineCap="Round"/>
+        <Line Name="BorderLine" X1="0" X2="0" Y1="0" Y2="0" StrokeEndLineCap="Round" StrokeStartLineCap="Round">
+            <Line.Stroke>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop x:Name="BorderSeg1" Color="Transparent" Offset="0.0" />
+                    <GradientStop x:Name="BorderSeg2" Color="Transparent" Offset="0.45" />
+                    <GradientStop x:Name="BorderSeg3" Color="Transparent" Offset="0.55" />
+                    <GradientStop x:Name="BorderSeg4" Color="Transparent" Offset="1.0" />
+                </LinearGradientBrush>
+            </Line.Stroke>
+        </Line>
+        <Line Name="ColoredLine" X1="0" X2="0" Y1="0" Y2="0" StrokeEndLineCap="Round" StrokeStartLineCap="Round">
+            <Line.Stroke>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop x:Name="LineSeg1" Color="Transparent" Offset="0.0" />
+                    <GradientStop x:Name="LineSeg2" Color="Transparent" Offset="0.45" />
+                    <GradientStop x:Name="LineSeg3" Color="Transparent" Offset="0.55" />
+                    <GradientStop x:Name="LineSeg4" Color="Transparent" Offset="1.0" />
+                </LinearGradientBrush>
+            </Line.Stroke>
+        </Line>
     </Grid>
 </UserControl>

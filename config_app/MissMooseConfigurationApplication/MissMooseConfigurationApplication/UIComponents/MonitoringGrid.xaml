@@ -7,59 +7,28 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <local:LineWithBorder x:Name="Line_0_0_Down" X1="50" Y1="50" X2="50" Y2="125" Thickness="10" isVertical="true" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_0_1_Up"   X1="50" Y1="125" X2="50" Y2="200" Thickness="10" isVertical="true" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_0_1_Down" X1="50" Y1="200" X2="50" Y2="275" Thickness="10" isVertical="true" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_0_2_Up"   X1="50" Y1="275" X2="50" Y2="350" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_00_01" X1="50" X2="50" Y1="50" Y2="200" Thickness="10" isVertical="true"/>
+        <local:LineWithBorder x:Name="Line_01_02" X1="50" X2="50" Y1="200" Y2="350" Thickness="10" isVertical="true"/>
 
-        <local:LineWithBorder x:Name="Line_1_0_Down" X1="250" Y1="50" X2="250" Y2="125" Thickness="10" isVertical="true" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_1_1_Up"   X1="250" Y1="125" X2="250" Y2="200" Thickness="10" isVertical="true" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_1_1_Down" X1="250" Y1="200" X2="250" Y2="275" Thickness="10" isVertical="true" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_1_2_Up"   X1="250" Y1="275" X2="250" Y2="350" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_10_11" X1="250" X2="250" Y1="50" Y2="200" Thickness="10" isVertical="true"/>
+        <local:LineWithBorder x:Name="Line_11_12" X1="250" X2="250" Y1="200" Y2="350" Thickness="10" isVertical="true"/>
 
-        <local:LineWithBorder x:Name="Line_2_0_Down" X1="450" Y1="50" X2="450" Y2="125" Thickness="10" isVertical="true" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_2_1_Up"   X1="450" Y1="125" X2="450" Y2="200" Thickness="10" isVertical="true" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_2_1_Down" X1="450" Y1="200" X2="450" Y2="275" Thickness="10" isVertical="true" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_2_2_Up"   X1="450" Y1="275" X2="450" Y2="350" Thickness="10" isVertical="true" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_20_21" X1="450" X2="450" Y1="50" Y2="200" Thickness="10" isVertical="true"/>
+        <local:LineWithBorder x:Name="Line_21_22" X1="450" X2="450" Y1="200" Y2="350" Thickness="10" isVertical="true"/>
 
-        <local:LineWithBorder x:Name="Line_0_0_Right" X1="50" Y1="50" X2="150" Y2="50" Thickness="10" isVertical="false" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_1_0_Left"  X1="150" Y1="50" X2="250" Y2="50" Thickness="10" isVertical="false" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_1_0_Right" X1="250" Y1="50" X2="350" Y2="50" Thickness="10" isVertical="false" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_2_0_Left"  X1="350" Y1="50" X2="450" Y2="50" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_00_10" X1="50" X2="250" Y1="50" Y2="50" Thickness="10" isVertical="false"/>
+        <local:LineWithBorder x:Name="Line_10_20" X1="250" X2="450" Y1="50" Y2="50" Thickness="10" isVertical="false"/>
 
-        <local:LineWithBorder x:Name="Line_0_1_Right" X1="50" Y1="200" X2="150" Y2="200" Thickness="10" isVertical="false" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_1_1_Left"  X1="150" Y1="200" X2="250" Y2="200" Thickness="10" isVertical="false" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_1_1_Right" X1="250" Y1="200" X2="350" Y2="200" Thickness="10" isVertical="false" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_2_1_Left"  X1="350" Y1="200" X2="450" Y2="200" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_01_11" X1="50" X2="250" Y1="200" Y2="200" Thickness="10" isVertical="false"/>
+        <local:LineWithBorder x:Name="Line_11_21" X1="250" X2="450" Y1="200" Y2="200" Thickness="10" isVertical="false"/>
 
-        <local:LineWithBorder x:Name="Line_0_2_Right" X1="50" Y1="350" X2="150" Y2="350" Thickness="10" isVertical="false" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_1_2_Left"  X1="150" Y1="350" X2="250" Y2="350" Thickness="10" isVertical="false" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_1_2_Right" X1="250" Y1="350" X2="350" Y2="350" Thickness="10" isVertical="false" Visibility="Hidden"/>
-        <local:LineWithBorder x:Name="Line_2_2_Left"  X1="350" Y1="350" X2="450" Y2="350" Thickness="10" isVertical="false" Visibility="Hidden"/>
+        <local:LineWithBorder x:Name="Line_02_12" X1="50" X2="250" Y1="350" Y2="350" Thickness="10" isVertical="false"/>
+        <local:LineWithBorder x:Name="Line_12_22" X1="250" X2="450" Y1="350" Y2="350" Thickness="10" isVertical="false"/>
 
-        <Path Name="Rectangle_0_0" Panel.ZIndex="-1" Opacity="0.35">
-            <Path.Data>
-                <RectangleGeometry Rect="50,50,200,150" />
-            </Path.Data>
-        </Path>
-
-        <Path Name="Rectangle_0_1" Panel.ZIndex="-1" Opacity="0.35">
-            <Path.Data>
-                <RectangleGeometry Rect="250,50,200,150" />
-            </Path.Data>
-        </Path>
-
-        <Path Name="Rectangle_1_0" Panel.ZIndex="-1" Opacity="0.35">
-            <Path.Data>
-                <RectangleGeometry Rect="50,200,200,150" />
-            </Path.Data>
-        </Path>
-
-        <Path Name="Rectangle_1_1" Panel.ZIndex="-1" Opacity="0.35">
-            <Path.Data>
-                <RectangleGeometry Rect="250,200,200,150" />
-            </Path.Data>
-        </Path>
+        <local:ActivityRegion x:Name="Rectangle_0_0" Panel.ZIndex="-1" Points="50,50 250,50 250,200 50,200" PointCoordinates="0,0 1,0 1,1 0,1"></local:ActivityRegion>
+        <local:ActivityRegion x:Name="Rectangle_0_1" Panel.ZIndex="-1" Points="50,200 250,200 250,350 50,350" PointCoordinates="0,1 1,1 1,2 0,2" ></local:ActivityRegion>
+        <local:ActivityRegion x:Name="Rectangle_1_0" Panel.ZIndex="-1" Points="250,50 450,50 450,200 250,200" PointCoordinates="1,0 2,0 2,1 1,1"></local:ActivityRegion>
+        <local:ActivityRegion x:Name="Rectangle_1_1" Panel.ZIndex="-1" Points="250,200 450,200 450,350 250,350" PointCoordinates="1,1 2,1 2,2 1,2"></local:ActivityRegion>
 
         <Viewbox Name="SensorViewbox_0_0" Width="100" Height="100" Stretch="Fill" Margin="0,0,400,300">
             <Viewbox.RenderTransform>
