@@ -99,6 +99,9 @@
     <Compile Include="ANTDataPages\PositionConfigurationCommandPage.cs" />
     <Compile Include="AntControl\PageSender.cs" />
     <Compile Include="AntControl\PageParser.cs" />
+    <Compile Include="UIComponents\ActivityRegion.xaml.cs">
+      <DependentUpon>ActivityRegion.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UIComponents\ArrowButton.xaml.cs">
       <DependentUpon>ArrowButton.xaml</DependentUpon>
     </Compile>
@@ -162,6 +165,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UIComponents\ActivityRegion.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UIComponents\ArrowButton.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
