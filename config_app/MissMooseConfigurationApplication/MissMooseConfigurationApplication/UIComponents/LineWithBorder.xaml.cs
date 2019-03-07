@@ -20,12 +20,32 @@ namespace MissMooseConfigurationApplication.UIComponents
     /// </summary>
     public partial class LineWithBorder : UserControl
     {
+        #region Private Members
+        private Color firstHalfColor;
+        private Color secondHalfColor;
+        private int X1_offset = 0;
+        private int X2_offset = 0;
+        private int Y1_offset = 0;
+        private int Y2_offset = 0;
+        #endregion
+
+        #region Public Members
         public int X1
         {
             set
             {
                 BorderLine.X1 += value;
                 ColoredLine.X1 += value;
+            }
+        }
+
+        public int X1_Offset
+        {
+            set
+            {
+                X1 = -X1_offset;
+                X1 = value;
+                X1_offset = value;
             }
         }
 
@@ -38,6 +58,16 @@ namespace MissMooseConfigurationApplication.UIComponents
             }
         }
 
+        public int X2_Offset
+        {
+            set
+            {
+                X2 = -X2_offset;
+                X2 = value;
+                X2_offset = value;
+            }
+        }
+
         public int Y1
         {
             set
@@ -47,12 +77,32 @@ namespace MissMooseConfigurationApplication.UIComponents
             }
         }
 
+        public int Y1_Offset
+        {
+            set
+            {
+                Y1 = -Y1_offset;
+                Y1 = value;
+                Y1_offset = value;
+            }
+        }
+
         public int Y2
         {
             set
             {
                 BorderLine.Y2 += value;
                 ColoredLine.Y2 += value;
+            }
+        }
+
+        public int Y2_Offset
+        {
+            set
+            {
+                Y2 = -Y2_offset;
+                Y2 = value;
+                Y2_offset = value;
             }
         }
 
@@ -83,10 +133,88 @@ namespace MissMooseConfigurationApplication.UIComponents
                 }
             }
         }
+        #endregion
 
+        #region Public Methods
         public LineWithBorder()
         {
             InitializeComponent();
         }
+
+        public void SetColour(LineHalves half, Color new_color)
+        {
+            switch(half)
+            {
+                case LineHalves.FirstHalf:
+                    firstHalfColor = new_color;
+                    LineSeg1.Color = firstHalfColor;
+                    LineSeg2.Color = firstHalfColor;
+                    break;
+                case LineHalves.SecondHalf:
+                    secondHalfColor = new_color;
+                    LineSeg3.Color = secondHalfColor;
+                    LineSeg4.Color = secondHalfColor;
+                    break;
+            }
+        }
+
+        public void SetVisibility(LineHalves half, bool visible)
+        {
+            switch (half)
+            {
+                case LineHalves.FirstHalf:
+                    if (visible)
+                    {
+                        BorderSeg1.Color = Brushes.Black.Color;
+                        BorderSeg2.Color = Brushes.Black.Color;
+                        LineSeg1.Color = firstHalfColor;
+                        LineSeg2.Color = firstHalfColor;
+                    }
+                    else
+                    {
+                        BorderSeg1.Color = Brushes.Transparent.Color;
+                        BorderSeg2.Color = Brushes.Transparent.Color;
+                        LineSeg1.Color = Brushes.Transparent.Color;
+                        LineSeg2.Color = Brushes.Transparent.Color;
+                    }
+                    break;
+                case LineHalves.SecondHalf:
+                    if (visible)
+                    {
+                        BorderSeg3.Color = Brushes.Black.Color;
+                        BorderSeg4.Color = Brushes.Black.Color;
+                        LineSeg3.Color = secondHalfColor;
+                        LineSeg4.Color = secondHalfColor;
+                    }
+                    else
+                    {
+                        BorderSeg3.Color = Brushes.Transparent.Color;
+                        BorderSeg4.Color = Brushes.Transparent.Color;
+                        LineSeg3.Color = Brushes.Transparent.Color;
+                        LineSeg4.Color = Brushes.Transparent.Color;
+                    }
+                    break;
+            }
+        }
+        #endregion
+
+        #region Public Types
+        public enum LineHalves
+        {
+            FirstHalf, // the "first" half is always the rightmost or topmost half of the line
+            SecondHalf
+        }
+
+        public class LineSegment
+        {
+            public LineWithBorder line;
+            public LineWithBorder.LineHalves half;
+            public LineSegment(LineWithBorder line, LineWithBorder.LineHalves half)
+            {
+                this.line = line;
+                this.half = half;
+            }
+        }
+        #endregion
     }
 }

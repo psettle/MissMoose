@@ -87,7 +87,7 @@ namespace MissMooseConfigurationApplication
 
                     if (GetLineDirection(totalRotation, out LineDirection direction))
                     {
-                        Brush colour = dataPage.Region > LidarRegion.None ? StatusColour.Red : StatusColour.Blue;
+                        SolidColorBrush colour = dataPage.Region > LidarRegion.None ? StatusColour.Red : StatusColour.Blue;
 
                         Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                         {
@@ -126,7 +126,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this sensor data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);
@@ -152,7 +153,7 @@ namespace MissMooseConfigurationApplication
 
                     if (GetLineDirection(totalRotation, out LineDirection direction))
                     {
-                        Brush colour = dataPage.Detection ? StatusColour.Red : StatusColour.Blue;
+                        SolidColorBrush colour = dataPage.Detection ? StatusColour.Red : StatusColour.Blue;
 
                         Application.Current.Dispatcher.BeginInvoke((ThreadStart)delegate
                         {
@@ -182,7 +183,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this sensor data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);
@@ -232,7 +234,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this LED data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);
@@ -286,7 +289,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this region AV data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);
@@ -339,7 +343,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this error data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);
@@ -392,7 +397,8 @@ namespace MissMooseConfigurationApplication
             // Send an acknowledgement page so the gateway knows this error data was received
             MonitoringDataAckPage ackPage = new MonitoringDataAckPage
             {
-                MessageId = dataPage.MessageId
+                MessageId = dataPage.MessageId,
+                AckedId = dataPage.DataPageNumber
             };
 
             responder.SendBroadcast(ackPage);

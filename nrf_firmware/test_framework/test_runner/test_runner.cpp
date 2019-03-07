@@ -54,14 +54,16 @@ static void deinit_test_case(void);
                        DEFINITIONS
 **********************************************************/
 
-void test_runner_init(std::vector<TestCase> const & tests, mm_sensor_algorithm_config_t const * config)
+float test_runner_init(std::vector<TestCase> const & tests, mm_sensor_algorithm_config_t const * config)
 {
 	sensor_algorithm_config = config;
-	
+    float overall_score = 0;
+
 	for (int i = 0; i < tests.size(); i++)
     {
-        run_test_case(tests[i]);
+        overall_score += run_test_case(tests[i]);
     }
+    return overall_score / tests.size();
 }
 
 static float run_test_case(TestCase const & test)

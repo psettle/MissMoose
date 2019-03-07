@@ -10,6 +10,7 @@
 
 #include "test_runner.hpp"
 #include "tests.hpp"
+#include "test_parameters_utils.hpp"
 
 /**********************************************************
                         VARIABLES
@@ -50,22 +51,65 @@ static mm_sensor_algorithm_config_t const sensor_algorithm_config_default =
 	60 // minimum_alarm_signal_duration_s
 };
 
+/* Best -pre-eli tests 0.6332615613937378 */
+static mm_sensor_algorithm_config_t const sensor_algorithm_config_1551863129 =
+{
+    4.3985562363, /* activity_variable_min */
+    260.2637593756, /* activity_variable_max */
+    1.0000000000, /* common_sensor_weight_factor */
+    1.2718169501, /* base_sensor_weight_factor_pir */
+    6.2389932065, /* base_sensor_weight_factor_lidar */
+    1.0000000000, /* road_proximity_factor_0 */
+    1.0000000000, /* road_proximity_factor_1 */
+    1.0000000000, /* road_proximity_factor_2 */
+    1.0000000000, /* common_sensor_trickle_factor */
+    1.3020024630, /* base_sensor_trickle_factor_pir */
+    1.0000000000, /* base_sensor_trickle_factor_lidar */
+    3.0530560759, /* road_trickle_proximity_factor_0 */
+    1.0000000000, /* road_trickle_proximity_factor_1 */
+    1.0000000000, /* road_trickle_proximity_factor_2 */
+    0.9407985368, /* activity_variable_decay_factor */
+    14.8725093912, /* activity_decay_period_ms */
+    6.5727234744, /* possible_detection_threshold_rs */
+    6.4876488286, /* possible_detection_threshold_nrs */
+    42.1739123043, /* detection_threshold_rs */
+    40.4021446771, /* detection_threshold_nrs */
+    4.2276560074, /* minimum_concern_signal_duration_s */
+    1.0000000000, /* minimum_alarm_signal_duration_s */
+};
 
 /**********************************************************
                        DEFINITIONS
 **********************************************************/
 
-int main()
+int main(int argc, char* argv[])
 {
     std::vector<TestCase> tests;
 
-    test_basic_sensor_activity_add_tests(tests);
-    test_hyperactive_inactive_add_tests(tests);
-    test_one_animal_constant_speed_add_tests(tests);
-    test_one_animal_in_out_add_tests(tests);
-    test_one_animal_with_one_stop_add_tests(tests);
-
-    test_runner_init(tests, &sensor_algorithm_config_default);
+    if (argc > 1)
+    {
+        test_one_animal_constant_speed_add_tests(tests);
+        test_one_animal_in_out_add_tests(tests);
+        test_one_animal_with_one_stop_add_tests(tests);
+        test_slow_to_fast_running_animals(tests);
+        test_two_animals_through_network(tests);
+        // We're getting some arguments from the genetic algorithm :D
+        mm_sensor_algorithm_config_t parameters;
+        test_demo_parse_parameters(&parameters, std::string(argv[0]), std::string(argv[1]));
+        float score = test_runner_init(tests, &parameters);
+        test_demo_write_score(score, std::string(argv[0]), std::string(argv[1]));
+    }
+    else
+    {
+        test_basic_sensor_activity_add_tests(tests);
+        test_hyperactive_inactive_add_tests(tests);
+        test_one_animal_constant_speed_add_tests(tests);
+        test_one_animal_in_out_add_tests(tests);
+        test_one_animal_with_one_stop_add_tests(tests);
+        test_slow_to_fast_running_animals(tests);
+        test_two_animals_through_network(tests);
+        test_runner_init(tests, &sensor_algorithm_config_default);
+    }
 
     return 0;
 }

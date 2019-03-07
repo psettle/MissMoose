@@ -102,7 +102,16 @@
     <ClCompile Include="test_framework\test_cases\tests_one_animal_with_one_stop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_framework\test_cases\test_slow_to_fast_running_animals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_framework\test_cases\test_two_animals_through_network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\sensor_algorithm\mm_sensor_algorithm_config.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_framework\util\test_parameters_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -177,6 +186,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="test_framework\mocked_implementations\mm_led_control.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test_framework\util\test_parameters_utils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

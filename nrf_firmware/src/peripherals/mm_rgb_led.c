@@ -92,7 +92,7 @@ static low_power_pwm_t low_power_pwm_green;
 static low_power_pwm_t low_power_pwm_blue;
 
 #if BUTTON_CONTROL
-    static uint32_t colour_cycle[9] = {MM_RGB_COLOUR_RED, 0xFF8800, 0x88FF00, MM_RGB_COLOUR_GREEN, 0x00FF88, 0x0088FF, MM_RGB_COLOUR_BLUE, 0x8800FF, 0xFF0088};
+    static uint32_t colour_cycle[10] = {MM_RGB_COLOUR_RED, 0xFF8800, 0x88FF00, MM_RGB_COLOUR_GREEN, 0x00FF88, 0x0088FF, MM_RGB_COLOUR_BLUE, 0x8800FF, 0xFF0088, MM_RGB_COLOUR_WHITE};
     static uint8_t  colour_cycle_index = 0;
 
     /* Some sets of numbers that make for an interesting demonstration */
@@ -419,7 +419,7 @@ static void on_cycle_timer_event(void* evt_data, uint16_t evt_size)
      */
     static void control_pin_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
     {
-        uint32_t err_code;
+        uint32_t err_code = NRF_SUCCESS;
 
         /* Kick button event to main. */
         switch(pin)
@@ -440,7 +440,7 @@ static void on_cycle_timer_event(void* evt_data, uint16_t evt_size)
         #if(LED_DEBUG)
             bsp_board_led_invert(0);
         #endif
-        colour_cycle_index = colour_cycle_index == 8 ? 0 : colour_cycle_index + 1;
+        colour_cycle_index = colour_cycle_index == 9 ? 0 : colour_cycle_index + 1;
         mm_rgb_led_set_colour(colour_cycle[colour_cycle_index]);
     }
 
