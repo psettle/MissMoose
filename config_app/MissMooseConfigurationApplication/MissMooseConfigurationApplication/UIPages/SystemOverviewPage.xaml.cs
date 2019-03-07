@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -173,16 +173,19 @@ namespace MissMooseConfigurationApplication
             shadedRegions[xCoordinate][yCoordinate].Region.Fill = colour;
         }
 
+        public void IncrementDetectionCount()
+        {
+            DetectionsPastHour.NumberField.Content = (int.Parse(DetectionsPastHour.NumberField.Content.ToString()) + 1).ToString();
+        }
+
         public void LogSystemProblem(String logString)
         {
             SystemProblems.TextList.Items.Add(CreateLogItem(logString));
-            SystemProblems.UpdateScrollBar();
         }
 
         public void LogEvent(String logString)
         {
             EventLog.TextList.Items.Add(CreateLogItem(logString));
-            EventLog.UpdateScrollBar();
         }
 
         #endregion
@@ -209,9 +212,7 @@ namespace MissMooseConfigurationApplication
                     parentWindow.PageFrame.Navigate(new NodeOverviewPage(node, sensorViewboxes));
                     break;
                 }
-            }
-
-            
+            }            
         }
 
         private void InitializeViewboxes()
