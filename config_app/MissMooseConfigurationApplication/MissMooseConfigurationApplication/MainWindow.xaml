@@ -21,7 +21,9 @@
                 <ColumnDefinition Width="8*" MaxWidth="160"/>
                 <ColumnDefinition Width="*"  MaxWidth="20"/>
             </Grid.ColumnDefinitions>
-
+            <Grid.Effect>
+                <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="75"/>
+            </Grid.Effect>
             <Canvas Margin="10,5,10,15" Grid.Row="0" Grid.Column="0" Name="LogoCanvas">
                 <Canvas.RenderTransform>
                     <ScaleTransform ScaleX="0.15" ScaleY="0.15" />

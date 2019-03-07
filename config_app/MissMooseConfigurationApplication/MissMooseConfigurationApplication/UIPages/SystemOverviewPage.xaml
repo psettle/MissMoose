@@ -24,7 +24,7 @@
             </Grid.RowDefinitions>
             <Border BorderThickness="0,4,0,0" BorderBrush="Yellow" Grid.Row="0"></Border>
             <Line Margin="0,2,0,0" Stroke="White" StrokeThickness="4" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" X2="{Binding ActualWidth, RelativeSource={RelativeSource Self}}" StrokeDashArray="10 8"></Line>
-            <TextBlock Text="Direction of Traffic &#x2794;" Grid.RowSpan="2" Foreground="DeepSkyBlue" FontWeight="Bold" FontSize="20" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4" Padding="4" Background="#2e2e2e"/>
+            <TextBlock Text="Direction of Traffic &#x2794;" Grid.RowSpan="2" Foreground="Yellow" FontWeight="Bold" FontSize="20" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4" Padding="4" Background="#2e2e2e"/>
         </Grid>
         <Grid Grid.Column="1" Grid.RowSpan="2">
             <Grid>
