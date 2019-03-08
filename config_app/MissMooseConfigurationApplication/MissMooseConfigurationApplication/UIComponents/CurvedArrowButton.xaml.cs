@@ -20,20 +20,27 @@ namespace MissMooseConfigurationApplication
     /// </summary>
     public partial class CurvedArrowButton : Button
     {
+        private bool counterClockwise = false;
+
         public bool IsCounterClockwise
         {
-            set
-            {
-                if (value)
-                {
-                    ArrowImage.Source = new BitmapImage(new Uri(@"/MissMooseConfigurationApplication;component/counter_clockwise_curved_arrow_tranparent.png", UriKind.Relative));
-                }
-            }
+            get { return counterClockwise; }
+            set { counterClockwise = value; }
         }
 
         public CurvedArrowButton()
         {
+            this.Loaded += OnLoaded;
+
             InitializeComponent();
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (IsCounterClockwise)
+            {
+                FlowDirection = FlowDirection.RightToLeft;
+            }
         }
     }
 }
