@@ -253,7 +253,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>   
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -268,8 +268,6 @@
     </Content>
     <Resource Include="Fonts\MODERNE SANS.ttf" />
     <Resource Include="logoWhiteMs.ico" />
-    <Resource Include="clockwise_curved_arrow_tranparent.png" />
-    <Resource Include="counter_clockwise_curved_arrow_tranparent.png" />
     <Content Include="DSI_CP210xManufacturing_3_1.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
