@@ -130,6 +130,32 @@ static mm_sensor_algorithm_config_t const sensor_algorithm_config_default =
     30, // minimum_concern_signal_duration_s
     60 // minimum_alarm_signal_duration_s
 };
+
+static mm_sensor_algorithm_config_t const sensor_algorithm_config_1551911794 =
+{
+    2.1684160132, /* activity_variable_min */
+    173.0773543340, /* activity_variable_max */
+    1.0000000000, /* common_sensor_weight_factor */
+    1.0000000000, /* base_sensor_weight_factor_pir */
+    1.0000000000, /* base_sensor_weight_factor_lidar */
+    5.4670607275, /* road_proximity_factor_0 */
+    6.3722118535, /* road_proximity_factor_1 */
+    6.7627315568, /* road_proximity_factor_2 */
+    1.0000000000, /* common_sensor_trickle_factor */
+    1.2259346369, /* base_sensor_trickle_factor_pir */
+    1.0000000000, /* base_sensor_trickle_factor_lidar */
+    1.0000000000, /* road_trickle_proximity_factor_0 */
+    1.0000000000, /* road_trickle_proximity_factor_1 */
+    1.0000000000, /* road_trickle_proximity_factor_2 */
+    0.9535216014, /* activity_variable_decay_factor */
+    1.0000000000, /* activity_decay_period_ms */
+    9.7637955926, /* possible_detection_threshold_rs */
+    9.7837836894, /* possible_detection_threshold_nrs */
+    41.3127704940, /* detection_threshold_rs */
+    40.0230364488, /* detection_threshold_nrs */
+    36.9740456420, /* minimum_concern_signal_duration_s */
+    1.0000000000, /* minimum_alarm_signal_duration_s */
+};
 #endif
 
 
@@ -265,7 +291,7 @@ static void external_init(void)
     /* Init sensor error transmission over ant. */
     mm_sensor_error_transmission_init();
     /* Init sensor data processing now that data can be transmitted. */
-    mm_sensor_algorithm_init(&sensor_algorithm_config_default);
+    mm_sensor_algorithm_init(&sensor_algorithm_config_1551911794);
     /* Init AV output transmission over ANT now that the sensor algorithm is up and running. */
     mm_av_transmission_init();
 #endif
