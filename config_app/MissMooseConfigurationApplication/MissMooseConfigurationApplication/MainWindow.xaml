@@ -12,8 +12,9 @@
             <RowDefinition Height="6*"/>
             <RowDefinition Height="*" MaxHeight="80"/>
         </Grid.RowDefinitions>
-        <Frame Grid.Row="0" Grid.Column="0" Name="PageFrame" Source="UIPages/ConfigurationPage.xaml" Background="{StaticResource ThemeBrushBackground}" NavigationUIVisibility="Hidden"></Frame>
-        <Grid Grid.Row="1" Grid.Column="0" Background="{StaticResource ThemeBrushForeground}">
+        <Button Grid.Row="0" Click="SwitchThemeButton_Click" Grid.ZIndex="5"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="1" x:Name="SwitchThemeButton" Margin="2,100,2,16" >Switch Theme</Button>
+        <Frame Grid.Row="0" Grid.Column="0" Name="PageFrame" Source="UIPages/ConfigurationPage.xaml" Background="{DynamicResource ThemeBrushBackground}" NavigationUIVisibility="Hidden"></Frame>
+        <Grid Grid.Row="1" Grid.Column="0" Background="{DynamicResource ThemeBrushForeground}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="8*" MaxWidth="160"/>
                 <ColumnDefinition Width="16*"/>
@@ -29,7 +30,7 @@
                     <ScaleTransform ScaleX="0.15" ScaleY="0.15" />
                 </Canvas.RenderTransform>
                 <Path Style="{StaticResource LogoPath}"/>
-                <TextBlock Text="MISSMOOSE" Foreground="{StaticResource ThemeBrushText}" FontSize="192" FontWeight="Normal" FontFamily="{StaticResource ModerneSans}" Canvas.Left="1000" Canvas.Top="200"/>
+                <TextBlock Text="MISSMOOSE" Foreground="{DynamicResource ThemeBrushText}" FontSize="192" FontWeight="Normal" FontFamily="{StaticResource ModerneSans}" Canvas.Left="1000" Canvas.Top="200"/>
             </Canvas>
 
             <local:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="2" x:Name="ConfigPageButton" Margin="2,16,2,16" >Configure Nodes</local:PageSwitcherButton>

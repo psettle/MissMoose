@@ -9,8 +9,8 @@
              Click="PageSwitcherButtonClick"
              Margin="8"
              BorderThickness="0"
-             Foreground="{StaticResource ThemeBrushText}"
-             Background="{StaticResource ThemeBrushBackgroundBlue}"
+             Foreground="{DynamicResource ThemeBrushText}"
+             Background="{DynamicResource ThemeBrushBackgroundBlue}"
              FontSize="14" FontWeight="Bold">
     <Button.Effect>
         <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="320"/>

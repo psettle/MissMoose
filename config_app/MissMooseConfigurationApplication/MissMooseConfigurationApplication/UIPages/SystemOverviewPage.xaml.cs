@@ -31,10 +31,32 @@ namespace MissMooseConfigurationApplication
         private List<List<Viewbox>> sensorViewboxes;
         private List<SensorNode> nodes = new List<SensorNode>();
         private List<List<Dictionary<LineDirection, LineWithBorder.LineSegment>>> lineSegmentAssociations;
+        private Dictionary<LineWithBorder.LineSegment, StatusColour> lineSegmentColours;
         private List<List<ActivityRegion>> shadedRegions;
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
         private const string timestampFormatString = "yyyy-MMM-dd hh:mm:ss tt";
+
+        private SolidColorBrush Red
+        {
+            get { return (SolidColorBrush)Application.Current.FindResource("ThemeBrushRed"); }
+        }
+
+        private SolidColorBrush Yellow
+        {
+            get { return (SolidColorBrush)Application.Current.FindResource("ThemeBrushYellow"); }
+        }
+
+        private SolidColorBrush Blue
+        {
+            get { return (SolidColorBrush)Application.Current.FindResource("ThemeBrushForegroundBlue"); }
+        }
+
+        private SolidColorBrush Disabled
+        {
+            get { return (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground"); }
+        }
+
         #endregion
 
         #region Public Methods
@@ -46,6 +68,8 @@ namespace MissMooseConfigurationApplication
             InitializeShadedRegions();
 
             AntControl.Instance.AddMonitoringUI(this);
+
+            ((MainWindow)Application.Current.MainWindow).UpdateTheme += OnUpdatetheme;
 
             for (int i = 0; i < 100; i++)
             {
@@ -141,13 +165,15 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public void MarkSensorDetection(int xpos, int ypos, LineDirection direction, SolidColorBrush colour)
+        public void MarkSensorDetection(int xpos, int ypos, LineDirection direction, StatusColour colour)
         {
             if (lineSegmentAssociations[xpos][ypos].ContainsKey(direction))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[xpos][ypos][direction];
                 linesegment.line.SetVisibility(linesegment.half, true);
-                linesegment.line.SetColour(linesegment.half, colour.Color);             
+                linesegment.line.SetColour(linesegment.half, GetBrushFromStatusColour(colour).Color);
+
+                lineSegmentColours[linesegment] = colour;
             }
             else
             {
@@ -155,7 +181,7 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        public void MarkSensorDetection(SensorNode node, LineDirection direction, SolidColorBrush colour)
+        public void MarkSensorDetection(SensorNode node, LineDirection direction, StatusColour colour)
         {
             MarkSensorDetection(node.xpos, node.ypos, direction, colour);
         }
@@ -170,10 +196,10 @@ namespace MissMooseConfigurationApplication
                     colour = Brushes.Transparent;
                     break;
                 case RegionStatus.ProbableDetection:
-                    colour = StatusColour.Yellow;
+                    colour = GetBrushFromStatusColour(StatusColour.Yellow);
                     break;
                 case RegionStatus.DefiniteDetection:
-                    colour = StatusColour.Red;
+                    colour = GetBrushFromStatusColour(StatusColour.Red);
                     break;
                 default:
                     colour = Brushes.Transparent;
@@ -328,6 +354,18 @@ namespace MissMooseConfigurationApplication
                     },
                 }
             };
+
+            lineSegmentColours = new Dictionary<LineWithBorder.LineSegment, StatusColour>();
+            foreach (List<Dictionary<LineDirection, LineWithBorder.LineSegment>> list in lineSegmentAssociations)
+            {
+                foreach (Dictionary<LineDirection, LineWithBorder.LineSegment> dict in list)
+                {
+                    foreach (LineWithBorder.LineSegment lineSegment in dict.Values)
+                    {
+                        lineSegmentColours.Add(lineSegment, StatusColour.Disabled);
+                    }
+                }
+            }
         }
 
         private void InitializeShadedRegions()
@@ -471,6 +509,44 @@ namespace MissMooseConfigurationApplication
                     break;
             }
         }
+
+        private void OnUpdatetheme()
+        {
+            foreach (TextBox item in EventLog.TextList.Items)
+            {
+                item.Background = (SolidColorBrush)Application.Current.FindResource("ThemeBrushBackground");
+                item.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushText");
+            }
+
+            foreach (TextBox item in SystemProblems.TextList.Items)
+            {
+                item.Background = (SolidColorBrush)Application.Current.FindResource("ThemeBrushBackground");
+                item.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushText");
+            }
+
+            foreach (LineWithBorder.LineSegment lineSegment in lineSegmentColours.Keys)
+            {
+                lineSegment.line.SetColour(lineSegment.half, GetBrushFromStatusColour(lineSegmentColours[lineSegment]).Color);
+            }
+        }
+
+        private SolidColorBrush GetBrushFromStatusColour(StatusColour colour)
+        {
+            switch (colour)
+            {
+                case StatusColour.Yellow:
+                    return Yellow;
+                case StatusColour.Red:
+                    return Red;
+                case StatusColour.Blue:
+                    return Blue;
+                case StatusColour.Disabled:
+                    return Disabled;
+                default:
+                    return Disabled;
+            }
+        }
+
         #endregion
     }
 }

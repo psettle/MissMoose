@@ -20,7 +20,7 @@
         <Ellipse
           Name="PIR_0_Deg" Width="200" Height="200"
           Canvas.Left="20" Canvas.Top="0" Stretch="Fill"
-          Stroke="White" Fill="White" Margin="125,0,125,250">
+          Stroke="DarkGray" StrokeThickness="2" Fill="White" Margin="125,0,125,250">
             <Ellipse.Clip>
                 <RectangleGeometry Rect="0,0,200,100"/>
             </Ellipse.Clip>
@@ -30,7 +30,7 @@
           Name="PIR_90_Deg"
           Width="200" Height="200"
           Canvas.Left="20" Canvas.Top="0" Stretch="Fill" 
-          Stroke="White" Fill="White" Margin="250,125,0,125"
+          Stroke="DarkGray" StrokeThickness="2" Fill="White" Margin="250,125,0,125"
           Visibility="Hidden">
             <Ellipse.Clip>
                 <RectangleGeometry Rect="100,0,100,200"/>
@@ -41,7 +41,7 @@
           Name="PIR_270_Deg"
           Width="200" Height="200"
           Canvas.Left="20" Canvas.Top="0" Stretch="Fill" 
-          Stroke="White" Fill="White" Margin="0,125,250,125"
+          Stroke="DarkGray" StrokeThickness="2" Fill="White" Margin="0,125,250,125"
           Visibility="Hidden">
             <Ellipse.Clip>
                 <RectangleGeometry Rect="0,0,100,200"/>
@@ -57,14 +57,14 @@
             </Polygon.RenderTransform>
         </Polygon>
 
-        <Ellipse Name="OuterRingBoder" Fill="Black" Height="310" Width="310"/>
-        <Ellipse Name="OuterRing" Fill="Blue" Height="300" Width="300" />
-        <Ellipse Name="Border" Fill="Black" Height="260" Width="260" />
-        <Ellipse Name="InnerRing" Fill="DarkGray" Height="250" Width="250" />
-        <Ellipse Name="InnerRingBorder" Fill="DarkGray" Height="210" Width="210" />
-        <Ellipse Name="InnerCircle" Fill="DarkGray" Height="200" Width="200" />
-        <Label Name="NodeIDLabel" Foreground="White" FontSize="120" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <Label Name="NodeGatewayLabel" Content="G" Foreground="White" FontSize="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,185,0,0" FontWeight="Bold">
+        <Ellipse Name="OuterRingBoder" Fill="Black" Height="307" Width="307"/>
+        <Ellipse Name="OuterRing" Height="300" Width="300" />
+        <Ellipse Name="Border" Fill="Black" Height="257" Width="257" />
+        <Ellipse Name="InnerRing" Height="250" Width="250" />
+        <Ellipse Name="InnerRingBorder" Height="207" Width="207" />
+        <Ellipse Name="InnerCircle" Height="200" Width="200" />
+        <Label Name="NodeIDLabel" FontSize="120" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Label Name="NodeGatewayLabel" Content="G" FontSize="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,185,0,0" FontWeight="Bold">
             <Label.RenderTransform>
                 <TransformGroup>
                     <RotateTransform Angle="0" CenterX="225" CenterY="40"/>

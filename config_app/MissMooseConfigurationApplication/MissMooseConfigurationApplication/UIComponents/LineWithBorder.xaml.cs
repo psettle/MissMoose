@@ -111,7 +111,7 @@ namespace MissMooseConfigurationApplication.UIComponents
             set
             {
                 BorderLine.StrokeThickness = value;
-                ColoredLine.StrokeThickness = value - 4;
+                ColoredLine.StrokeThickness = value - 2;
             }
         }
 

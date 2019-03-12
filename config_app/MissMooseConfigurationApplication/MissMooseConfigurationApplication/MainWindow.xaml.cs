@@ -24,6 +24,16 @@ namespace MissMooseConfigurationApplication
         private string ConfigurationSaveFileName = "SavedConfiguration.xml";
         private string ConfigurationRootXmlElement = "Configuration";
 
+        private bool lightTheme;
+
+        #endregion
+
+        #region Public Events
+
+        public delegate void UpdateThemeEventHandler();
+
+        public event UpdateThemeEventHandler UpdateTheme;
+
         #endregion
 
         #region Public Methods
@@ -145,6 +155,19 @@ namespace MissMooseConfigurationApplication
                     ((SystemOverviewPage)navigationItems[SystemOverviewPageButton]).UpdateNode(sensornode);
                 }
             }
+        }
+
+        private void SwitchThemeButton_Click(object sender, RoutedEventArgs e)
+        {
+            ((App)Application.Current).Resources.MergedDictionaries[0].Source =
+                lightTheme ?
+                new Uri($"/Themes/Dark.xaml", UriKind.Relative)
+                :
+                new Uri($"/Themes/Light.xaml", UriKind.Relative);
+
+            UpdateTheme();
+
+            lightTheme = lightTheme ? false : true;
         }
 
         #endregion
