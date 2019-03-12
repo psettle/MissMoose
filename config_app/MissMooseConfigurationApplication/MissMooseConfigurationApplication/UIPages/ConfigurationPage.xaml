@@ -107,7 +107,7 @@
                         </Viewbox>
                     </Grid>
 
-                    <Button Grid.Row="3" Click="ResetOffsetClick" Content="Reset" BorderThickness="0" Background="{DynamicResource ThemeBrushBackgroundBlue}" Foreground="{DynamicResource ThemeBrushText}" Margin="4">
+                    <Button Grid.Row="3" Click="ResetOffsetClick" Content="Reset" BorderThickness="0" Foreground="{DynamicResource ThemeBrushText}" Style="{DynamicResource MouseoverButtonStyle}" Margin="4">
                         <Button.Effect>
                             <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="320"/>
                         </Button.Effect>

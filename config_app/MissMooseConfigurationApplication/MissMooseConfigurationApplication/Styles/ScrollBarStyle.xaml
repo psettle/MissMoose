@@ -149,11 +149,11 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" Value="{StaticResource ThumbMouseOverBrush}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource ThumbMouseOverBorderBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource ThumbMouseOverBrush}"/>
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
                             <Setter Property="Background" Value="{StaticResource ThumbPressedBrush}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource ThumbPressedBorderBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource ThumbPressedBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

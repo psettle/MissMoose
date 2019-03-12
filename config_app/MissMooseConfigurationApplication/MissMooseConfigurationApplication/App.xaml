@@ -8,6 +8,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Themes/Light.xaml"/>
                 <ResourceDictionary Source="/Styles/ScrollBarStyle.xaml"/>
+                <ResourceDictionary Source="/Styles/MouseoverButtonStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <!--Logo and title text -->
             <FontFamily x:Key="ModerneSans">pack://application:,,,/Fonts/#Modern Sans</FontFamily>

@@ -10,9 +10,9 @@
              Margin="8"
              BorderThickness="0"
              Foreground="{DynamicResource ThemeBrushText}"
-             Background="{DynamicResource ThemeBrushBackgroundBlue}"
-             FontSize="14" FontWeight="Bold">
+             FontSize="14" FontWeight="Bold"
+             Style="{DynamicResource MouseoverButtonStyle}">
     <Button.Effect>
         <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="320"/>
-    </Button.Effect>
+    </Button.Effect>    
 </Button>
