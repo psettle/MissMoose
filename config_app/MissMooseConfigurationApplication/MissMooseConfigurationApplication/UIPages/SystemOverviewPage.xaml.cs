@@ -70,7 +70,7 @@ namespace MissMooseConfigurationApplication
             AntControl.Instance.AddMonitoringUI(this);
 
             // Register for the UpdateTheme event so we know when to update the colours
-            ((MainWindow)Application.Current.MainWindow).UpdateTheme += OnUpdateTheme;    
+            ((MainWindow)Application.Current.MainWindow).UpdateTheme += OnUpdateTheme;
         }
 
         /// <summary>
