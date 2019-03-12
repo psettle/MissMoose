@@ -46,19 +46,18 @@ namespace MissMooseConfigurationApplication
 
     public class LedColour
     {
-        public static readonly SolidColorBrush Red = Brushes.Red;
-        public static readonly SolidColorBrush Yellow = Brushes.Yellow;
-        public static readonly SolidColorBrush Green = Brushes.Green;
-        public static readonly SolidColorBrush Blue = Brushes.Blue;
-        public static readonly SolidColorBrush Disabled = Brushes.Gray;
+        public static readonly SolidColorBrush Red = (SolidColorBrush)Application.Current.FindResource("ThemeBrushRed");
+        public static readonly SolidColorBrush Yellow = (SolidColorBrush)Application.Current.FindResource("ThemeBrushYellow");
+        public static readonly SolidColorBrush Blue = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForegroundBlue");
+        public static readonly SolidColorBrush Disabled = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground");
     }
 
     public class StatusColour
     {
-        public static readonly SolidColorBrush Red = Brushes.Red;
-        public static readonly SolidColorBrush Yellow = Brushes.Yellow;
-        public static readonly SolidColorBrush Blue = Brushes.Blue;
-        public static readonly SolidColorBrush Disabled = Brushes.Gray;
+        public static readonly SolidColorBrush Red = (SolidColorBrush)Application.Current.FindResource("ThemeBrushRed");
+        public static readonly SolidColorBrush Yellow = (SolidColorBrush)Application.Current.FindResource("ThemeBrushYellow");
+        public static readonly SolidColorBrush Blue = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForegroundBlue");
+        public static readonly SolidColorBrush Disabled = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground");
     }
 
     public class Rotation
@@ -297,8 +296,8 @@ namespace MissMooseConfigurationApplication
             }
 
             SetStatusColour(StatusColour.Blue);
-            SetLedFunction(LedFunction.Off);
-            SetLedColour(LedColour.Blue);
+            SetLedFunction(LedFunction.Continuous);
+            SetLedColour(LedColour.Red);
         }
 
         public bool SetLedFunction(LedFunction ledFunction)
@@ -393,6 +392,11 @@ namespace MissMooseConfigurationApplication
             node.SetLedColour(ledColour);
             node.SetStatusColour(statusColour);
 
+            if (xpos == 0)
+            {
+                SetLedColour(LedColour.Yellow);
+            }
+
             return node;
         }
 
@@ -401,27 +405,33 @@ namespace MissMooseConfigurationApplication
         /// </summary>
         public void UseActivePalette()
         {
-            InnerCircle.Fill = Brushes.DarkGray;
+            if (configuration != HardwareConfiguration.PirLidarLed)
+            {
+                InnerRing.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground");
+                InnerRingBorder.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground");
+            }
+            InnerCircle.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground");
+
             Effect = new DropShadowEffect
             {
-                Color = new Color { A = 255, R = 125, G = 125, B = 125 },
-                Direction = 320 + rotation.Val,
-                ShadowDepth = 10,
-                Opacity = 10
+                Direction = 75 + rotation.Val,
+                ShadowDepth = 5,
+                BlurRadius = 15
+
             };
-            NodeIDLabel.Foreground = Brushes.White;
+            NodeIDLabel.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushText");
             NodeIDLabel.Effect = new DropShadowEffect
             {
-                Direction = 320,
-                ShadowDepth = 10,
-                Opacity = 10
+                Direction = 75,
+                ShadowDepth = 1,
+                BlurRadius = 15
             };
-            NodeGatewayLabel.Foreground = Brushes.White;
+            NodeGatewayLabel.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushText");
             NodeGatewayLabel.Effect = new DropShadowEffect
             {
-                Direction = 320,
-                ShadowDepth = 10,
-                Opacity = 10
+                Direction = 75,
+                ShadowDepth = 1,
+                BlurRadius = 15
             };
         }
 
@@ -430,10 +440,15 @@ namespace MissMooseConfigurationApplication
         /// </summary>
         public void UseInactivePalette()
         {
-            InnerCircle.Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#b2b2b2"));
+            if (configuration != HardwareConfiguration.PirLidarLed)
+            {
+                InnerRing.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushBackground");
+                InnerRingBorder.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushBackground");
+            }
+            InnerCircle.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushBackground");
             Effect = null;
-            NodeIDLabel.Foreground = Brushes.DarkSlateGray;
-            NodeGatewayLabel.Foreground = Brushes.DarkSlateGray;
+            NodeIDLabel.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground");
+            NodeGatewayLabel.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground");
             NodeIDLabel.Effect = null;
             NodeGatewayLabel.Effect = null;
         }

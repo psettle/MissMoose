@@ -407,6 +407,8 @@ namespace MissMooseConfigurationApplication.UIPages
             AddViewboxOffset(ActiveViewbox, -node.xoffset, -node.yoffset);
             node.yoffset = 0;
             node.xoffset = 0;
+            YOffsetText.NumberField.Content = 0;
+            XOffsetText.NumberField.Content = 0;
         }
 
         #endregion

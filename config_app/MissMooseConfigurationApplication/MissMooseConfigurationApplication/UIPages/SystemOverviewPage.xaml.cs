@@ -46,6 +46,15 @@ namespace MissMooseConfigurationApplication
             InitializeShadedRegions();
 
             AntControl.Instance.AddMonitoringUI(this);
+
+            for (int i = 0; i < 100; i++)
+            {
+                LogSystemProblem("teeeeeeee eeeee eeeeeeeeeee eeeeeex xxxxxxxxx xxxx xxxxxxxxx xxxxx xxxxxtttttttt ttttttt");
+                LogEvent("teeeeeeee eeeee eeeeeeeeeee eeeeeex xxxxxxxxx xxxx xxxxxxxxx xxxxx xxxxxtttttttt ttttttt");
+            }
+
+            SetRegionActivityVariable(0, 0, RegionStatus.ProbableDetection);
+            SetRegionActivityVariable(1, 0, RegionStatus.DefiniteDetection);            
         }
 
         /// <summary>
@@ -197,6 +206,8 @@ namespace MissMooseConfigurationApplication
             TextBox textBox = new TextBox();
             textBox.TextWrapping = TextWrapping.Wrap;
             textBox.BorderThickness = new Thickness(0);
+            textBox.Background = (SolidColorBrush)Application.Current.FindResource("ThemeBrushBackground");
+            textBox.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushText");
             textBox.Text = DateTimeOffset.UtcNow.ToLocalTime().ToString(timestampFormatString) + ":\n" + logString;
 
             return textBox;

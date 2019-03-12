@@ -7,8 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Margin="4">
-
-    <Button DockPanel.Dock="Top" Name="TitleButton" Background="Gray" Foreground="White" BorderThickness="2" BorderBrush="Black" Click="PageSwitchClick"></Button>
-    <ListBox Name="TextList" DockPanel.Dock="Top" Background="White" BorderThickness="2,0,2,2" BorderBrush="Black"
+    <Button DockPanel.Dock="Top" Name="TitleButton" FontSize="14" Background="{StaticResource ThemeBrushForeground}" Foreground="{StaticResource ThemeBrushText}" BorderBrush="Transparent" Click="PageSwitchClick"></Button>
+    <ListBox Name="TextList" DockPanel.Dock="Top" Background="{StaticResource ThemeBrushBackground}" BorderThickness="2,0,2,2" BorderBrush="Transparent"
              ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch"/>
 </DockPanel>
