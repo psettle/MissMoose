@@ -31,12 +31,14 @@ namespace MissMooseConfigurationApplication
             this.Effect = isClicked ?
                 new DropShadowEffect
                 {
-                    Direction = 75,
-                    ShadowDepth = 1,
+                    Direction = 320,
+                    ShadowDepth = 2,
                     BlurRadius = 5
                 }
                 :
                 null;
+
+            this.Opacity = isClicked ? 1.0 : 0.75;
         }
 
         #endregion

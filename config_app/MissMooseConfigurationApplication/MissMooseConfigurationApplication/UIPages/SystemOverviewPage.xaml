@@ -35,17 +35,17 @@
                 </Grid.RowDefinitions>
                 <local:PageSwitcherTextbox x:Name="EventLog" Grid.Row="0" Title="Event Log">
                     <local:PageSwitcherTextbox.Effect>
-                        <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="75"/>
+                        <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="320"/>
                     </local:PageSwitcherTextbox.Effect>
                 </local:PageSwitcherTextbox>
                 <local:PageSwitcherTextbox x:Name="SystemProblems" Grid.Row="1" Title="System Problems">
                     <local:PageSwitcherTextbox.Effect>
-                        <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="75"/>
+                        <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="320"/>
                     </local:PageSwitcherTextbox.Effect>
                 </local:PageSwitcherTextbox>
                 <local:PageSwitcherNumberBox x:Name="DetectionsPastHour" Grid.Row="2" Title="Detections Past Hour">
                     <local:PageSwitcherNumberBox.Effect>
-                        <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="75"/>
+                        <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="320"/>
                     </local:PageSwitcherNumberBox.Effect>
                 </local:PageSwitcherNumberBox>
             </Grid>

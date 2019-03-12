@@ -33,7 +33,7 @@
 
         <Grid Grid.Row="1" Grid.Column="0">
             <Grid.Effect>
-                <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="75"/>
+                <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="320"/>
             </Grid.Effect>
             <Viewbox >
                 <Grid Margin="20,0,20,0">
@@ -56,7 +56,7 @@
 
         <Grid Grid.Row="1" Grid.Column="2">
             <Grid.Effect>
-                <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="75"/>
+                <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="320"/>
             </Grid.Effect>
             <Viewbox Margin="20,30">
                 <Grid Width="155" VerticalAlignment="Stretch">
@@ -120,18 +120,18 @@
 
                     <Button Grid.Row="3" Click="ResetOffsetClick" Content="Reset" BorderThickness="0" Background="{StaticResource ThemeBrushBackgroundBlue}" Foreground="{StaticResource ThemeBrushText}" Margin="4">
                         <Button.Effect>
-                            <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="75"/>
+                            <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="320"/>
                         </Button.Effect>
                     </Button>
                     <StackPanel Orientation="Vertical" Grid.Row="4">
                         <components:PageSwitcherNumberBox Title="X offset (cm):" x:Name="XOffsetText">
                             <components:PageSwitcherNumberBox.Effect>
-                                <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="75"/>
+                                <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="320"/>
                             </components:PageSwitcherNumberBox.Effect>
                         </components:PageSwitcherNumberBox>
                         <components:PageSwitcherNumberBox Title="Y offset (cm):" x:Name="YOffsetText">
                             <components:PageSwitcherNumberBox.Effect>
-                                <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="75"/>
+                                <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="320"/>
                             </components:PageSwitcherNumberBox.Effect>
                         </components:PageSwitcherNumberBox>
                     </StackPanel>

@@ -414,7 +414,7 @@ namespace MissMooseConfigurationApplication
 
             Effect = new DropShadowEffect
             {
-                Direction = 75 + rotation.Val,
+                Direction = 320 + rotation.Val,
                 ShadowDepth = 5,
                 BlurRadius = 15
 
@@ -422,14 +422,14 @@ namespace MissMooseConfigurationApplication
             NodeIDLabel.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushText");
             NodeIDLabel.Effect = new DropShadowEffect
             {
-                Direction = 75,
+                Direction = 320,
                 ShadowDepth = 1,
                 BlurRadius = 15
             };
             NodeGatewayLabel.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushText");
             NodeGatewayLabel.Effect = new DropShadowEffect
             {
-                Direction = 75,
+                Direction = 320,
                 ShadowDepth = 1,
                 BlurRadius = 15
             };

@@ -13,6 +13,6 @@
              Background="{StaticResource ThemeBrushBackgroundBlue}"
              FontSize="14" FontWeight="Bold">
     <Button.Effect>
-        <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="75"/>
+        <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="320"/>
     </Button.Effect>
 </Button>
