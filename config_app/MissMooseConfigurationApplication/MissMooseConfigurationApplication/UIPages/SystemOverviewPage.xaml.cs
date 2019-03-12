@@ -71,12 +71,6 @@ namespace MissMooseConfigurationApplication
 
             // Register for the UpdateTheme event so we know when to update the colours
             ((MainWindow)Application.Current.MainWindow).UpdateTheme += OnUpdateTheme;    
-            
-            for (int i = 0; i < 100; i++)
-            {
-                LogSystemProblem("ttttttteeeeeeeeee  xxxxxxxxxxxxxxxxxx tttttttttttttttttt hhhhhhhhhhhhh eeeeeeeeerrrrrrrreeeee");
-                LogEvent("ttttttteeeeeeeeee  xxxxxxxxxxxxxxxxxx tttttttttttttttttt hhhhhhhhhhhhh eeeeeeeeerrrrrrrreeeee");
-            }
         }
 
         /// <summary>
