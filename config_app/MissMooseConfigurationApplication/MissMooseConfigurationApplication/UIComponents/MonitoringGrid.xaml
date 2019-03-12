@@ -4,8 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MissMooseConfigurationApplication.UIComponents"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             mc:Ignorable="d">
     <Grid>
         <local:LineWithBorder x:Name="Line_00_01" X1="50" X2="50" Y1="50" Y2="200" Thickness="10" isVertical="true"/>
         <local:LineWithBorder x:Name="Line_01_02" X1="50" X2="50" Y1="200" Y2="350" Thickness="10" isVertical="true"/>

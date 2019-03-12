@@ -5,6 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MissMooseConfigurationApplication"
+        xmlns:uicomponents="clr-namespace:MissMooseConfigurationApplication.UIComponents"
         xmlns:controls="clr-namespace:CSharpControls.Wpf;assembly=CSharpControls.Wpf"
         mc:Ignorable="d"
         Title="MissMoose" Height="650" Width="800" Closing="SaveConfiguration">
@@ -61,8 +62,8 @@
                 <TextBlock Text="MISSMOOSE" Foreground="{DynamicResource ThemeBrushText}" FontSize="192" FontWeight="Normal" FontFamily="{StaticResource ModerneSans}" Canvas.Left="1000" Canvas.Top="200"/>
             </Canvas>
 
-            <local:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="2" x:Name="ConfigPageButton" Margin="2,16,2,16" >Configure Nodes</local:PageSwitcherButton>
-            <local:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="3" x:Name="SystemOverviewPageButton"  Margin="2,16,2,16" >System Overview</local:PageSwitcherButton>
+            <uicomponents:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="2" x:Name="ConfigPageButton" Margin="2,16,2,16" >Configure Nodes</uicomponents:PageSwitcherButton>
+            <uicomponents:PageSwitcherButton Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="3" x:Name="SystemOverviewPageButton"  Margin="2,16,2,16" >System Overview</uicomponents:PageSwitcherButton>
 
         </Grid>
     </Grid>

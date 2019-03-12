@@ -4,9 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MissMooseConfigurationApplication.UIComponents"
-             xmlns:missmooseconfigurationapplication="clr-namespace:MissMooseConfigurationApplication"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="450">
+             mc:Ignorable="d">
     <Grid>
         <Line X1="50" Y1="50" X2="50" Y2="400" Stroke="Black"/>
         <Line X1="225" Y1="50" X2="225" Y2="400" Stroke="Black"/>
@@ -18,33 +16,33 @@
 
 
         <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,0,350,350">
-            <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_0_0"/>
+            <local:PulsingCircle x:Name="Pulse_0_0"/>
         </Viewbox>
         <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,0,0,350">
-            <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_1_0"/>
+            <local:PulsingCircle x:Name="Pulse_1_0"/>
         </Viewbox>
         <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="350,0,0,350">
-            <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_2_0"/>
+            <local:PulsingCircle x:Name="Pulse_2_0"/>
         </Viewbox>
 
         <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,175,350,175">
-            <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_0_1"/>
+            <local:PulsingCircle x:Name="Pulse_0_1"/>
         </Viewbox>
         <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,175,0,175">
-            <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_1_1"/>
+            <local:PulsingCircle x:Name="Pulse_1_1"/>
         </Viewbox>
         <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="350,175,0,175">
-            <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_2_1"/>
+            <local:PulsingCircle x:Name="Pulse_2_1"/>
         </Viewbox>
 
         <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,350,350,0">
-            <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_0_2"/>
+            <local:PulsingCircle x:Name="Pulse_0_2"/>
         </Viewbox>
         <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="0,350,0,0">
-            <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_1_2"/>
+            <local:PulsingCircle x:Name="Pulse_1_2"/>
         </Viewbox>
         <Viewbox Grid.Column="1" Width="100" Height="100" Stretch="None" Margin="350,350,0,0">
-            <missmooseconfigurationapplication:PulsingCircle x:Name="Pulse_2_2"/>
+            <local:PulsingCircle x:Name="Pulse_2_2"/>
         </Viewbox>
 
         <Viewbox Name="SensorViewbox_0_0" Width="100" Height="100" Stretch="Fill" Margin="0,0,350,350">

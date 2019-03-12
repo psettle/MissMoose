@@ -15,7 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MissMooseConfigurationApplication.UIPages;
 
-namespace MissMooseConfigurationApplication
+namespace MissMooseConfigurationApplication.UIComponents
 {
     public partial class PageSwitcherButton : Button
     {

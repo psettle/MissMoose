@@ -1,5 +1,6 @@
 ﻿using ANT_Managed_Library;
 using MissMooseConfigurationApplication.UIPages;
+using MissMooseConfigurationApplication.UIComponents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -273,7 +274,6 @@ namespace MissMooseConfigurationApplication
                             break;
                         case RegionStatus.DefiniteDetection:
                             logString += "System is detecting wildlife";
-                            MonitoringUI.IncrementDetectionCount();
                             break;
                         default:
                             // Do nothing (shouldn't get here)

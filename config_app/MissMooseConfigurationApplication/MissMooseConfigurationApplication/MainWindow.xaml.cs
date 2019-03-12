@@ -2,20 +2,15 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Imaging;
-using MissMooseConfigurationApplication.UIPages;
 using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
+using MissMooseConfigurationApplication.UIComponents;
+using MissMooseConfigurationApplication.UIPages;
 using MissMooseConfigurationApplication.Utils;
 
 namespace MissMooseConfigurationApplication
 {
-    enum SystemStatusEnum
-    {
-        SystemStatus_OK
-    }
-
     public partial class MainWindow : Window
     {
         #region Private Members
@@ -44,8 +39,6 @@ namespace MissMooseConfigurationApplication
             navigationItems = new Dictionary<PageSwitcherButton, Page>()
             {
                 { ConfigPageButton, new ConfigurationPage() },
-                //{ EventLogPageButton, new EventLogPage() },
-                //{ SystemProblemsPageButton, new SystemProblemsPage()},
                 { SystemOverviewPageButton, new SystemOverviewPage()}
             };
             if(File.Exists(ConfigurationSaveFileName))
