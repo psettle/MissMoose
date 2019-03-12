@@ -51,6 +51,7 @@ namespace MissMooseConfigurationApplication
         Red,
         Blue,
         Disabled,
+        Transparent,
     }
 
     public class Rotation
@@ -313,8 +314,8 @@ namespace MissMooseConfigurationApplication
             ((MainWindow)App.Current.MainWindow).UpdateTheme += OnUpdateTheme;
 
             SetStatusColour(StatusColour.Blue);
-            SetLedFunction(LedFunction.Continuous);
-            SetLedColour(LedColour.Red);
+            SetLedFunction(LedFunction.Off);
+            SetLedColour(LedColour.Blue);
         }
 
         public bool SetLedFunction(LedFunction ledFunction)
@@ -351,11 +352,15 @@ namespace MissMooseConfigurationApplication
             if(configuration == HardwareConfiguration.PirLidarLed
                 && (ledFunction != LedFunction.Off || colour == LedColour.Blue))
             {
-                ledColour = colour;
+                
                 OuterRing.Fill = GetBrushFromLedColour(colour);
 
                 // The colour was changed
-                return true;
+                if (colour != ledColour)
+                {
+                    ledColour = colour;
+                    return true;
+                }
             }
 
             // The colour was not changed
@@ -393,11 +398,6 @@ namespace MissMooseConfigurationApplication
             node.SetLedFunction(ledFunction);
             node.SetLedColour(ledColour);
             node.SetStatusColour(statusColour);
-
-            if (xpos == 0)
-            {
-                SetLedColour(LedColour.Yellow);
-            }
 
             return node;
         }

@@ -69,16 +69,8 @@ namespace MissMooseConfigurationApplication
 
             AntControl.Instance.AddMonitoringUI(this);
 
-            ((MainWindow)Application.Current.MainWindow).UpdateTheme += OnUpdatetheme;
-
-            for (int i = 0; i < 100; i++)
-            {
-                LogSystemProblem("teeeeeeee eeeee eeeeeeeeeee eeeeeex xxxxxxxxx xxxx xxxxxxxxx xxxxx xxxxxtttttttt ttttttt");
-                LogEvent("teeeeeeee eeeee eeeeeeeeeee eeeeeex xxxxxxxxx xxxx xxxxxxxxx xxxxx xxxxxtttttttt ttttttt");
-            }
-
-            SetRegionActivityVariable(0, 0, RegionStatus.ProbableDetection);
-            SetRegionActivityVariable(1, 0, RegionStatus.DefiniteDetection);            
+            // Register for the UpdateTheme event so we know when to update the colours
+            ((MainWindow)Application.Current.MainWindow).UpdateTheme += OnUpdateTheme;          
         }
 
         /// <summary>
@@ -362,7 +354,7 @@ namespace MissMooseConfigurationApplication
                 {
                     foreach (LineWithBorder.LineSegment lineSegment in dict.Values)
                     {
-                        lineSegmentColours.Add(lineSegment, StatusColour.Disabled);
+                        lineSegmentColours.Add(lineSegment, StatusColour.Transparent);
                     }
                 }
             }
@@ -510,7 +502,7 @@ namespace MissMooseConfigurationApplication
             }
         }
 
-        private void OnUpdatetheme()
+        private void OnUpdateTheme()
         {
             foreach (TextBox item in EventLog.TextList.Items)
             {
@@ -542,6 +534,8 @@ namespace MissMooseConfigurationApplication
                     return Blue;
                 case StatusColour.Disabled:
                     return Disabled;
+                case StatusColour.Transparent:
+                    return Brushes.Transparent;
                 default:
                     return Disabled;
             }

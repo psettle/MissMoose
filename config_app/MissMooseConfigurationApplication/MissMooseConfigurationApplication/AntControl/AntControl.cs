@@ -46,8 +46,8 @@ namespace MissMooseConfigurationApplication
             pageHandler.AddConfigUI(ConfigUI);
 
             // Open the ANT slave channel to scan for nodes
-            //channelManager.StartConfigDevice();
-            //channelManager.channel.channelResponse += ChannelResponse;
+            channelManager.StartConfigDevice();
+            channelManager.channel.channelResponse += ChannelResponse;
         }
 		
         public void AddMonitoringUI(SystemOverviewPage MonitoringUI)
