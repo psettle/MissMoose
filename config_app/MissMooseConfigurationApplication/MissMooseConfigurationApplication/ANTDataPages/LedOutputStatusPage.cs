@@ -14,7 +14,7 @@ namespace MissMooseConfigurationApplication
         private byte messageId;
         private UInt16 nodeId;
         private LedFunction ledFunction;
-        private LedColourEnum ledColour;
+        private LedColour ledColour;
 
         #endregion
 
@@ -43,7 +43,7 @@ namespace MissMooseConfigurationApplication
             set { ledFunction = value; OnPropertyChanged("LedFunction"); }
         }
 
-        public LedColourEnum LedColour
+        public LedColour LedColour
         {
             get { return ledColour; }
             set { ledColour = value; OnPropertyChanged("LedColour"); }
@@ -81,7 +81,7 @@ namespace MissMooseConfigurationApplication
 
             LedFunction = (LedFunction)(rxBuffer[4] & 0x03);
 
-            LedColour = (LedColourEnum)(rxBuffer[5] & 0x01);
+            LedColour = (LedColour)(rxBuffer[5] & 0x01);
         }
 
             #endregion

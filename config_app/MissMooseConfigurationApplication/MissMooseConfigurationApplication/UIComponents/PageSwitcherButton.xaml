@@ -7,6 +7,12 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" 
              Click="PageSwitcherButtonClick"
-             BorderThickness="2"
-             Margin="8">
+             Margin="8"
+             BorderThickness="0"
+             Foreground="{DynamicResource ThemeBrushText}"
+             FontSize="14" FontWeight="Bold"
+             Style="{DynamicResource MouseoverButtonStyle}">
+    <Button.Effect>
+        <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="320"/>
+    </Button.Effect>    
 </Button>

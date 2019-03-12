@@ -26,6 +26,14 @@ namespace MissMooseConfigurationApplication
 
         #endregion
 
+        #region Public Events
+
+        public delegate void UpdateThemeEventHandler();
+
+        public event UpdateThemeEventHandler UpdateTheme;
+
+        #endregion
+
         #region Public Methods
 
         public MainWindow()
@@ -145,6 +153,19 @@ namespace MissMooseConfigurationApplication
                     ((SystemOverviewPage)navigationItems[SystemOverviewPageButton]).UpdateNode(sensornode);
                 }
             }
+        }
+
+        private void SwitchThemeButton_Click(object sender, RoutedEventArgs e)
+        {
+            CSharpControls.Wpf.ToggleSwitch toggleSwitch = (CSharpControls.Wpf.ToggleSwitch)sender;
+
+            ((App)Application.Current).Resources.MergedDictionaries[0].Source =
+                (bool)toggleSwitch.IsChecked ?
+                new Uri($"/Themes/Dark.xaml", UriKind.Relative)
+                :
+                new Uri($"/Themes/Light.xaml", UriKind.Relative);
+
+            UpdateTheme();
         }
 
         #endregion

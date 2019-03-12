@@ -6,5 +6,5 @@
              xmlns:local="clr-namespace:MissMooseConfigurationApplication.UIComponents"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Polygon Name="Region" Opacity="0.35"></Polygon>
+    <Polygon Name="Region" Opacity="0.7"></Polygon>
 </UserControl>

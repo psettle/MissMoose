@@ -14,31 +14,31 @@
             <ColumnDefinition Width="2*" MaxWidth="400"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2*" MaxHeight="60"></RowDefinition>
-            <RowDefinition Height="12*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Grid.ColumnSpan="3" Background="#2e2e2e">
+        <Grid Grid.ZIndex="2" Grid.Column="1" Margin="0,6,5,6">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="8*"></RowDefinition>
+                <RowDefinition Height="4*"></RowDefinition>
+                <RowDefinition Height="2*" MaxHeight="40"></RowDefinition>
             </Grid.RowDefinitions>
-            <Border BorderThickness="0,4,0,0" BorderBrush="Yellow" Grid.Row="0"></Border>
-            <Line Margin="0,2,0,0" Stroke="White" StrokeThickness="4" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" X2="{Binding ActualWidth, RelativeSource={RelativeSource Self}}" StrokeDashArray="10 8"></Line>
-            <TextBlock Text="Direction of Traffic &#x2794;" Grid.RowSpan="2" Foreground="Yellow" FontWeight="Bold" FontSize="20" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4" Padding="4" Background="#2e2e2e"/>
+            <local:PageSwitcherTextbox x:Name="EventLog" Grid.Row="0" Title="Event Log">
+                <local:PageSwitcherTextbox.Effect>
+                    <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="320"/>
+                </local:PageSwitcherTextbox.Effect>
+            </local:PageSwitcherTextbox>
+            <local:PageSwitcherTextbox x:Name="SystemProblems" Grid.Row="1" Title="System Problems">
+                <local:PageSwitcherTextbox.Effect>
+                    <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="320"/>
+                </local:PageSwitcherTextbox.Effect>
+            </local:PageSwitcherTextbox>
+            <local:PageSwitcherNumberBox x:Name="DetectionsPastHour" Grid.Row="2" Title="Detections Past Hour">
+                <local:PageSwitcherNumberBox.Effect>
+                    <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="320"/>
+                </local:PageSwitcherNumberBox.Effect>
+            </local:PageSwitcherNumberBox>
         </Grid>
-        <Grid Grid.Column="1" Grid.RowSpan="2" Margin="0,6,5,6">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="8*"></RowDefinition>
-                    <RowDefinition Height="4*"></RowDefinition>
-                    <RowDefinition Height="2*" MaxHeight="40"></RowDefinition>
-                </Grid.RowDefinitions>
-                <local:PageSwitcherTextbox x:Name="EventLog" Grid.Row="0" Title="Event Log"></local:PageSwitcherTextbox>
-                <local:PageSwitcherTextbox x:Name="SystemProblems" Grid.Row="1" Title="System Problems"></local:PageSwitcherTextbox>
-                <local:PageSwitcherNumberBox x:Name="DetectionsPastHour" Grid.Row="2" Title="Detections Past Hour"></local:PageSwitcherNumberBox>
-            </Grid>
-        </Grid>
-        <Grid Grid.Column="0" Grid.Row="1" Margin="0,10,0,0">
+        <Grid Grid.Column="0" Grid.Row="0" Margin="0,10,0,0">
             <Viewbox>
                 <uicomponents:MonitoringGrid x:Name="MonitGrid"/>
             </Viewbox>

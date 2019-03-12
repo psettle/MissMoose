@@ -38,27 +38,20 @@ namespace MissMooseConfigurationApplication
         Continuous,
     }
 
-    public enum LedColourEnum : byte
+    public enum LedColour : byte
     {
         Yellow,
         Red,
+        Blue,
     }
 
-    public class LedColour
+    public enum StatusColour : byte
     {
-        public static readonly SolidColorBrush Red = Brushes.Red;
-        public static readonly SolidColorBrush Yellow = Brushes.Yellow;
-        public static readonly SolidColorBrush Green = Brushes.Green;
-        public static readonly SolidColorBrush Blue = Brushes.Blue;
-        public static readonly SolidColorBrush Disabled = Brushes.Gray;
-    }
-
-    public class StatusColour
-    {
-        public static readonly SolidColorBrush Red = Brushes.Red;
-        public static readonly SolidColorBrush Yellow = Brushes.Yellow;
-        public static readonly SolidColorBrush Blue = Brushes.Blue;
-        public static readonly SolidColorBrush Disabled = Brushes.Gray;
+        Yellow,
+        Red,
+        Blue,
+        Disabled,
+        Transparent,
     }
 
     public class Rotation
@@ -256,10 +249,31 @@ namespace MissMooseConfigurationApplication
         private sbyte x = -1;
         private sbyte y = -1;
         private LedFunction ledFunction;
-        private Brush ledColour;
-        private Brush statusColour;
+        private LedColour ledColour;
+        private StatusColour statusColour;
+        private bool isActive;
         private bool isGateway;
         private Rotation rotation;
+
+        private SolidColorBrush Red
+        {
+            get { return (SolidColorBrush)Application.Current.FindResource("ThemeBrushRed"); }
+        }
+
+        private SolidColorBrush Yellow
+        {
+            get { return (SolidColorBrush)Application.Current.FindResource("ThemeBrushYellow"); }
+        }
+
+        private SolidColorBrush Blue
+        {
+            get { return (SolidColorBrush)Application.Current.FindResource("ThemeBrushForegroundBlue"); }
+        }
+
+        private SolidColorBrush Disabled
+        {
+            get { return (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground"); }
+        }
 
         #endregion
 
@@ -296,6 +310,9 @@ namespace MissMooseConfigurationApplication
                     break;
             }
 
+            // Register for the UpdateTheme event so we know when to update the colours
+            ((MainWindow)App.Current.MainWindow).UpdateTheme += OnUpdateTheme;
+
             SetStatusColour(StatusColour.Blue);
             SetLedFunction(LedFunction.Off);
             SetLedColour(LedColour.Blue);
@@ -330,38 +347,27 @@ namespace MissMooseConfigurationApplication
             return false;
         }
 
-        public bool SetLedColour(Brush colour)
+        public bool SetLedColour(LedColour colour)
         {
             if(configuration == HardwareConfiguration.PirLidarLed
-                && colour != this.ledColour
                 && (ledFunction != LedFunction.Off || colour == LedColour.Blue))
             {
-                ledColour = colour;
-                OuterRing.Fill = colour;
+                
+                OuterRing.Fill = GetBrushFromLedColour(colour);
 
                 // The colour was changed
-                return true;
+                if (colour != ledColour)
+                {
+                    ledColour = colour;
+                    return true;
+                }
             }
 
             // The colour was not changed
             return false;
         }
 
-        public bool SetLedColour(LedColourEnum colour)
-        {
-            switch (colour)
-            {
-                case LedColourEnum.Yellow:
-                    return SetLedColour(LedColour.Yellow);
-                case LedColourEnum.Red:
-                    return SetLedColour(LedColour.Red);
-                default:
-                    // Do nothing
-                    return false;
-            }
-        }
-
-        public void SetStatusColour(Brush colour)
+        public void SetStatusColour(StatusColour colour)
         {
             statusColour = colour;
 
@@ -369,10 +375,10 @@ namespace MissMooseConfigurationApplication
             {
                 case HardwareConfiguration.Pir2:
                 case HardwareConfiguration.PirLidar:
-                    OuterRing.Fill = colour;
+                    OuterRing.Fill = GetBrushFromStatusColour(colour);
                     break;
                 case HardwareConfiguration.PirLidarLed:
-                    InnerRing.Fill = colour;
+                    InnerRing.Fill = GetBrushFromStatusColour(colour);
                     break;
                 default:
                     throw new InvalidOperationException("Unknown hardware configuration");
@@ -401,28 +407,25 @@ namespace MissMooseConfigurationApplication
         /// </summary>
         public void UseActivePalette()
         {
-            InnerCircle.Fill = Brushes.DarkGray;
+            if (configuration != HardwareConfiguration.PirLidarLed)
+            {
+                InnerRing.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground");
+                InnerRingBorder.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground");
+            }
+            InnerCircle.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushForeground");
+
+            NodeIDLabel.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushText");
+            NodeGatewayLabel.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushText");
+
             Effect = new DropShadowEffect
             {
-                Color = new Color { A = 255, R = 125, G = 125, B = 125 },
                 Direction = 320 + rotation.Val,
-                ShadowDepth = 10,
-                Opacity = 10
+                ShadowDepth = 5,
+                BlurRadius = 15
+
             };
-            NodeIDLabel.Foreground = Brushes.White;
-            NodeIDLabel.Effect = new DropShadowEffect
-            {
-                Direction = 320,
-                ShadowDepth = 10,
-                Opacity = 10
-            };
-            NodeGatewayLabel.Foreground = Brushes.White;
-            NodeGatewayLabel.Effect = new DropShadowEffect
-            {
-                Direction = 320,
-                ShadowDepth = 10,
-                Opacity = 10
-            };
+
+            isActive = true;
         }
 
         /// <summary>
@@ -430,12 +433,17 @@ namespace MissMooseConfigurationApplication
         /// </summary>
         public void UseInactivePalette()
         {
-            InnerCircle.Fill = (SolidColorBrush)(new BrushConverter().ConvertFrom("#b2b2b2"));
+            if (configuration != HardwareConfiguration.PirLidarLed)
+            {
+                InnerRing.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushBackground");
+                InnerRingBorder.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushBackground");
+            }
+            InnerCircle.Fill = (SolidColorBrush)Application.Current.FindResource("ThemeBrushBackground");
             Effect = null;
-            NodeIDLabel.Foreground = Brushes.DarkSlateGray;
-            NodeGatewayLabel.Foreground = Brushes.DarkSlateGray;
-            NodeIDLabel.Effect = null;
-            NodeGatewayLabel.Effect = null;
+            NodeIDLabel.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushTextSecondary");
+            NodeGatewayLabel.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushTextSecondary");
+
+            isActive = false;
         }
 
         #endregion
@@ -469,6 +477,51 @@ namespace MissMooseConfigurationApplication
         private void SetDisplayID()
         {
             DisplayID = (char)('A' + y) + (x + 1).ToString();
+        }
+
+        private void OnUpdateTheme()
+        {
+            SetLedColour(ledColour);
+            SetStatusColour(statusColour);
+
+            if (isActive)
+            {
+                UseActivePalette();
+            }
+            else
+            {
+                UseInactivePalette();
+            }
+        }
+
+        private SolidColorBrush GetBrushFromLedColour(LedColour colour)
+        {
+            switch (colour)
+            {
+                case LedColour.Yellow:
+                    return Yellow;
+                case LedColour.Red:
+                    return Red;
+                default:
+                    return Blue;
+            }
+        }
+
+        private SolidColorBrush GetBrushFromStatusColour(StatusColour colour)
+        {
+            switch (colour)
+            {
+                case StatusColour.Yellow:
+                    return Yellow;
+                case StatusColour.Red:
+                    return Red;
+                case StatusColour.Blue:
+                    return Blue;
+                case StatusColour.Disabled:
+                    return Disabled;
+                default:
+                    return Disabled;
+            }
         }
 
         #endregion

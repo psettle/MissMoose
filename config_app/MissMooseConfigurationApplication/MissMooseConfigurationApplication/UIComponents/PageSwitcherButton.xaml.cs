@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -18,12 +19,6 @@ namespace MissMooseConfigurationApplication
 {
     public partial class PageSwitcherButton : Button
     {
-        #region Private Members
-
-        private Brush darkBackground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#2e2e2e"));
-
-        #endregion
-
         #region Public Methods
 
         public PageSwitcherButton()
@@ -33,9 +28,17 @@ namespace MissMooseConfigurationApplication
 
         public void SetButtonColour(bool isClicked)
         {
-            this.Background = isClicked ? Brushes.LightGray : darkBackground;
-            this.Foreground = isClicked ? Brushes.Black : Brushes.White;
-            this.BorderBrush = isClicked ? darkBackground : Brushes.Black;
+            this.Effect = isClicked ?
+                new DropShadowEffect
+                {
+                    Direction = 320,
+                    ShadowDepth = 2,
+                    BlurRadius = 5
+                }
+                :
+                null;
+
+            this.Opacity = isClicked ? 1.0 : 0.75;
         }
 
         #endregion
