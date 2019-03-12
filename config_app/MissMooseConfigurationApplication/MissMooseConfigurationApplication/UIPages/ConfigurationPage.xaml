@@ -18,20 +18,9 @@
             <ColumnDefinition Width="2*" MaxWidth="250"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2*" MaxHeight="60"></RowDefinition>
-            <RowDefinition Height="12*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Grid.ColumnSpan="3" Background="{DynamicResource ThemeBrushForeground2}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
-            </Grid.RowDefinitions>
-            <Border BorderThickness="0,4,0,0" BorderBrush="{DynamicResource ThemeBrushYellow}" Grid.Row="0"></Border>
-            <Line Margin="0,2,0,0" Stroke="White" StrokeThickness="4" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" X2="{Binding ActualWidth, RelativeSource={RelativeSource Self}}" StrokeDashArray="10 8"></Line>
-            <TextBlock Text="Direction of Traffic &#x2794;" Grid.RowSpan="2" Foreground="{DynamicResource ThemeBrushYellow}" FontWeight="Bold" FontSize="20" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4" Padding="4" Background="{DynamicResource ThemeBrushForeground2}"/>
-        </Grid>
-
-        <Grid Grid.Row="1" Grid.Column="0">
+        <Grid Grid.Row="0" Grid.Column="0">
             <Grid.Effect>
                 <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="320"/>
             </Grid.Effect>
@@ -48,13 +37,13 @@
             </Viewbox>
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+        <Grid Grid.Row="0" Grid.Column="1" Margin="0,10,0,0">
             <Viewbox>
                 <uicomponents:ConfigurationGrid x:Name="ConfigGrid"/>
             </Viewbox>
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="2">
+        <Grid Grid.Row="0" Grid.Column="2">
             <Grid.Effect>
                 <DropShadowEffect ShadowDepth="1" BlurRadius="15" Direction="320"/>
             </Grid.Effect>

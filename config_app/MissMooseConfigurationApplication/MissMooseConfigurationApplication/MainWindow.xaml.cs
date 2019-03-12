@@ -24,8 +24,6 @@ namespace MissMooseConfigurationApplication
         private string ConfigurationSaveFileName = "SavedConfiguration.xml";
         private string ConfigurationRootXmlElement = "Configuration";
 
-        private bool lightTheme;
-
         #endregion
 
         #region Public Events
@@ -159,15 +157,15 @@ namespace MissMooseConfigurationApplication
 
         private void SwitchThemeButton_Click(object sender, RoutedEventArgs e)
         {
+            CSharpControls.Wpf.ToggleSwitch toggleSwitch = (CSharpControls.Wpf.ToggleSwitch)sender;
+
             ((App)Application.Current).Resources.MergedDictionaries[0].Source =
-                lightTheme ?
+                (bool)toggleSwitch.IsChecked ?
                 new Uri($"/Themes/Dark.xaml", UriKind.Relative)
                 :
                 new Uri($"/Themes/Light.xaml", UriKind.Relative);
 
             UpdateTheme();
-
-            lightTheme = lightTheme ? false : true;
         }
 
         #endregion

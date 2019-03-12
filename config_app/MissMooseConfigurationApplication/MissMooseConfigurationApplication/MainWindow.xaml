@@ -5,16 +5,44 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MissMooseConfigurationApplication"
+        xmlns:controls="clr-namespace:CSharpControls.Wpf;assembly=CSharpControls.Wpf"
         mc:Ignorable="d"
         Title="MissMoose" Height="650" Width="800" Closing="SaveConfiguration">
     <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="6*"/>
-            <RowDefinition Height="*" MaxHeight="80"/>
+            <RowDefinition Height="1*" MaxHeight="60"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="11*"/>
+            <RowDefinition Height="2*" MaxHeight="80"/>
         </Grid.RowDefinitions>
-        <Button Grid.Row="0" Click="SwitchThemeButton_Click" Grid.ZIndex="5"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="1" x:Name="SwitchThemeButton" Margin="2,100,2,16" >Switch Theme</Button>
-        <Frame Grid.Row="0" Grid.Column="0" Name="PageFrame" Source="UIPages/ConfigurationPage.xaml" Background="{DynamicResource ThemeBrushBackground}" NavigationUIVisibility="Hidden"></Frame>
-        <Grid Grid.Row="1" Grid.Column="0" Background="{DynamicResource ThemeBrushForeground}">
+        <Grid Grid.Row="0" Background="{DynamicResource ThemeBrushForeground2}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Border BorderThickness="0,4,0,0" BorderBrush="{DynamicResource ThemeBrushYellow}" Grid.Row="0"></Border>
+            <Line Margin="0,2,0,0" Stroke="White" StrokeThickness="4" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" X2="{Binding ActualWidth, RelativeSource={RelativeSource Self}}" StrokeDashArray="10 8"></Line>
+            <TextBlock Text="Direction of Traffic &#x2794;" Grid.RowSpan="2" Foreground="{DynamicResource ThemeBrushYellow}" FontWeight="Bold" FontSize="20" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4" Padding="4" Background="{DynamicResource ThemeBrushForeground2}"/>
+        </Grid>
+        <controls:ToggleSwitch x:Name="SwitchThemeButton" Grid.Row="1" Click="SwitchThemeButton_Click" Grid.ZIndex="3"
+                               HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5">
+            <controls:ToggleSwitch.Style>
+                <Style TargetType="{x:Type controls:ToggleSwitch}">
+                    <Setter Property="CheckedBackground" Value="{DynamicResource ThemeBrushBackground}"/>
+                    <Setter Property="CheckedForeground" Value="{DynamicResource ThemeBrushText}"/>
+                    <Setter Property="CheckedBorderBrush" Value="{DynamicResource ThemeBrushBackgroundBlue}"/>
+                    <Setter Property="UncheckedBackground" Value="{DynamicResource ThemeBrushBackground}"/>
+                    <Setter Property="UncheckedForeground" Value="{DynamicResource ThemeBrushText}"/>
+                    <Setter Property="UncheckedBorderBrush" Value="{DynamicResource ThemeBrushBackgroundBlue}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource ThemeBrushText}"/>
+                    <Setter Property="CheckedText" Value="Dark"/>
+                    <Setter Property="UncheckedText" Value="Dark"/>
+                    <Setter Property="Content" Value="Light"/>
+                </Style>
+            </controls:ToggleSwitch.Style>
+        </controls:ToggleSwitch>
+        <Frame Grid.Row="1" Grid.Column="0" Grid.RowSpan="2" Name="PageFrame" Source="UIPages/ConfigurationPage.xaml" Background="{DynamicResource ThemeBrushBackground}" NavigationUIVisibility="Hidden"></Frame>
+        <Grid Grid.Row="3" Grid.Column="0" Background="{DynamicResource ThemeBrushForeground}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="8*" MaxWidth="160"/>
                 <ColumnDefinition Width="16*"/>

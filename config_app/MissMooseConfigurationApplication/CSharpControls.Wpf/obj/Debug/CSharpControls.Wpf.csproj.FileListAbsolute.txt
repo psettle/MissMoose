@@ -1,0 +1,13 @@
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\bin\Debug\CSharpControls.Wpf.dll
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\bin\Debug\CSharpControls.Wpf.pdb
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\Resources\ColorStyles.baml
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\CSharpControls.Wpf_MarkupCompile.cache
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\CSharpControls.Wpf_MarkupCompile.lref
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\Themes\Generic.baml
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\CSharpControls.Wpf.g.resources
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\CSharpControls.Wpf.Properties.Resources.resources
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\CSharpControls.Wpf.csproj.GenerateResource.cache
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\CSharpControls.Wpf.csproj.CoreCompileInputs.cache
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\CSharpControls.Wpf.dll
+C:\Users\Heather\Downloads\WpfToggleSwitch\WpfToggleSwitch\CSharp\CSharpControls.Wpf\obj\Debug\CSharpControls.Wpf.pdb
