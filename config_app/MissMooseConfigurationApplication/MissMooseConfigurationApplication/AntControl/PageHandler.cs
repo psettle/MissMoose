@@ -196,7 +196,7 @@ namespace MissMooseConfigurationApplication
             // Only handle the data page if its message ID is different
             // than the most recently received monitoring data page.
             // This prevents unnecessary UI updates and duplicate logs.
-            if (dataPage.MessageId == 0)
+            if (dataPage.MessageId != monitoringMessageId)
             {
                 // Save the data page's message ID so we can ignore duplicates
                 monitoringMessageId = dataPage.MessageId;
