@@ -49,6 +49,7 @@ namespace MissMooseConfigurationApplication
         {
             Border border = (Border)VisualTreeHelper.GetChild(TextList, 0);
             scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild(border, 0);
+            //scrollViewer.Style = (Style)FindResource("PrettyScrollViewer");
             scrollViewer.ScrollToBottom();
 
             ((INotifyCollectionChanged)TextList.Items).CollectionChanged += OnTextListChanged;
