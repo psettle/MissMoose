@@ -118,7 +118,7 @@
                         </Viewbox>
                     </Grid>
 
-                    <Button Grid.Row="3" Click="ResetOffsetClick" Content="Reset" BorderThickness="0" Background="{StaticResource ThemeBrushForeground}" Foreground="{StaticResource ThemeBrushText}" Margin="4">
+                    <Button Grid.Row="3" Click="ResetOffsetClick" Content="Reset" BorderThickness="0" Background="{StaticResource ThemeBrushBackgroundBlue}" Foreground="{StaticResource ThemeBrushText}" Margin="4">
                         <Button.Effect>
                             <DropShadowEffect ShadowDepth="1" BlurRadius="5" Direction="75"/>
                         </Button.Effect>
