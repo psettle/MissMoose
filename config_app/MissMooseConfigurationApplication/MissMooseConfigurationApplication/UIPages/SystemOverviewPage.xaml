@@ -18,8 +18,8 @@
         </Grid.RowDefinitions>
         <Grid Grid.ZIndex="2" Grid.Column="1" Margin="0,6,5,6">
             <Grid.RowDefinitions>
-                <RowDefinition Height="9*"></RowDefinition>
-                <RowDefinition Height="5*"></RowDefinition>
+                <RowDefinition Height="8*"></RowDefinition>
+                <RowDefinition Height="4*"></RowDefinition>
             </Grid.RowDefinitions>
             <uicomponents:TextItemDisplayBox x:Name="EventLog" Grid.Row="0" Title="Event Log">
                 <uicomponents:TextItemDisplayBox.Effect>

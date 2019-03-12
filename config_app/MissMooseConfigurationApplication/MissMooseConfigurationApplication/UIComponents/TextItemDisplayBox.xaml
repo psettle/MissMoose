@@ -8,7 +8,7 @@
              Margin="4">
     <!-- this invisble border forces the textblock to occupy the entire grid cell while keeping the text centered -->
     <Border DockPanel.Dock="Top" Background="{DynamicResource ThemeBrushForeground}" BorderThickness="0">
-        <TextBlock Name="TitleText" TextWrapping="WrapWithOverflow" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource ThemeBrushText}" FontSize="14"></TextBlock>
+        <TextBlock Name="TitleText" TextWrapping="WrapWithOverflow" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource ThemeBrushText}" FontSize="15"></TextBlock>
     </Border>
     <ListBox Name="TextList" DockPanel.Dock="Top" Background="{DynamicResource ThemeBrushBackground}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch"/>
 </DockPanel>
