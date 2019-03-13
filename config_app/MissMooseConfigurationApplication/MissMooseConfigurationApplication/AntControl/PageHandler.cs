@@ -316,7 +316,7 @@ namespace MissMooseConfigurationApplication
                         Rotation totalRotation = new Rotation(node.Rotation.Val);
                         totalRotation.Add(dataPage.SensorRotation);
 
-                        String logString = GetStringFromRotation(totalRotation)
+                        String logString = GetStringFromRotation(totalRotation) + " "
                         + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + node.DisplayID;
 
                         if (dataPage.ErrorOccurring)
@@ -370,7 +370,7 @@ namespace MissMooseConfigurationApplication
                         Rotation totalRotation = new Rotation(node.Rotation.Val);
                         totalRotation.Add(dataPage.SensorRotation);
 
-                        String logString = GetStringFromRotation(totalRotation)
+                        String logString = GetStringFromRotation(totalRotation) + " "
                         + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + node.DisplayID;
 
                         if (dataPage.ErrorOccurring)
