@@ -6,9 +6,11 @@
              xmlns:local="clr-namespace:MissMooseConfigurationApplication"
              mc:Ignorable="d" 
              Margin="4">
-    <!-- this invisble border forces the textblock to occupy the entire grid cell while keeping the text centered -->
-    <Border DockPanel.Dock="Top" Background="{DynamicResource ThemeBrushForeground}" BorderThickness="0">
-        <TextBlock Name="TitleText" TextWrapping="WrapWithOverflow" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource ThemeBrushText}" FontSize="15"></TextBlock>
+    <!-- this invisible border forces the textblock to occupy the entire grid cell while keeping the text centered.
+    The negative margin is necessary because there is a small gap between the border and the listbox
+    (for unknown, otherwise unsolvable reasons)-->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource ThemeBrushForeground}" BorderThickness="0" Margin="0,0,0,-1">
+        <TextBlock Name="TitleText" Margin="2" TextWrapping="WrapWithOverflow" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource ThemeBrushText}" FontSize="14"></TextBlock>
     </Border>
     <ListBox Name="TextList" DockPanel.Dock="Top" Background="{DynamicResource ThemeBrushBackground}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch"/>
 </DockPanel>
