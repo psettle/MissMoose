@@ -11,7 +11,6 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
@@ -36,6 +35,9 @@ namespace MissMooseConfigurationApplication
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
         private const string timestampFormatString = "yyyy-MMM-dd hh:mm:ss tt";
+        private const int maxLogCount = 100;
+        private String eventLogFile = "EventLog.txt";
+        private String systemProblemsFile = "SystemProblems.txt";
 
         private SolidColorBrush Red
         {
@@ -86,8 +88,6 @@ namespace MissMooseConfigurationApplication
 
             node = node.Clone();
             node.UseActivePalette();
-
-            node.Button.Click += NodeClick;
 
             var viewbox = sensorViewboxes[node.xpos][node.ypos];
             viewbox.Child = node;
@@ -200,19 +200,32 @@ namespace MissMooseConfigurationApplication
             shadedRegions[xCoordinate][yCoordinate].Region.Fill = colour;
         }
 
-        public void IncrementDetectionCount()
-        {
-            DetectionsPastHour.NumberField.Content = (int.Parse(DetectionsPastHour.NumberField.Content.ToString()) + 1).ToString();
-        }
-
         public void LogSystemProblem(String logString)
         {
-            SystemProblems.TextList.Items.Add(CreateLogItem(logString));
+            String fullLogString = AddTimestamp(logString);
+            if (SystemProblems.TextList.Items.Count == maxLogCount)
+            {
+                SystemProblems.TextList.Items.RemoveAt(0);
+            }
+            SystemProblems.TextList.Items.Add(CreateLogItem(fullLogString));
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(systemProblemsFile, true))
+            {
+                file.WriteLine(fullLogString);
+            }
         }
 
         public void LogEvent(String logString)
         {
-            EventLog.TextList.Items.Add(CreateLogItem(logString));
+            String fullLogString = AddTimestamp(logString);
+            if (EventLog.TextList.Items.Count == maxLogCount)
+            {
+                EventLog.TextList.Items.RemoveAt(0);
+            }
+            EventLog.TextList.Items.Add(CreateLogItem(fullLogString));
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(eventLogFile, true))
+            {
+                file.WriteLine(fullLogString);
+            }
         }
 
         #endregion
@@ -226,22 +239,14 @@ namespace MissMooseConfigurationApplication
             textBox.BorderThickness = new Thickness(0);
             textBox.Background = (SolidColorBrush)Application.Current.FindResource("ThemeBrushBackground");
             textBox.Foreground = (SolidColorBrush)Application.Current.FindResource("ThemeBrushText");
-            textBox.Text = DateTimeOffset.UtcNow.ToLocalTime().ToString(timestampFormatString) + ":\n" + logString;
+            textBox.Text = logString;
 
             return textBox;
         }
 
-        private void NodeClick(object sender, RoutedEventArgs e)
+        private String AddTimestamp(String logString)
         {
-            foreach(var node in nodes)
-            {
-                if(node.Button == sender)
-                {
-                    MainWindow parentWindow = Window.GetWindow(this) as MainWindow;
-                    parentWindow.PageFrame.Navigate(new NodeOverviewPage(node, sensorViewboxes));
-                    break;
-                }
-            }            
+            return DateTimeOffset.UtcNow.ToLocalTime().ToString(timestampFormatString) + ":\n" + logString;
         }
 
         private void InitializeViewboxes()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,16 +14,21 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MissMooseConfigurationApplication.UIPages
+namespace MissMooseConfigurationApplication.UIComponents
 {
-    /// <summary>
-    /// Interaction logic for DetectionsPage.xaml
-    /// </summary>
-    public partial class DetectionsPage : Page
+    public partial class NumericDisplayBox
     {
-        public DetectionsPage()
+        public NumericDisplayBox()
         {
             InitializeComponent();
+        }
+
+        public String Title
+        {
+            set
+            {
+                TitleText.Text = value;
+            }
         }
     }
 }

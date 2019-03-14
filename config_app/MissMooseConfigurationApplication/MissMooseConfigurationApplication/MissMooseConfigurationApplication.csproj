@@ -120,11 +120,11 @@
     <Compile Include="UIComponents\PageSwitcherButton.xaml.cs">
       <DependentUpon>PageSwitcherButton.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UIComponents\PageSwitcherNumberBox.xaml.cs">
-      <DependentUpon>PageSwitcherNumberBox.xaml</DependentUpon>
+    <Compile Include="UIComponents\NumericDisplayBox.xaml.cs">
+      <DependentUpon>NumericDisplayBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UIComponents\PageSwitcherTextbox.xaml.cs">
-      <DependentUpon>PageSwitcherTextbox.xaml</DependentUpon>
+    <Compile Include="UIComponents\TextItemDisplayBox.xaml.cs">
+      <DependentUpon>TextItemDisplayBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="UIComponents\SensorNode.xaml.cs">
       <DependentUpon>SensorNode.xaml</DependentUpon>
@@ -135,20 +135,8 @@
     <Compile Include="UIPages\ConfigurationPage.xaml.cs">
       <DependentUpon>ConfigurationPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UIPages\DetectionsPage.xaml.cs">
-      <DependentUpon>DetectionsPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UIPages\EventLogPage.xaml.cs">
-      <DependentUpon>EventLogPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UIPages\NodeOverviewPage.xaml.cs">
-      <DependentUpon>NodeOverviewPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UIPages\SystemOverviewPage.xaml.cs">
       <DependentUpon>SystemOverviewPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UIPages\SystemProblemsPage.xaml.cs">
-      <DependentUpon>SystemProblemsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\BitManipulation.cs" />
     <Compile Include="Utils\IconHelper.cs" />
@@ -209,11 +197,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UIComponents\PageSwitcherNumberBox.xaml">
+    <Page Include="UIComponents\NumericDisplayBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UIComponents\PageSwitcherTextbox.xaml">
+    <Page Include="UIComponents\TextItemDisplayBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -229,23 +217,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UIPages\DetectionsPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UIPages\EventLogPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UIPages\NodeOverviewPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="UIPages\SystemOverviewPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UIPages\SystemProblemsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

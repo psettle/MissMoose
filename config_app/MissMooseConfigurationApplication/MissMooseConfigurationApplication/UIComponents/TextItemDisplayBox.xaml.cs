@@ -16,16 +16,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MissMooseConfigurationApplication
+namespace MissMooseConfigurationApplication.UIComponents
 {
-    public partial class PageSwitcherTextbox
+    public partial class TextItemDisplayBox
     {
-        private String title;
         private ScrollViewer scrollViewer;
 
         #region Public Methods
 
-        public PageSwitcherTextbox()
+        public TextItemDisplayBox()
         {
             InitializeComponent();
 
@@ -36,8 +35,7 @@ namespace MissMooseConfigurationApplication
         {
             set
             {
-                TitleButton.Content = value;
-                title = value;
+                TitleText.Text = value;
             }
         }
 
@@ -52,15 +50,6 @@ namespace MissMooseConfigurationApplication
             scrollViewer.ScrollToBottom();
 
             ((INotifyCollectionChanged)TextList.Items).CollectionChanged += OnTextListChanged;
-        }
-
-        private void PageSwitchClick(object sender, EventArgs e)
-        {
-            // navigate to new page
-            MainWindow parentWindow = Window.GetWindow(this) as MainWindow;
-            PageSwitcherButton falseSender = new PageSwitcherButton();
-            falseSender.Name = Regex.Replace(title, @"\s+", "");
-            parentWindow.PageSwitchClick(falseSender);
         }
 
         private void OnTextListChanged(object sender, NotifyCollectionChangedEventArgs e)

@@ -1,5 +1,6 @@
 ﻿using ANT_Managed_Library;
 using MissMooseConfigurationApplication.UIPages;
+using MissMooseConfigurationApplication.UIComponents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -273,7 +274,6 @@ namespace MissMooseConfigurationApplication
                             break;
                         case RegionStatus.DefiniteDetection:
                             logString += "System is detecting wildlife";
-                            MonitoringUI.IncrementDetectionCount();
                             break;
                         default:
                             // Do nothing (shouldn't get here)
@@ -316,7 +316,7 @@ namespace MissMooseConfigurationApplication
                         Rotation totalRotation = new Rotation(node.Rotation.Val);
                         totalRotation.Add(dataPage.SensorRotation);
 
-                        String logString = GetStringFromRotation(totalRotation)
+                        String logString = GetStringFromRotation(totalRotation) + " "
                         + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + node.DisplayID;
 
                         if (dataPage.ErrorOccurring)
@@ -370,7 +370,7 @@ namespace MissMooseConfigurationApplication
                         Rotation totalRotation = new Rotation(node.Rotation.Val);
                         totalRotation.Add(dataPage.SensorRotation);
 
-                        String logString = GetStringFromRotation(totalRotation)
+                        String logString = GetStringFromRotation(totalRotation) + " "
                         + dataPage.SensorType.ToString().ToUpper() + " sensor on node " + node.DisplayID;
 
                         if (dataPage.ErrorOccurring)
