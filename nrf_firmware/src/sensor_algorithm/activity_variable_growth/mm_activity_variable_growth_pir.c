@@ -96,8 +96,9 @@ void translate_pir_detection(sensor_evt_t const * sensor_evt)
         evt->detection
         );
 
-    /* Is the sensor hyperactive? */
-    if(mm_sensor_error_is_sensor_hyperactive(sensor_evt))
+    /* Is the sensor hyperactive and detection something? */
+    if(mm_sensor_error_is_sensor_hyperactive(sensor_evt) &&
+       evt->detection)
     {
         /* If so, don't process further. */
         return;
