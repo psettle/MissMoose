@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "app_timer.h"
+#include "app_scheduler.h"
 
 /**********************************************************
                         CONSTANTS
@@ -25,6 +26,7 @@ APP_TIMER_DEF(m_timer_id);
 
 static void add_page_single ( uint8_t page_number, mm_ant_payload_t const * payload );
 static void timer_event(void * p_context);
+static void next_page(void* evt_data, uint16_t evt_size);
 
 typedef struct page_queue_element_struct
 {
@@ -62,11 +64,11 @@ void mm_ant_page_manager_init( void )
     APP_ERROR_CHECK(err_code);
 }
 
-void mm_ant_page_manager_add_page( uint8_t page_number, mm_ant_payload_t const * payload, uint8_t copies )
+void mm_ant_page_manager_add_page(uint8_t page_number, mm_ant_payload_t const * payload, uint8_t copies)
 {
-    for ( uint8_t i = 0; i < copies; i++ )
+    for (uint8_t i = 0; i < copies; i++)
     {
-        add_page_single( page_number, payload );
+        add_page_single(page_number, payload);
     }
 }
 
@@ -108,6 +110,13 @@ void mm_ant_page_manager_replace_all_pages(uint8_t page_number, mm_ant_payload_t
 
 static void timer_event(void * p_context)
 {
+    uint32_t err_code;
+    err_code = app_sched_event_put(NULL, 0, next_page);
+    APP_ERROR_CHECK(err_code);
+}
+
+static void next_page(void* evt_data, uint16_t evt_size)
+{
     if (page_queue_size == 0)
     {
         return;
@@ -118,14 +127,14 @@ static void timer_event(void * p_context)
         page_queue_index++;
         page_queue_index %= ANT_PAGE_MANAGER_MAX_QUEUE_SIZE;
     }
-    while(ant_page_manager_message_queue[page_queue_index].page_number == 0 );
+    while(ant_page_manager_message_queue[page_queue_index].page_number == 0);
 
     mm_ant_set_payload( &( ant_page_manager_message_queue[page_queue_index].payload ) );
 }
 
 static void add_page_single ( uint8_t page_number, mm_ant_payload_t const * payload )
 {
-    for (int i = 0; i < ANT_PAGE_MANAGER_MAX_QUEUE_SIZE; i++)
+    for (uint8_t i = 0; i < ANT_PAGE_MANAGER_MAX_QUEUE_SIZE; i++)
     {
         if ( ant_page_manager_message_queue[i].page_number == 0 )
         {

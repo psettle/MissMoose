@@ -201,7 +201,7 @@ void mm_monitoring_dispatch_send_pir_data
 
 static void sensor_state_queue_pop(void)
 {
-    if(QUEUE_EMPTY())
+    if(QUEUE_EMPTY() || !sensor_state_queue_current()->valid)
     {
         /* (Popping an empty queue isn't allowed, it is protected against here
             by checking !QUEUE_EMPTY() or QUEUE_FULL() as guards before calling.) */
@@ -209,8 +209,12 @@ static void sensor_state_queue_pop(void)
     }
 
     sensor_state_queue_current()->valid = false;
-    state_queue.current = queue_next(state_queue.current);
     state_queue.count--;
+
+    if(!QUEUE_EMPTY())
+    {
+        state_queue.current = queue_next(state_queue.current);
+    }
 }
 
 static void sensor_state_queue_push(sensor_state_t const * sensor_state)
@@ -311,7 +315,7 @@ static void on_monitoring_data_acknowledge(void* evt_data, uint16_t evt_size)
     //If the ack is for the message type that was being broadcast, then it's an ack for the right message.
     if(payload[ACKED_PAGE_NUM_INDEX] == current_page_id())
     {
-        if(current_msg_id() == payload[MESSAGE_ID_INDEX])
+        if(payload[MESSAGE_ID_INDEX] == current_msg_id())
         {
             /* If the message is acknowledging the current broadcast, mark it as invalid and switch to the next page. */
             broadcast_new_page();
@@ -400,6 +404,11 @@ static uint8_t find_queue_slot(sensor_state_t const * sensor_state)
 
         if(!element->valid)
         {
+            /* If the queue is empty, current must be reset to the provided index. */
+            if(QUEUE_EMPTY())
+            {
+                state_queue.current = i;
+            }
             return i;
         }
     }
