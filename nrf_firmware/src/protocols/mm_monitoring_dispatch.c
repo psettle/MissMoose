@@ -113,12 +113,12 @@ static sensor_state_t* sensor_state_queue_current(void);
 static uint16_t queue_next(uint16_t index);
 
 /**
- * Returns the page id of the current of the queue.
+ * Returns the page id of the current broadcast.
  */
 static uint8_t current_page_id(void);
 
 /**
- * Returns the message id of the current of the queue.
+ * Returns the message id of the current broadcast.
  */
 static uint8_t current_msg_id(void);
 
