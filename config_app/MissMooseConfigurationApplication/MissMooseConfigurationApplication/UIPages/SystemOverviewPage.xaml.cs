@@ -75,9 +75,6 @@ namespace MissMooseConfigurationApplication
 
             // Register for the UpdateTheme event so we know when to update the colours
             ((MainWindow)Application.Current.MainWindow).UpdateTheme += OnUpdateTheme;
-
-            SetRegionActivityVariable(0, 0, RegionStatus.DefiniteDetection);
-            SetRegionActivityVariable(1, 0, RegionStatus.ProbableDetection);
         }
 
         /// <summary>
