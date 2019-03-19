@@ -105,8 +105,9 @@ void translate_lidar_detection(sensor_evt_t const * sensor_evt)
         detection.region
         );
 
-    /* Is the sensor hyperactive? */
-    if(mm_sensor_error_is_sensor_hyperactive(sensor_evt))
+    /* Is the sensor hyperactive and detecting something? */
+    if(mm_sensor_error_is_sensor_hyperactive(sensor_evt) &&
+       detection.region != LIDAR_REGION_REGION_NONE)
     {
         /* If so, don't process further. */
         return;

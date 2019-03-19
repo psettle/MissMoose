@@ -12,17 +12,17 @@ notes:
 
 #include "app_error.h"
 #include "app_scheduler.h"
-#include "app_timer.h"
 
 #include "mm_ant_control.h"
 #include "mm_ant_page_manager.h"
 #include "mm_monitoring_dispatch.h"
+#include "mm_sensor_algorithm_config.h"
 
 /**********************************************************
                         CONSTANTS
 **********************************************************/
 
-#define ANT_PAYLOAD_QUEUE_SIZE                  ( 50 )
+#define SENSOR_STATE_QUEUE_SIZE                  ( MAX_SENSOR_COUNT )
 #define MONITORING_ACKNOWLEDGEMENT_PAGE_NUM     ( 0x20 )
 #define MONITORING_LIDAR_DATA_PAGE_NUM          ( 0x21 )
 #define MONITORING_PIR_DATA_PAGE_NUM            ( 0x22 )
@@ -38,27 +38,30 @@ notes:
 
 #define ACKED_PAGE_NUM_INDEX                    ( 2 )
 
-#define TEST_MODE                               ( false )
-#define TEST_MODE_PERIOD_MS                     ( 200 )
-#define TEST_MODE_TICKS                         ( APP_TIMER_TICKS(TEST_MODE_PERIOD_MS) )
-
 /**********************************************************
                         MACROS
 **********************************************************/
 
-#define QUEUE_EMPTY()   ( payload_queue.count == 0 )
-#define QUEUE_FULL()    ( payload_queue.count == ANT_PAYLOAD_QUEUE_SIZE )
+#define QUEUE_EMPTY()   ( state_queue.count == 0 )
+#define QUEUE_FULL()    ( state_queue.count == SENSOR_STATE_QUEUE_SIZE )
 
 /**********************************************************
                        TYPES
 **********************************************************/
 
 typedef struct {
-    mm_ant_payload_t queue[ANT_PAYLOAD_QUEUE_SIZE];
+    bool                valid;
+    uint16_t            node_id;
+    sensor_type_t       sensor_type;
+    sensor_rotation_t   sensor_rotation;
+    mm_ant_payload_t    message;
+} sensor_state_t;
+
+typedef struct {
+    sensor_state_t queue[SENSOR_STATE_QUEUE_SIZE];
     uint16_t         count;
-    uint16_t         head;
-    uint16_t         tail;
-} ant_payload_queue_t;
+    uint16_t         current;
+} sensor_state_queue_t;
 
 /**********************************************************
                        DECLARATIONS
@@ -75,14 +78,14 @@ static void process_ant_evt(ant_evt_t * evt);
 static void on_monitoring_data_acknowledge(void* evt_data, uint16_t evt_size);
 
 /**
- * Pop the payload queue, then broadcast the tail (if the queue is not empty)
+ * Pop the payload queue, then broadcast the current (if the queue is not empty)
  */
 static void broadcast_new_page(void);
 
 /**
  * Pop the payload queue
  */
-static void ant_payload_queue_pop(void);
+static void sensor_state_queue_pop(void);
 
 /**
  * Push to the payload queue.
@@ -90,12 +93,19 @@ static void ant_payload_queue_pop(void);
  * If queue was empty, start a new broadcast.
  * If queue was full, broadcast_new_page() before pushing.
  */
-static void ant_payload_queue_push(mm_ant_payload_t const * ant_payload);
+static void sensor_state_queue_push(sensor_state_t const * sensor_state);
 
 /**
- * Look at the tail of the queue.
+ * Find a queue slot that matches the provided sensor state (if one exists) or is empty.
+ * 
+ * Returns the index of the found slot.
  */
-static mm_ant_payload_t const * ant_payload_queue_peek_tail(void);
+static uint8_t find_queue_slot(sensor_state_t const * sensor_state);
+
+/**
+ * Look at the current broadcast of the queue.
+ */
+static sensor_state_t* sensor_state_queue_current(void);
 
 /**
  * Returns the array address of the next queue element after index.
@@ -103,45 +113,21 @@ static mm_ant_payload_t const * ant_payload_queue_peek_tail(void);
 static uint16_t queue_next(uint16_t index);
 
 /**
- * Returns the page id of the tail of the queue.
+ * Returns the page id of the current broadcast.
  */
 static uint8_t current_page_id(void);
 
 /**
- * Returns the message id of the tail of the queue.
+ * Returns the message id of the current broadcast.
  */
 static uint8_t current_msg_id(void);
-
-#if TEST_MODE
-    /**
-     * Initialize test feature of this module.
-     * 
-     * The test feature pushs a random sensor update event to the payload queue
-     * every TEST_MODE_PERIOD_MS ms.
-     */
-    static void test_mode_init(void);
-
-    /**
-     * Interrupt callback for the test mode timer.
-     */
-    static void test_timer_event(void * p_context);
-
-    /**
-     * Main callback for the test mode timer.
-     */
-    static void on_test_timer_event(void* evt_data, uint16_t evt_size);
-#endif
 
 /**********************************************************
                        VARIABLES
 **********************************************************/
 
-static ant_payload_queue_t payload_queue;
+static sensor_state_queue_t state_queue;
 static uint8_t             message_id = 0;
-
-#if TEST_MODE
-    APP_TIMER_DEF(test_timer);
-#endif
 
 /**********************************************************
                        DEFINITIONS
@@ -149,14 +135,10 @@ static uint8_t             message_id = 0;
 void mm_monitoring_dispatch_init(void)
 {
     /* Init queue */
-    memset(&payload_queue, 0, sizeof(payload_queue));
+    memset(&state_queue, 0, sizeof(state_queue));
 
     /* Register to receive ANT events */
     mm_ant_evt_handler_set(process_ant_evt);
-
-#if TEST_MODE
-    test_mode_init();
-#endif
 }
 
 void mm_monitoring_dispatch_send_lidar_data
@@ -168,10 +150,15 @@ void mm_monitoring_dispatch_send_lidar_data
     )
 {
     /* Encode payload */
-    mm_ant_payload_t lidar_page_payload;
-    uint8_t* payload = &lidar_page_payload.data[0];
+    sensor_state_t      sensor_state;
+    memset(&sensor_state, 0, sizeof(sensor_state));
 
-    memset(&lidar_page_payload, 0, sizeof(mm_ant_payload_t));
+    sensor_state.valid = true;
+    sensor_state.sensor_type = SENSOR_TYPE_LIDAR;
+    sensor_state.sensor_rotation = sensor_rotation;
+    sensor_state.node_id = node_id;
+ 
+    uint8_t* payload = &sensor_state.message.data[0];
 
     payload[PAGE_NUM_INDEX] = MONITORING_LIDAR_DATA_PAGE_NUM;
     payload[MESSAGE_ID_INDEX] = message_id;
@@ -180,9 +167,8 @@ void mm_monitoring_dispatch_send_lidar_data
     memcpy(&payload[LIDAR_DISTANCE_MEASURED_INDEX], &distance_measured, sizeof(uint16_t));
     payload[LIDAR_REGION_DETECTED_INDEX] = region;
     message_id++;
-
     /* Push to message queue. */
-    ant_payload_queue_push(&lidar_page_payload);
+    sensor_state_queue_push(&sensor_state);
 }
 
 void mm_monitoring_dispatch_send_pir_data
@@ -193,74 +179,99 @@ void mm_monitoring_dispatch_send_pir_data
     )
 {
     /* Encode payload */
-    mm_ant_payload_t pir_page_payload;
-    uint8_t* payload = &pir_page_payload.data[0];
+    sensor_state_t      sensor_state;
+    memset(&sensor_state, 0, sizeof(sensor_state));
 
-    memset(&pir_page_payload, 0x00, sizeof(mm_ant_payload_t));
+    sensor_state.valid = true;
+    sensor_state.sensor_type = SENSOR_TYPE_PIR;
+    sensor_state.sensor_rotation = sensor_rotation;
+    sensor_state.node_id = node_id;
+
+    uint8_t* payload = &sensor_state.message.data[0];
 
     payload[PAGE_NUM_INDEX] = MONITORING_PIR_DATA_PAGE_NUM;
     payload[MESSAGE_ID_INDEX] = message_id;
     memcpy(&payload[NODE_ID_INDEX], &node_id, sizeof(uint16_t));
     payload[SENSOR_ROTATION_INDEX] = sensor_rotation;
     payload[PIR_DETECTION_INDEX] = detection ? 1 : 0;
-
     message_id++;
-
     /* Push to message queue. */
-    ant_payload_queue_push(&pir_page_payload);
+    sensor_state_queue_push(&sensor_state);
 }
 
-static void ant_payload_queue_pop(void)
+static void sensor_state_queue_pop(void)
 {
-    if(QUEUE_EMPTY())
+    if(QUEUE_EMPTY() || !sensor_state_queue_current()->valid)
     {
         /* (Popping an empty queue isn't allowed, it is protected against here
             by checking !QUEUE_EMPTY() or QUEUE_FULL() as guards before calling.) */
         APP_ERROR_CHECK(true);
     }
 
-    payload_queue.tail = queue_next(payload_queue.tail);
-    payload_queue.count--;
+    sensor_state_queue_current()->valid = false;
+    state_queue.count--;
+
+    if(!QUEUE_EMPTY())
+    {
+        state_queue.current = queue_next(state_queue.current);
+    }
 }
 
-static void ant_payload_queue_push(mm_ant_payload_t const * ant_payload)
+static void sensor_state_queue_push(sensor_state_t const * sensor_state)
 {
-    APP_ERROR_CHECK(ant_payload == NULL);
+    APP_ERROR_CHECK(sensor_state == NULL);
 
-    /* If the queue is full, pop a page to make room. */
-    if(QUEUE_FULL())
+    bool queue_empty = QUEUE_EMPTY();
+
+    uint8_t index = find_queue_slot(sensor_state);
+    sensor_state_t* dest = &state_queue.queue[index];
+
+    /* If the destination is not valid, it means we are adding to the queue. */
+    if(!dest->valid)
     {
-        broadcast_new_page();
+        state_queue.count++;
     }
 
     /* Write the page into the next available slot. */
-    memcpy(&payload_queue.queue[payload_queue.head], ant_payload, sizeof(mm_ant_payload_t));
-    payload_queue.head = queue_next(payload_queue.head);
-    payload_queue.count++;
+    memcpy(dest, sensor_state, sizeof(sensor_state_t));
 
     /* If the queue was empty previously, start a new broadcast. */
-    if(payload_queue.count == 1)
+    if(queue_empty)
     {
         /* Broadcast a new message */
         mm_ant_page_manager_add_page
             (
             current_page_id(),
-            ant_payload_queue_peek_tail(),
+            &sensor_state_queue_current()->message,
             CONCURRENT_PAGE_COUNT
             );
     }
-
+    /* Otherwise if the current broadcast was updated, refresh it.
+       (This will overwrite the previous message id, which will prevent an ack from
+        being misinterpreted) */
+    else if(index == state_queue.current)
+    {
+        mm_ant_page_manager_remove_all_pages
+            (
+            current_page_id()
+            );
+        mm_ant_page_manager_add_page
+            (
+            current_page_id(),
+            &sensor_state_queue_current()->message,
+            CONCURRENT_PAGE_COUNT
+            );
+    }
 }
 
-static mm_ant_payload_t const * ant_payload_queue_peek_tail(void)
+static sensor_state_t* sensor_state_queue_current(void)
 {
     if(QUEUE_EMPTY())
     {
         return NULL;
     }
 
-    return &payload_queue.queue[payload_queue.tail];
-
+    return &state_queue.queue[state_queue.current];
 }
 
 static void process_ant_evt(ant_evt_t * evt)
@@ -304,9 +315,9 @@ static void on_monitoring_data_acknowledge(void* evt_data, uint16_t evt_size)
     //If the ack is for the message type that was being broadcast, then it's an ack for the right message.
     if(payload[ACKED_PAGE_NUM_INDEX] == current_page_id())
     {
-        if(current_msg_id() == payload[MESSAGE_ID_INDEX])
+        if(payload[MESSAGE_ID_INDEX] == current_msg_id())
         {
-            /* If the message is acknowledging the current broadcast, switch to the next page. */
+            /* If the message is acknowledging the current broadcast, mark it as invalid and switch to the next page. */
             broadcast_new_page();
         }
     }
@@ -318,7 +329,7 @@ static void broadcast_new_page(void)
     mm_ant_page_manager_remove_all_pages(current_page_id());
 
     /* Pop the page that was being broadcast */
-    ant_payload_queue_pop();
+    sensor_state_queue_pop();
 
     /* Add the new page to be broadcast */
     if(!QUEUE_EMPTY())
@@ -326,7 +337,7 @@ static void broadcast_new_page(void)
         mm_ant_page_manager_add_page
             (
             current_page_id(),
-            ant_payload_queue_peek_tail(),
+            &sensor_state_queue_current()->message,
             CONCURRENT_PAGE_COUNT
             );
     }
@@ -334,66 +345,75 @@ static void broadcast_new_page(void)
 
 static uint16_t queue_next(uint16_t index)
 {
-    /* Return the next index after index in the queue. */
-    index++;
-    index %= ANT_PAYLOAD_QUEUE_SIZE;
+    /* We assume an element exists, so the queue can't be empty. */
+    APP_ERROR_CHECK(QUEUE_EMPTY());
+
+    /* Find the next valid index. */
+    do {
+        index++;
+        index %= SENSOR_STATE_QUEUE_SIZE;
+    } while(!state_queue.queue[index].valid);
+    
     return index;
 }
 
 static uint8_t current_page_id(void)
 {
-    mm_ant_payload_t const * tail = ant_payload_queue_peek_tail();
-    return tail->data[PAGE_NUM_INDEX];
+    return sensor_state_queue_current()->message.data[PAGE_NUM_INDEX];
 }
 
 static uint8_t current_msg_id(void)
 {
-    mm_ant_payload_t const * tail = ant_payload_queue_peek_tail();
-    return tail->data[MESSAGE_ID_INDEX];
+    return sensor_state_queue_current()->message.data[MESSAGE_ID_INDEX];
 }
 
-#if TEST_MODE
-    static void test_mode_init(void)
+static uint8_t find_queue_slot(sensor_state_t const * sensor_state)
+{
+    /* See if there is already a queue slot for the provided state: */
+    for(uint8_t i = 0; i < SENSOR_STATE_QUEUE_SIZE; ++i)
     {
-        uint32_t err_code;
+        sensor_state_t const * element = &state_queue.queue[i];
 
-        /* Launch a timer to fill up the queue: */
-        err_code = app_timer_create(&test_timer, APP_TIMER_MODE_REPEATED, test_timer_event);
-        APP_ERROR_CHECK(err_code);
-
-        err_code = app_timer_start(test_timer, TEST_MODE_TICKS, NULL);
-        APP_ERROR_CHECK(err_code);
-    }
-
-    static void test_timer_event(void * p_context)
-    {
-        /* Kick event to main. */
-        uint32_t err_code;
-        err_code = app_sched_event_put(NULL, 0, on_test_timer_event);
-        APP_ERROR_CHECK(err_code);
-    }
-
-    static void on_test_timer_event(void* evt_data, uint16_t evt_size)
-    {
-        /* Send a monitoring event. */
-        switch(message_id & 0x01)
+        if(!element->valid)
         {
-        case 0:
-            mm_monitoring_dispatch_send_pir_data
-                (
-                message_id,
-                message_id % SENSOR_ROTATION_COUNT,
-                message_id & 0x02  
-                );
-            break;
-        case 1:
-            mm_monitoring_dispatch_send_lidar_data
-                (
-                message_id,
-                message_id % SENSOR_ROTATION_COUNT,
-                258 /* 1 in msb, 2 in lsb */  
-                );
-            break;
+            continue;
+        }
+
+        if(element->node_id != sensor_state->node_id)
+        {
+            continue;
+        }
+
+        if(element->sensor_type != sensor_state->sensor_type)
+        {
+            continue;
+        }
+
+        if(element->sensor_rotation != sensor_state->sensor_rotation)
+        {
+            continue;
+        }
+
+        return i;
+    }
+
+    /* Find an invalid slot, since there isn't one allocated. */
+    for(uint8_t i = 0; i < SENSOR_STATE_QUEUE_SIZE; ++i)
+    {
+        sensor_state_t const * element = &state_queue.queue[i];
+
+        if(!element->valid)
+        {
+            /* If the queue is empty, current must be reset to the provided index. */
+            if(QUEUE_EMPTY())
+            {
+                state_queue.current = i;
+            }
+            return i;
         }
     }
-#endif
+
+    /* There should either be an existing slot, or an empty slot: */
+    APP_ERROR_CHECK(true);
+    return 0;
+}
