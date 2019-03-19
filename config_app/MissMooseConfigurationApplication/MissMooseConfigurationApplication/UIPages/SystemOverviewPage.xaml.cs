@@ -31,7 +31,9 @@ namespace MissMooseConfigurationApplication
         private List<SensorNode> nodes = new List<SensorNode>();
         private List<List<Dictionary<LineDirection, LineWithBorder.LineSegment>>> lineSegmentAssociations;
         private Dictionary<LineWithBorder.LineSegment, StatusColour> lineSegmentColours;
+        private Dictionary<LineWithBorder.LineSegment, bool> lineSegmentVisibilities;
         private List<List<ActivityRegion>> shadedRegions;
+        private Dictionary<ActivityRegion, RegionStatus> shadedRegionStatuses;
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
         private const string timestampFormatString = "yyyy-MMM-dd hh:mm:ss tt";
@@ -136,24 +138,36 @@ namespace MissMooseConfigurationApplication
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Up];
                 linesegment.line.SetVisibility(linesegment.half, false);
+
+                lineSegmentColours[linesegment] = StatusColour.Transparent;
+                lineSegmentVisibilities[linesegment] = false;
             }
 
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Right))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Right];
                 linesegment.line.SetVisibility(linesegment.half, false);
+
+                lineSegmentColours[linesegment] = StatusColour.Transparent;
+                lineSegmentVisibilities[linesegment] = false;
             }
 
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Down))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Down];
                 linesegment.line.SetVisibility(linesegment.half, false);
+
+                lineSegmentColours[linesegment] = StatusColour.Transparent;
+                lineSegmentVisibilities[linesegment] = false;
             }
 
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Left))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Left];
                 linesegment.line.SetVisibility(linesegment.half, false);
+
+                lineSegmentColours[linesegment] = StatusColour.Transparent;
+                lineSegmentVisibilities[linesegment] = false;
             }
         }
 
@@ -166,6 +180,7 @@ namespace MissMooseConfigurationApplication
                 linesegment.line.SetColour(linesegment.half, GetBrushFromStatusColour(colour).Color);
 
                 lineSegmentColours[linesegment] = colour;
+                lineSegmentVisibilities[linesegment] = true;
             }
             else
             {
@@ -178,26 +193,11 @@ namespace MissMooseConfigurationApplication
             MarkSensorDetection(node.xpos, node.ypos, direction, colour);
         }
 
-
         public void SetRegionActivityVariable(byte xCoordinate, byte yCoordinate, RegionStatus regionStatus)
         {
-            Brush colour;
-            switch (regionStatus)
-            {
-                case RegionStatus.NoDetection:
-                    colour = Brushes.Transparent;
-                    break;
-                case RegionStatus.ProbableDetection:
-                    colour = GetBrushFromStatusColour(StatusColour.Yellow);
-                    break;
-                case RegionStatus.DefiniteDetection:
-                    colour = GetBrushFromStatusColour(StatusColour.Red);
-                    break;
-                default:
-                    colour = Brushes.Transparent;
-                    break;
-            }
-            shadedRegions[xCoordinate][yCoordinate].Region.Fill = colour;
+            SetRegionActivityVariable(shadedRegions[xCoordinate][yCoordinate], regionStatus);
+
+            shadedRegionStatuses[shadedRegions[xCoordinate][yCoordinate]] = regionStatus;
         }
 
         public void LogSystemProblem(String logString)
@@ -353,6 +353,7 @@ namespace MissMooseConfigurationApplication
             };
 
             lineSegmentColours = new Dictionary<LineWithBorder.LineSegment, StatusColour>();
+            lineSegmentVisibilities = new Dictionary<LineWithBorder.LineSegment, bool>();
             foreach (List<Dictionary<LineDirection, LineWithBorder.LineSegment>> list in lineSegmentAssociations)
             {
                 foreach (Dictionary<LineDirection, LineWithBorder.LineSegment> dict in list)
@@ -360,6 +361,7 @@ namespace MissMooseConfigurationApplication
                     foreach (LineWithBorder.LineSegment lineSegment in dict.Values)
                     {
                         lineSegmentColours.Add(lineSegment, StatusColour.Transparent);
+                        lineSegmentVisibilities.Add(lineSegment, false);
                     }
                 }
             }
@@ -380,6 +382,36 @@ namespace MissMooseConfigurationApplication
                     MonitGrid.Rectangle_1_1,
                 },
             };
+
+            shadedRegionStatuses = new Dictionary<ActivityRegion, RegionStatus>();
+            foreach(List<ActivityRegion> list in shadedRegions)
+            {
+                foreach(ActivityRegion activityRegion in list)
+                {
+                    shadedRegionStatuses.Add(activityRegion, RegionStatus.NoDetection);
+                }
+            }
+        }
+
+        private void SetRegionActivityVariable(ActivityRegion region, RegionStatus regionStatus)
+        {
+            Brush colour;
+            switch (regionStatus)
+            {
+                case RegionStatus.NoDetection:
+                    colour = Brushes.Transparent;
+                    break;
+                case RegionStatus.ProbableDetection:
+                    colour = GetBrushFromStatusColour(StatusColour.Yellow);
+                    break;
+                case RegionStatus.DefiniteDetection:
+                    colour = GetBrushFromStatusColour(StatusColour.Red);
+                    break;
+                default:
+                    colour = Brushes.Transparent;
+                    break;
+            }
+            region.Region.Fill = colour;
         }
 
         private void AddShadedRegionOffset(SensorNode node)
@@ -524,6 +556,16 @@ namespace MissMooseConfigurationApplication
             foreach (LineWithBorder.LineSegment lineSegment in lineSegmentColours.Keys)
             {
                 lineSegment.line.SetColour(lineSegment.half, GetBrushFromStatusColour(lineSegmentColours[lineSegment]).Color);
+            }
+
+            foreach (LineWithBorder.LineSegment lineSegment in lineSegmentVisibilities.Keys)
+            {
+                lineSegment.line.SetVisibility(lineSegment.half, lineSegmentVisibilities[lineSegment]);
+            }
+
+            foreach (ActivityRegion region in shadedRegionStatuses.Keys)
+            {
+                SetRegionActivityVariable(region, shadedRegionStatuses[region]);
             }
         }
 
