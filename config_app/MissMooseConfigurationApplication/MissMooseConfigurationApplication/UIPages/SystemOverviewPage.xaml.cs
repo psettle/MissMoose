@@ -31,6 +31,7 @@ namespace MissMooseConfigurationApplication
         private List<SensorNode> nodes = new List<SensorNode>();
         private List<List<Dictionary<LineDirection, LineWithBorder.LineSegment>>> lineSegmentAssociations;
         private Dictionary<LineWithBorder.LineSegment, StatusColour> lineSegmentColours;
+        private Dictionary<LineWithBorder.LineSegment, bool> lineSegmentVisibilities;
         private List<List<ActivityRegion>> shadedRegions;
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
@@ -136,24 +137,36 @@ namespace MissMooseConfigurationApplication
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Up];
                 linesegment.line.SetVisibility(linesegment.half, false);
+
+                lineSegmentColours[linesegment] = StatusColour.Transparent;
+                lineSegmentVisibilities[linesegment] = false;
             }
 
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Right))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Right];
                 linesegment.line.SetVisibility(linesegment.half, false);
+
+                lineSegmentColours[linesegment] = StatusColour.Transparent;
+                lineSegmentVisibilities[linesegment] = false;
             }
 
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Down))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Down];
                 linesegment.line.SetVisibility(linesegment.half, false);
+
+                lineSegmentColours[linesegment] = StatusColour.Transparent;
+                lineSegmentVisibilities[linesegment] = false;
             }
 
             if (lineSegmentAssociations[node.xpos][node.ypos].ContainsKey(LineDirection.Left))
             {
                 LineWithBorder.LineSegment linesegment = lineSegmentAssociations[node.xpos][node.ypos][LineDirection.Left];
                 linesegment.line.SetVisibility(linesegment.half, false);
+
+                lineSegmentColours[linesegment] = StatusColour.Transparent;
+                lineSegmentVisibilities[linesegment] = false;
             }
         }
 
@@ -166,6 +179,7 @@ namespace MissMooseConfigurationApplication
                 linesegment.line.SetColour(linesegment.half, GetBrushFromStatusColour(colour).Color);
 
                 lineSegmentColours[linesegment] = colour;
+                lineSegmentVisibilities[linesegment] = true;
             }
             else
             {
@@ -353,6 +367,7 @@ namespace MissMooseConfigurationApplication
             };
 
             lineSegmentColours = new Dictionary<LineWithBorder.LineSegment, StatusColour>();
+            lineSegmentVisibilities = new Dictionary<LineWithBorder.LineSegment, bool>();
             foreach (List<Dictionary<LineDirection, LineWithBorder.LineSegment>> list in lineSegmentAssociations)
             {
                 foreach (Dictionary<LineDirection, LineWithBorder.LineSegment> dict in list)
@@ -360,6 +375,7 @@ namespace MissMooseConfigurationApplication
                     foreach (LineWithBorder.LineSegment lineSegment in dict.Values)
                     {
                         lineSegmentColours.Add(lineSegment, StatusColour.Transparent);
+                        lineSegmentVisibilities.Add(lineSegment, false);
                     }
                 }
             }
@@ -524,6 +540,11 @@ namespace MissMooseConfigurationApplication
             foreach (LineWithBorder.LineSegment lineSegment in lineSegmentColours.Keys)
             {
                 lineSegment.line.SetColour(lineSegment.half, GetBrushFromStatusColour(lineSegmentColours[lineSegment]).Color);
+            }
+
+            foreach (LineWithBorder.LineSegment lineSegment in lineSegmentVisibilities.Keys)
+            {
+                lineSegment.line.SetVisibility(lineSegment.half, lineSegmentVisibilities[lineSegment]);
             }
         }
 
