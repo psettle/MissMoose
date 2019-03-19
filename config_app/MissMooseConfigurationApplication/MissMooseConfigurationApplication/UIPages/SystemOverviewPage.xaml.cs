@@ -33,6 +33,7 @@ namespace MissMooseConfigurationApplication
         private Dictionary<LineWithBorder.LineSegment, StatusColour> lineSegmentColours;
         private Dictionary<LineWithBorder.LineSegment, bool> lineSegmentVisibilities;
         private List<List<ActivityRegion>> shadedRegions;
+        private Dictionary<ActivityRegion, RegionStatus> shadedRegionStatuses;
         private const int GridSize = 3;
         private const int OffsetScalePixels = 5;
         private const string timestampFormatString = "yyyy-MMM-dd hh:mm:ss tt";
@@ -74,6 +75,9 @@ namespace MissMooseConfigurationApplication
 
             // Register for the UpdateTheme event so we know when to update the colours
             ((MainWindow)Application.Current.MainWindow).UpdateTheme += OnUpdateTheme;
+
+            SetRegionActivityVariable(0, 0, RegionStatus.DefiniteDetection);
+            SetRegionActivityVariable(1, 0, RegionStatus.ProbableDetection);
         }
 
         /// <summary>
@@ -192,26 +196,11 @@ namespace MissMooseConfigurationApplication
             MarkSensorDetection(node.xpos, node.ypos, direction, colour);
         }
 
-
         public void SetRegionActivityVariable(byte xCoordinate, byte yCoordinate, RegionStatus regionStatus)
         {
-            Brush colour;
-            switch (regionStatus)
-            {
-                case RegionStatus.NoDetection:
-                    colour = Brushes.Transparent;
-                    break;
-                case RegionStatus.ProbableDetection:
-                    colour = GetBrushFromStatusColour(StatusColour.Yellow);
-                    break;
-                case RegionStatus.DefiniteDetection:
-                    colour = GetBrushFromStatusColour(StatusColour.Red);
-                    break;
-                default:
-                    colour = Brushes.Transparent;
-                    break;
-            }
-            shadedRegions[xCoordinate][yCoordinate].Region.Fill = colour;
+            SetRegionActivityVariable(shadedRegions[xCoordinate][yCoordinate], regionStatus);
+
+            shadedRegionStatuses[shadedRegions[xCoordinate][yCoordinate]] = regionStatus;
         }
 
         public void LogSystemProblem(String logString)
@@ -396,6 +385,36 @@ namespace MissMooseConfigurationApplication
                     MonitGrid.Rectangle_1_1,
                 },
             };
+
+            shadedRegionStatuses = new Dictionary<ActivityRegion, RegionStatus>();
+            foreach(List<ActivityRegion> list in shadedRegions)
+            {
+                foreach(ActivityRegion activityRegion in list)
+                {
+                    shadedRegionStatuses.Add(activityRegion, RegionStatus.NoDetection);
+                }
+            }
+        }
+
+        private void SetRegionActivityVariable(ActivityRegion region, RegionStatus regionStatus)
+        {
+            Brush colour;
+            switch (regionStatus)
+            {
+                case RegionStatus.NoDetection:
+                    colour = Brushes.Transparent;
+                    break;
+                case RegionStatus.ProbableDetection:
+                    colour = GetBrushFromStatusColour(StatusColour.Yellow);
+                    break;
+                case RegionStatus.DefiniteDetection:
+                    colour = GetBrushFromStatusColour(StatusColour.Red);
+                    break;
+                default:
+                    colour = Brushes.Transparent;
+                    break;
+            }
+            region.Region.Fill = colour;
         }
 
         private void AddShadedRegionOffset(SensorNode node)
@@ -545,6 +564,11 @@ namespace MissMooseConfigurationApplication
             foreach (LineWithBorder.LineSegment lineSegment in lineSegmentVisibilities.Keys)
             {
                 lineSegment.line.SetVisibility(lineSegment.half, lineSegmentVisibilities[lineSegment]);
+            }
+
+            foreach (ActivityRegion region in shadedRegionStatuses.Keys)
+            {
+                SetRegionActivityVariable(region, shadedRegionStatuses[region]);
             }
         }
 
