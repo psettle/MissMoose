@@ -8,8 +8,8 @@
 					   DECLARATIONS
 **********************************************************/
 
-static void one_animal_zig_zag_left_away_slow(TestOutput& oracle);
-static void one_animal_zig_zag_right_away_fast(TestOutput& oracle);
+static void test_case_one_animal_zig_zag_left_away_slow(TestOutput& oracle);
+static void test_case_one_animal_zig_zag_right_away_fast(TestOutput& oracle);
 
 /**********************************************************
 					   DEFINITIONS
@@ -17,11 +17,11 @@ static void one_animal_zig_zag_right_away_fast(TestOutput& oracle);
 
 void test_one_animal_zig_zag(std::vector<TestCase>& tests)
 {
-	ADD_TEST(one_animal_zig_zag_left_away_slow);
-	ADD_TEST(one_animal_zig_zag_right_away_fast);
+	ADD_TEST(test_case_one_animal_zig_zag_left_away_slow);
+	ADD_TEST(test_case_one_animal_zig_zag_right_away_fast);
 }
 
-static void one_animal_zig_zag_left_away_slow(TestOutput& oracle)
+static void test_case_one_animal_zig_zag_left_away_slow(TestOutput& oracle)
 {
 	/*
 	 * One deer brushes the network from the top left (after crossing the road),
@@ -29,7 +29,7 @@ static void one_animal_zig_zag_left_away_slow(TestOutput& oracle)
 	 * then down to the bottom left AV before leaving the network.
 	 */
 
-	 /* Idle */
+	/* Idle */
 	simulate_time(MINUTES(3));
 
 	/*
@@ -136,7 +136,7 @@ static void one_animal_zig_zag_left_away_slow(TestOutput& oracle)
 	simulate_time(MINUTES(10));
 }
 
-static void one_animal_zig_zag_right_away_fast(TestOutput& oracle)
+static void test_case_one_animal_zig_zag_right_away_fast(TestOutput& oracle)
 {
 	/*
 	 * One deer enters the network from the top-left quadrant and weaves 
@@ -144,7 +144,7 @@ static void one_animal_zig_zag_right_away_fast(TestOutput& oracle)
 	 * the bottom left quadrant.
 	 */
 
-	 /* Idle */
+	/* Idle */
 	simulate_time(MINUTES(3));
 
 	/*

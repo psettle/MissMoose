@@ -8,7 +8,7 @@
 					   DECLARATIONS
 **********************************************************/
 
-static void three_animals_left_to_right(TestOutput& oracle);
+static void test_case_three_animals_left_to_right(TestOutput& oracle);
 
 /**********************************************************
 					   DEFINITIONS
@@ -16,10 +16,10 @@ static void three_animals_left_to_right(TestOutput& oracle);
 
 void test_more_than_two_animals_through_network(std::vector<TestCase>& tests)
 {
-	ADD_TEST(three_animals_left_to_right);
+	ADD_TEST(test_case_three_animals_left_to_right);
 }
 
-static void three_animals_left_to_right(TestOutput& oracle)
+static void test_case_three_animals_left_to_right(TestOutput& oracle)
 {
 	/*
 	 * Three deer enter the network from the left side (2 simultaneously,

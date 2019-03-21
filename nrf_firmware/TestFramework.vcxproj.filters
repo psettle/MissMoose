@@ -120,6 +120,9 @@
     <ClCompile Include="test_framework\test_cases\test_one_animal_zig_zag.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_framework\test_cases\test_sensors_not_working.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_framework\mocked_interfaces\app_error.h">
