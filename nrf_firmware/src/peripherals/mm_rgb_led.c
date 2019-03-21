@@ -299,6 +299,16 @@ static void rgb_led_apply_colour_individual(uint8_t red_duty_cycle, uint8_t gree
 void mm_rgb_set_on_off_cycle(uint16_t on_ticks_ms, uint16_t off_ticks_ms)
 {
     uint32_t err_code;
+
+    if( on_ticks_ms == on_cycle_length_ms &&
+        off_ticks_ms == off_cycle_length_ms &&
+        led_startup_test_done )
+    {
+        /* The settings have not been changed, so there is no need to interrupt the timers
+           and potentially cause visual glitches. */
+        return;
+    }
+
     on_cycle_length_ms = on_ticks_ms;
     off_cycle_length_ms = off_ticks_ms;
     err_code = app_timer_stop(power_cycle_timer_id);
