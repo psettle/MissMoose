@@ -91,6 +91,7 @@ int main(int argc, char* argv[])
         test_one_animal_constant_speed_add_tests(tests);
         test_one_animal_in_out_add_tests(tests);
         test_one_animal_with_one_stop_add_tests(tests);
+        test_one_animal_outside_network_add_tests(tests);
         test_slow_to_fast_running_animals(tests);
         test_two_animals_through_network(tests);
         // We're getting some arguments from the genetic algorithm :D
@@ -106,6 +107,7 @@ int main(int argc, char* argv[])
         test_one_animal_constant_speed_add_tests(tests);
         test_one_animal_in_out_add_tests(tests);
         test_one_animal_with_one_stop_add_tests(tests);
+        test_one_animal_outside_network_add_tests(tests);
         test_slow_to_fast_running_animals(tests);
         test_two_animals_through_network(tests);
         test_runner_init(tests, &sensor_algorithm_config_default);

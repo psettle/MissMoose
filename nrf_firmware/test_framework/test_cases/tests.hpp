@@ -65,4 +65,7 @@ void test_slow_to_fast_running_animals(std::vector<TestCase>& tests);
 // Add the tests for two animals moving through the network
 void test_two_animals_through_network(std::vector<TestCase>& tests);
 
+// Add the tests for animals being detected but not entering the network
+void test_one_animal_outside_network_add_tests(std::vector<TestCase>& tests);
+
 #endif /* TESTS_HPP */
