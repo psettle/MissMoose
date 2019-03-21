@@ -322,7 +322,6 @@ namespace MissMooseConfigurationApplication
                         if (dataPage.ErrorOccurring)
                         {
                             logString += " is hyperactive, and may be malfunctioning";
-                            MonitoringUI.LogSystemProblem(logString);
 
                             node.SetStatusColour(StatusColour.Red);
                             MonitoringUI.UpdateNode(node);
@@ -335,6 +334,7 @@ namespace MissMooseConfigurationApplication
                             MonitoringUI.UpdateNode(node);
                         }
 
+                        MonitoringUI.LogSystemProblem(logString);
                         MonitoringUI.LogEvent(logString);
                     });
                 }
@@ -376,7 +376,6 @@ namespace MissMooseConfigurationApplication
                         if (dataPage.ErrorOccurring)
                         {
                             logString += " is inactive, and may be malfunctioning";
-                            MonitoringUI.LogSystemProblem(logString);
 
                             node.SetStatusColour(StatusColour.Red);
                             MonitoringUI.UpdateNode(node);
@@ -389,6 +388,7 @@ namespace MissMooseConfigurationApplication
                             MonitoringUI.UpdateNode(node);
                         }
 
+                        MonitoringUI.LogSystemProblem(logString);
                         MonitoringUI.LogEvent(logString);
                     });
                 }
