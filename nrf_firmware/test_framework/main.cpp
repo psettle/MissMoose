@@ -135,6 +135,9 @@ int main(int argc, char* argv[])
         test_one_animal_with_one_stop_add_tests(tests);
         test_slow_to_fast_running_animals(tests);
         test_two_animals_through_network(tests);
+		test_one_animal_zig_zag(tests);
+		test_more_than_two_animals_through_network(tests);
+		test_sensors_not_working(tests);
         test_runner_init(tests, &sensor_algorithm_config_default);
     }
 
