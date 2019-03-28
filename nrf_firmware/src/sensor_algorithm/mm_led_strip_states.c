@@ -24,6 +24,9 @@
                         CONSTANTS
 **********************************************************/
 
+#define LED_STATE_REINFORCEMENT             ( true )
+#define LED_STATE_REINFORCEMENT_PERIOD_S    ( 10 )
+
 /**********************************************************
                         MACROS
 **********************************************************/
@@ -74,6 +77,15 @@ static void update_current_av_states(void);
     and timeouts.
 */
 static void update_current_output_states(void);
+
+#if(LED_STATE_REINFORCEMENT)
+    /**
+        Send a duplicate led output update event to each led.
+    
+        (This can help recover from dropped network packets if channels are not reliable)
+    */
+    static void reinforce_current_output_states(uint32_t seconds);
+#endif
 
 /**
     Sends an signalling state update to an LED node.
@@ -199,10 +211,14 @@ void mm_led_strip_states_init(void)
     Updates current LED signalling states and increments
     timeout counter.
 */
-void mm_led_signalling_states_on_second_elapsed(void)
+void mm_led_signalling_states_on_second_elapsed(uint32_t seconds)
 {
     update_current_av_states();
     update_current_output_states();
+
+#if(LED_STATE_REINFORCEMENT)
+    reinforce_current_output_states(seconds);
+#endif
 }
 
 /**
@@ -236,6 +252,29 @@ static void update_current_av_states(void)
 
     mm_av_transmission_send_all_avs();
 }
+
+#if(LED_STATE_REINFORCEMENT)
+    /**
+        Send a duplicate led output update event to each led.
+    
+        (This can help recover from dropped network packets if channels are not reliable)
+    */
+    static void reinforce_current_output_states(uint32_t seconds)
+    {
+        /* Only send an update on multiples of the reinforcment period. */
+        if(seconds % LED_STATE_REINFORCEMENT_PERIOD_S != 0)
+        {
+            return;
+        }
+
+        /* Send an update to each led. */
+        for (int8_t i = 0; i < MAX_GRID_SIZE_X; i++)
+        {   
+            /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
+            set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
+        }
+    }
+#endif
 
 /**
     Updates the current_output_states by considering any state changes

@@ -32,7 +32,7 @@ void mm_led_strip_states_init(void);
     Updates current LED signalling states and increments
     timeout counter.
 */
-void mm_led_signalling_states_on_second_elapsed(void);
+void mm_led_signalling_states_on_second_elapsed(uint32_t seconds);
 
 /**
  * Updates LED signalling states for all output nodes in case their positions have changed.

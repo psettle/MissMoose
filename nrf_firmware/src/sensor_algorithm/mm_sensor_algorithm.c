@@ -70,6 +70,11 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0);
 static void on_minute_elapsed(void);
 
 /**
+    Gets a timestamp accurate to 1 second. Rolls over to 0 ever 24 hours.
+*/
+static uint32_t get_second_timestamp(void);
+
+/**
     Gets a timestamp accurate to 1 minute. Rolls over to 0 ever 24 hours.
 */
 static uint32_t get_minute_timestamp(void);
@@ -170,7 +175,7 @@ static void on_second_elapsed(void* p_unused, uint16_t size_0)
 
     mm_activity_variable_growth_on_second_elapsed();
     mm_apply_activity_variable_drain_factor();
-    mm_led_signalling_states_on_second_elapsed();
+    mm_led_signalling_states_on_second_elapsed(get_second_timestamp());
 
     /* Space left to add other once-per-second updates if
      * necessary in the future. */
@@ -190,6 +195,14 @@ static void on_minute_elapsed(void)
     }
 
     mm_sensor_error_on_minute_elapsed(get_minute_timestamp());
+}
+
+/**
+    Gets a timestamp accurate to 1 second. Rolls over to 0 ever 24 hours.
+*/
+static uint32_t get_second_timestamp(void)
+{
+    return get_minute_timestamp() * SECONDS_PER_MINUTE + second_counter;
 }
 
 /**

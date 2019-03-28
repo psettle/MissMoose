@@ -20,8 +20,12 @@
 #define MEDIAN(a,b,c) ((a > b) ? (b > c) ? b : (a > c) ? c : a : \
                        (b > c) ? (a > c) ? a : c : b)
 
-#define ANT_BROADCAST_DEBUG         false // If true, broadcast the most recent filtered sample over ANT.
-#define USE_POWER_CYCLING           true  // Whether or not we should try and turn the lidar off between samplings.
+#define ANT_BROADCAST_DEBUG             ( false) // If true, broadcast the most recent filtered sample over ANT.
+#define USE_POWER_CYCLING               ( true ) // Whether or not we should try and turn the lidar off between samplings.
+#define LIDAR_REINFORCEMENT             ( true ) // Whether we should send the listeners a notification at least every 15s.
+#define LIDAR_REINFORCEMENT_PERIOD_S    ( 15 )
+#define ONE_SECOND_MS                   ( 1000 )
+#define ONE_SECOND_TICKS                APP_TIMER_TICKS(ONE_SECOND_MS)
 
 /* Register definitions for the LIDAR. */
 #define DISTANCE_VALUE_REGISTER     (0x8FU)
@@ -85,9 +89,17 @@ static ret_code_t write_register(uint8_t reg);
 void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context);
 void twi_reset(void);
 /* Processes timer timeout */
-static void on_timer_event(void* evt_data, uint16_t evt_size);
+static void on_sampling_timer_event(void* evt_data, uint16_t evt_size);
 
-static void timer_event_handler(void * p_context);
+static void sampling_timer_event_handler(void * p_context);
+
+
+#if(LIDAR_REINFORCEMENT)
+    /* These functions are only used if we're reinforcing the lidar data. */
+    static void one_second_timer_handler(void * p_context);
+    static void on_second_elapsed(void* p_unused, uint16_t size_0);
+    static void lidar_reinforcement_1s();
+#endif
 
 /**********************************************************
                         VARIABLES
@@ -133,7 +145,11 @@ static const nrf_drv_twi_config_t twi_lidar_config = {
 
 /* Timer instance. */
 APP_TIMER_DEF(m_lidar_timer);
-
+/* Timer instance for reinforcement */
+#if(LIDAR_REINFORCEMENT)
+    APP_TIMER_DEF(m_lidar_second_timer_id);
+    static uint32_t reinforcement_second_counter = 0;
+#endif
 
 /**********************************************************
                        DEFINITIONS
@@ -297,6 +313,10 @@ static void lidar_process_distance(void)
                 {
                     // The distance has suddenly changed when it was stable.
                     lidar_event_dispatch(new_filtered_distance, LIDAR_EVENT_CODE_MEASUREMENT_CHANGE);
+                    #if(LIDAR_REINFORCEMENT)
+                        /* Reset the amount of time since we last sent an update. */
+                        reinforcement_second_counter = 0;
+                    #endif
                 }
                 distance_changed_warning_flag = true;
             }
@@ -310,6 +330,10 @@ static void lidar_process_distance(void)
                 {
                     // The distance has now become stable.
                     lidar_event_dispatch(new_filtered_distance, LIDAR_EVENT_CODE_MEASUREMENT_SETTLE);
+                    #if(LIDAR_REINFORCEMENT)
+                        /* Reset the amount of time since we last sent an update. */
+                        reinforcement_second_counter = 0;
+                    #endif
                 }
                 distance_changed_warning_flag = false;
             }
@@ -419,7 +443,7 @@ static ret_code_t write_register(uint8_t reg)
 static void timed_reading_init(void)
 {
     ret_code_t err_code;
-    err_code = app_timer_create(&m_lidar_timer, APP_TIMER_MODE_REPEATED, timer_event_handler);
+    err_code = app_timer_create(&m_lidar_timer, APP_TIMER_MODE_REPEATED, sampling_timer_event_handler);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_start(m_lidar_timer, APP_TIMER_TICKS(CONTROL_TIMER_PERIOD), NULL);
@@ -455,6 +479,15 @@ void lidar_init(bool use_led_debug)
     #endif
 
     xfer_done = true;
+
+    #if(LIDAR_REINFORCEMENT)
+        /* Initialize 1 second timer, to be used for reinforcement. */
+        err_code = app_timer_create(&m_lidar_second_timer_id, APP_TIMER_MODE_REPEATED, one_second_timer_handler);
+        APP_ERROR_CHECK(err_code);
+
+        err_code = app_timer_start(m_lidar_second_timer_id, ONE_SECOND_TICKS, NULL);
+        APP_ERROR_CHECK(err_code);
+    #endif
 }
 
 /**
@@ -488,19 +521,19 @@ void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
 /**
  * @brief Handler for timer events.
  */
-static void timer_event_handler(void * p_context)
+static void sampling_timer_event_handler(void * p_context)
 {
     uint32_t err_code;
 
     /* Kick timer event to main, since there's a bunch of little steps to do on timer events. */
-    err_code = app_sched_event_put(NULL, 0, on_timer_event);
+    err_code = app_sched_event_put(NULL, 0, on_sampling_timer_event);
     APP_ERROR_CHECK(err_code);
 }
 
 /**
  * @brief The bulk of processing that needs to be done on timer events.
  */
-static void on_timer_event(void* evt_data, uint16_t evt_size)
+static void on_sampling_timer_event(void* evt_data, uint16_t evt_size)
 {
     timer_iteration_count++;
     if(timer_iteration_count >= periods_between_sample_acquisition)
@@ -575,3 +608,50 @@ static void on_timer_event(void* evt_data, uint16_t evt_size)
             break;
     }
 }
+
+#if(LIDAR_REINFORCEMENT)
+    /**
+        Timer handler to process second tick.
+    */
+    static void one_second_timer_handler(void * p_context)
+    {
+        /* Send off event to be handled in main context */
+        uint32_t err_code = app_sched_event_put(NULL, 0, on_second_elapsed);
+        APP_ERROR_CHECK(err_code);
+    }
+
+    /**
+     * Handle events to be carried out when 1 second elapses.
+     * Invoked from main context.
+     */
+    static void on_second_elapsed(void* p_unused, uint16_t size_0)
+    {
+        lidar_reinforcement_1s();
+    }
+
+    /**
+     * Check to see if enough time has elapsed without telling
+     * the sensor manager anything. If so, pack up and send a notification.
+     */
+    static void lidar_reinforcement_1s()
+    {
+        reinforcement_second_counter++;
+        /* Only send an update on multiples of the reinforcment period. */
+        if(reinforcement_second_counter % LIDAR_REINFORCEMENT_PERIOD_S != 0)
+        {
+            return;
+        }
+        /* We made it this far so we can reset the counter */
+        reinforcement_second_counter = 0;
+
+        /* Send out a notification. */
+        if(distance_changed_warning_flag == true)
+        {
+            lidar_event_dispatch(median_filtered_distance, LIDAR_EVENT_CODE_MEASUREMENT_CHANGE);
+        }
+        else
+        {
+            lidar_event_dispatch(median_filtered_distance, LIDAR_EVENT_CODE_MEASUREMENT_SETTLE);
+        }
+    }
+#endif
