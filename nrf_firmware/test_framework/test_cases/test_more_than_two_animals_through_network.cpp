@@ -122,8 +122,8 @@ static void test_case_three_animals_left_to_right(TestOutput& oracle)
 	 * animal C has moved into the top-right quadrant of the network.
 	 */
 	simulate_time(3);
-	test_send_lidar_data(-1, 1, SENSOR_ROTATION_180, 1300);
-	test_send_pir_data(0, -1, SENSOR_ROTATION_0, PIR_DETECTION_START);
+	test_send_lidar_data(-1, 0, SENSOR_ROTATION_90, 1300);
+	test_send_pir_data(1, 0, SENSOR_ROTATION_270, PIR_DETECTION_START);
 
 	/* By now, (3 seconds) top-middle LIDAR has stopped detecting. */
 	test_send_lidar_data(0, 1, SENSOR_ROTATION_180, 2100);
