@@ -155,7 +155,7 @@ void pir_st_00081_init(uint8_t num_pir_sensors, bool use_led_debug)
 
     #if(PIR_REINFORCEMENT)
         ret_code_t err_code;
-        /* Initialize 1 second timer, to be used for reinforement. */\
+        /* Initialize 1 second timer, to be used for reinforcement. */\
         err_code = app_timer_create(&m_pir_second_timer_id, APP_TIMER_MODE_REPEATED, one_second_timer_handler);
         APP_ERROR_CHECK(err_code);
 
@@ -347,7 +347,9 @@ static void on_pin_event(void* evt_data, uint16_t evt_size)
             pir_evt.event = pirs_detecting[i];
             pir_evt.sensor_index = i;
             pir_event_dispatch(&pir_evt);
-            reinforcement_second_counters[i] = 0;
+            #if(PIR_REINFORCEMENT)
+                reinforcement_second_counters[i] = 0;
+            #endif
         }
     }
 }

@@ -481,7 +481,7 @@ void lidar_init(bool use_led_debug)
     xfer_done = true;
 
     #if(LIDAR_REINFORCEMENT)
-        /* Initialize 1 second timer, to be used for reinforement. */\
+        /* Initialize 1 second timer, to be used for reinforcement. */
         err_code = app_timer_create(&m_lidar_second_timer_id, APP_TIMER_MODE_REPEATED, one_second_timer_handler);
         APP_ERROR_CHECK(err_code);
 
