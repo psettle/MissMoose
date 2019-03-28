@@ -29,6 +29,7 @@
 #include "boards.h"
 #include "pir_st_00081_pub.h"
 #include "nrf_error.h"
+#include "app_timer.h"
 #include "app_scheduler.h"
 
 /**********************************************************
@@ -46,6 +47,10 @@
     #define BUTTON_ENABLE_TEST      false //Always false in this case
 #endif
 
+#define PIR_REINFORCEMENT           ( true ) // Whether we should send the listeners a notification at least every 15s.
+#define PIR_REINFORCEMENT_PERIOD_S  ( 15 )
+#define ONE_SECOND_MS               ( 1000 )
+#define ONE_SECOND_TICKS            APP_TIMER_TICKS(ONE_SECOND_MS)
 
 /*Define pins for PIR enable and detectoion pins. Tried to select general I/O pins that were beside
 each other based on the J102 track numbers. Placed into arrays to make code cleaner.
@@ -96,6 +101,13 @@ static void pir_event_dispatch(pir_evt_t* evt_data);
     static void pir_button_press_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 #endif
 
+#if(PIR_REINFORCEMENT)
+    /* These functions are only used if we're reinforcing the pir data. */
+    static void one_second_timer_handler(void * p_context);
+    static void on_second_elapsed(void* p_unused, uint16_t size_0);
+    static void pir_reinforcement_1s();
+#endif
+
 /**********************************************************
                        VARIABLES
 **********************************************************/
@@ -106,13 +118,21 @@ static bool pirs_enabled[3] = {false, false, false};
 //The state of the PIR sensors - High or low (Detecting something or not detecting)
 static pir_event_type_t pirs_detecting[3] = {PIR_EVENT_CODE_NO_DETECTION, PIR_EVENT_CODE_NO_DETECTION, PIR_EVENT_CODE_NO_DETECTION};
 
-/**********************************************************
-                       DEFINITIONS
-**********************************************************/
+/* Timer instance for reinforcement */
+#if(PIR_REINFORCEMENT)
+    APP_TIMER_DEF(m_pir_second_timer_id);
+    /* Keep a counter of time since the last event notification for each PIR */
+    static uint32_t reinforcement_second_counters[MAXIMUM_NUM_PIRS] = {0,0,0};
+#endif
+
 /* Array of structs to hold the pinouts for individual PIR sensors */
 static pir_pinout_t pir_sensors[MAXIMUM_NUM_PIRS];
 
 static pir_evt_handler_t pir_evt_handlers[MAX_EVT_HANDLERS];
+
+/**********************************************************
+                       DEFINITIONS
+**********************************************************/
 
 /**
  * @brief Function for initializing the wide-angle PIR sensor.
@@ -132,6 +152,16 @@ void pir_st_00081_init(uint8_t num_pir_sensors, bool use_led_debug)
     pir_sensor_count = num_pir_sensors;
 
     pir_gpiote_init(pir_sensor_count);
+
+    #if(PIR_REINFORCEMENT)
+        ret_code_t err_code;
+        /* Initialize 1 second timer, to be used for reinforement. */\
+        err_code = app_timer_create(&m_pir_second_timer_id, APP_TIMER_MODE_REPEATED, one_second_timer_handler);
+        APP_ERROR_CHECK(err_code);
+
+        err_code = app_timer_start(m_pir_second_timer_id, ONE_SECOND_TICKS, NULL);
+        APP_ERROR_CHECK(err_code);
+    #endif
 }
 
 /**
@@ -317,6 +347,7 @@ static void on_pin_event(void* evt_data, uint16_t evt_size)
             pir_evt.event = pirs_detecting[i];
             pir_evt.sensor_index = i;
             pir_event_dispatch(&pir_evt);
+            reinforcement_second_counters[i] = 0;
         }
     }
 }
@@ -400,6 +431,55 @@ static void pir_event_dispatch(pir_evt_t* evt_data)
 #endif
 
 
+#if(PIR_REINFORCEMENT)
+    /**
+        Timer handler to process second tick.
+    */
+    static void one_second_timer_handler(void * p_context)
+    {
+        /* Send off event to be handled in main context */
+        uint32_t err_code = app_sched_event_put(NULL, 0, on_second_elapsed);
+        APP_ERROR_CHECK(err_code);
+    }
+
+    /**
+     * Handle events to be carried out when 1 second elapses.
+     * Invoked from main context.
+     */
+    static void on_second_elapsed(void* p_unused, uint16_t size_0)
+    {
+        pir_reinforcement_1s();
+    }
+
+    /**
+     * Check to see if enough time has elapsed without telling
+     * the sensor manager anything. If so, pack up and send a notification.
+     */
+    static void pir_reinforcement_1s()
+    {
+        for(int i = 0; i < pir_sensor_count; i++)
+        {
+            reinforcement_second_counters[i]++;
+            /* Only send an update on multiples of the reinforcment period. */
+            if(reinforcement_second_counters[i] % PIR_REINFORCEMENT_PERIOD_S != 0)
+            {
+                return;
+            }
+            /* We made it this far so we can reset the counter */
+            reinforcement_second_counters[i] = 0;
+
+            /* Check that the sensor is enabled */
+            if(check_pir_st_00081_enabled(i))
+            {
+                pir_evt_t pir_evt;
+                pir_evt.event = pirs_detecting[i];
+                pir_evt.sensor_index = i;
+                /* Send out a notification for the PIR sensor*/
+                pir_event_dispatch(&pir_evt);
+            }
+        }
+    }
+#endif
 
 /**
  *@}
