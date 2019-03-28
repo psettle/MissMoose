@@ -121,7 +121,7 @@ static pir_event_type_t pirs_detecting[3] = {PIR_EVENT_CODE_NO_DETECTION, PIR_EV
 /* Timer instance for reinforcement */
 #if(PIR_REINFORCEMENT)
     APP_TIMER_DEF(m_pir_second_timer_id);
-    /* Keep a counter of time since the last event notification for each PIR */
+    /* Keep a counter of time since the last event notification for each PIR. */
     static uint32_t reinforcement_second_counters[MAXIMUM_NUM_PIRS] = {0,0,0};
 #endif
 
@@ -247,7 +247,7 @@ static void pir_gpiote_init(uint8_t num_pir_sensors)
 
     ret_code_t err_code;
 
-    for (int i = 0; i < num_pir_sensors; i++){
+    for (uint8_t i = 0; i < num_pir_sensors; i++){
         //Set pir_en_pin_out and pir_pin_in
         pir_sensors[i].pir_en_pin_out = pir_enable_pins[i];
         pir_sensors[i].pir_pin_in = pir_input_pins[i];
@@ -321,7 +321,7 @@ static void on_pin_event(void* evt_data, uint16_t evt_size)
      * bsp_board_led_off, bsp_board_led_on, bsp_board_led_invert
      *
      * Match the pin with the PIR sensor - If pin in matches pin, that's the PIR that detected something.*/
-    for(int i = 0; i < MAXIMUM_NUM_PIRS; i++)
+    for(uint8_t i = 0; i < MAXIMUM_NUM_PIRS; i++)
     {
         if (pir_sensors[i].pir_pin_in == pin_evt->pin)
         {
@@ -406,7 +406,7 @@ static void pir_event_dispatch(pir_evt_t* evt_data)
        since we expect to use an IO board button for this. (Based on ir_led_transmit.c)*/
     //Perform for each PIR
     ret_code_t err_code;
-    for(int i = 0; i < num_pir_sensors; i++){
+    for(uint8_t i = 0; i < num_pir_sensors; i++){
             nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
             in_config.pull = NRF_GPIO_PIN_PULLUP;
 
@@ -422,7 +422,7 @@ static void pir_event_dispatch(pir_evt_t* evt_data)
         //Check that the pin was set - Otherwise the handler will run both when the button is pressed and depressed.
         //If it was set, then toggle the enable line for that PIR sensor
         if(nrf_drv_gpiote_in_is_set(pin)){
-            for(int i = 0; i < MAXIMUM_NUM_PIRS; i++){
+            for(uint8_t i = 0; i < MAXIMUM_NUM_PIRS; i++){
                 if(pir_enable_ctrl_buttons[i] == pin){
                     nrf_drv_gpiote_out_toggle(pir_sensors[i].pir_en_pin_out);
                 }
@@ -459,7 +459,7 @@ static void pir_event_dispatch(pir_evt_t* evt_data)
      */
     static void pir_reinforcement_1s()
     {
-        for(int i = 0; i < pir_sensor_count; i++)
+        for(uint8_t i = 0; i < pir_sensor_count; i++)
         {
             reinforcement_second_counters[i]++;
             /* Only send an update on multiples of the reinforcment period. */
