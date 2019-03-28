@@ -46,7 +46,7 @@ static void test_case_three_animals_left_to_right(TestOutput& oracle)
 
 	/* After 10 (8 + 2) seconds, top-left PIR stops detecting. */
 	simulate_time(2);
-	test_send_pir_data(-1, 0, SENSOR_ROTATION_180, PIR_DETECTION_END);
+	test_send_pir_data(-1, -1, SENSOR_ROTATION_180, PIR_DETECTION_END);
 
 	/*
 	 * Start detection from middle-left PIR and bottom left LIDAR:

@@ -70,7 +70,7 @@ static void test_case_one_animal_zig_zag_left_away_slow(TestOutput& oracle)
 	 * the animal has moved into the bottom-left quadrant.
 	 */
 	simulate_time(4);
-	test_send_lidar_data(-1, 0, SENSOR_ROTATION_180, 300);
+	test_send_lidar_data(-1, 0, SENSOR_ROTATION_90, 300);
 
 	/* After 12 seconds, the top-right PIR has stoppped detecting. */
 	test_send_pir_data(1, 1, SENSOR_ROTATION_270, PIR_DETECTION_END);
@@ -172,7 +172,7 @@ static void test_case_one_animal_zig_zag_right_away_fast(TestOutput& oracle)
 	 */
 	simulate_time(1);
 	test_send_lidar_data(-1, 0, SENSOR_ROTATION_90, 1300);
-	test_send_pir_data(0, 0, SENSOR_ROTATION_270, PIR_DETECTION_START);
+	test_send_pir_data(1, 0, SENSOR_ROTATION_270, PIR_DETECTION_START);
 
 	/* After 2 seconds (1 + 1), the top-left LIDAR has stopped detecting. */
 	test_send_lidar_data(-1, 1, SENSOR_ROTATION_90, 2100);
@@ -198,7 +198,7 @@ static void test_case_one_animal_zig_zag_right_away_fast(TestOutput& oracle)
 
 	/* After 2 seconds (1 + 1), the top-middle LIDAR has stopped detecting. */
 	simulate_time(1);
-	test_send_lidar_data(0, 1, SENSOR_ROTATION_180, 1300);
+	test_send_lidar_data(0, 1, SENSOR_ROTATION_180, 2100);
 
 	/* After 2 seconds (1 + 1), the bottom-right LIDAR has stopped detecting. */
 	simulate_time(1);
@@ -214,7 +214,7 @@ static void test_case_one_animal_zig_zag_right_away_fast(TestOutput& oracle)
 
 	/* After 10 seconds, the right-middle PIR has stopped detecting.*/
 	simulate_time(1);
-	test_send_pir_data(0, 0, SENSOR_ROTATION_270, PIR_DETECTION_END);
+	test_send_pir_data(0, 1, SENSOR_ROTATION_270, PIR_DETECTION_END);
 
 	/* After 10 seconds, the bottom-middle PIR has stopped detecting.*/
 	simulate_time(1);

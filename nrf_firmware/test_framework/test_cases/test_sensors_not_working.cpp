@@ -34,7 +34,7 @@ void test_sensors_not_working(std::vector<TestCase>& tests)
 static void test_case_bottom_left_lidar_not_working_one_animal(TestOutput& oracle)
 {
 	/*
-	 * One deer enters the network from the top-right quadrant, brushes against the
+	 * One deer enters the network from the top-left quadrant, brushes against the
 	 * edges of the bottom-left quadrant, and then exits the network out of the bottom
 	 * right quadrant. The bottom-left LIDAR is not working (not detecting).
 	 */
@@ -58,7 +58,6 @@ static void test_case_bottom_left_lidar_not_working_one_animal(TestOutput& oracl
 	test_send_lidar_data(-1, 0, SENSOR_ROTATION_90, 300);
 	test_send_pir_data(0, 0, SENSOR_ROTATION_270, PIR_DETECTION_START);
 	oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
-	oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 
 	/*
 	 * Start detection from middle-left PIR:
@@ -77,7 +76,6 @@ static void test_case_bottom_left_lidar_not_working_one_animal(TestOutput& oracl
 	simulate_time(1);
 	test_send_lidar_data(1, -1, SENSOR_ROTATION_270, 1300);
 	test_send_pir_data(-1, -1, SENSOR_ROTATION_90, PIR_DETECTION_START);
-	oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 
 	/*
 	 * Start detection from top-middle LIDAR and bottom-middle PIR:
@@ -86,14 +84,16 @@ static void test_case_bottom_left_lidar_not_working_one_animal(TestOutput& oracl
 	simulate_time(1);
 	test_send_lidar_data(0, 1, SENSOR_ROTATION_180, 1300);
 	test_send_pir_data(0, -1, SENSOR_ROTATION_0, PIR_DETECTION_START);
+	oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 
 	/*
 	 * Start detection from top-right LIDAR and bottom-right PIR:
-	 * the animal has moved into the bottom-right quadrant of the network.
+	 * the animal has exited the network from the bottom-right quadrant.
 	 */
 	simulate_time(2);
 	test_send_lidar_data(1, 1, SENSOR_ROTATION_180, 1300);
 	test_send_pir_data(1, -1, SENSOR_ROTATION_0, PIR_DETECTION_START);
+	oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 
 	/* After 4 seconds, bottom-right LIDAR has stopped detecting. */
 	test_send_lidar_data(1, -1, SENSOR_ROTATION_270, 2100);
@@ -147,7 +147,7 @@ static void test_case_bottom_left_lidar_not_working_one_animal(TestOutput& oracl
 static void test_case_bottom_right_lidar_not_working_one_animal(TestOutput& oracle)
 {
 	/*
-	 * One deer enters the network from the top-right quadrant, brushes against the
+	 * One deer enters the network from the bottom-right quadrant, brushes against the
 	 * edges of the bottom-left quadrant, and then exits the network out of the bottom
 	 * right quadrant. The bottom-left LIDAR is not working (not detecting).
 	 */
@@ -160,8 +160,9 @@ static void test_case_bottom_right_lidar_not_working_one_animal(TestOutput& orac
 	 * the animal has entered the network from the bottom-right quadrant.
 	 */
 	test_send_pir_data(0, -1, SENSOR_ROTATION_90, PIR_DETECTION_START);
+	oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 	oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
-	oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
+	
 
 	/*
 	 * Start detection from (other!) bottom-middle PIR and top-middle LIDAR:
@@ -170,9 +171,7 @@ static void test_case_bottom_right_lidar_not_working_one_animal(TestOutput& orac
 	simulate_time(2);
 	test_send_pir_data(0, -1, SENSOR_ROTATION_0, PIR_DETECTION_START);
 	test_send_lidar_data(0, 1, SENSOR_ROTATION_180, 1300);
-	oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 	oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
-	oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 
 	/*
 	 * Start detection from bottom-left PIR:
@@ -187,7 +186,7 @@ static void test_case_bottom_right_lidar_not_working_one_animal(TestOutput& orac
 	 * the animal has exited the network through the bottom-left quadrant.
 	 */
 	simulate_time(2);
-	test_send_pir_data(-1, 0, SENSOR_ROTATION_0, PIR_DETECTION_START);
+	test_send_pir_data(-1, 0, SENSOR_ROTATION_180, PIR_DETECTION_START);
 	test_send_lidar_data(-1, -1, SENSOR_ROTATION_0, 300);
 
 	/* AFter 3 seconds, the top-middle LIDAR has stopped detecting.*/
@@ -211,7 +210,7 @@ static void test_case_bottom_right_lidar_not_working_one_animal(TestOutput& orac
 
 	/* After 10 seconds, left-middle PIR has stopped detecting. */
 	simulate_time(2);
-	test_send_pir_data(-1, 0, SENSOR_ROTATION_0, PIR_DETECTION_END);
+	test_send_pir_data(-1, 0, SENSOR_ROTATION_180, PIR_DETECTION_END);
 
 	/* After about 30 seconds, the LEDs decay. */
 	simulate_time(30);
@@ -232,9 +231,8 @@ static void test_case_bottom_right_lidar_not_working_one_animal(TestOutput& orac
 static void test_case_top_middle_lidar_not_working_one_animal(TestOutput& oracle)
 {
 	/*
-	 * One deer enters the network from the top-right quadrant, brushes against the
-	 * edges of the bottom-left quadrant, and then exits the network out of the bottom
-	 * right quadrant. The bottom-left LIDAR is not working (not detecting).
+	 * One deer enters the network from the bottom-left quadrant, proceeds right
+	 * diagonally, and exits out of the network from the top-right quadrant.
 	 */
 
 	 /* Idle */
@@ -246,7 +244,7 @@ static void test_case_top_middle_lidar_not_working_one_animal(TestOutput& oracle
 	 */
 	test_send_pir_data(-1, -1, SENSOR_ROTATION_90, PIR_DETECTION_START);
 	test_send_lidar_data(1, -1, SENSOR_ROTATION_270, 1300);
-	oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
+	oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 	oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 
 	/*
@@ -255,9 +253,7 @@ static void test_case_top_middle_lidar_not_working_one_animal(TestOutput& oracle
 	 */
 	simulate_time(2);
 	test_send_pir_data(0, -1, SENSOR_ROTATION_0, PIR_DETECTION_START);
-	oracle.logLedUpdate(-1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 	oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
-	oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_YELLOW);
 
 	/* After 2 seconds, bottom-right LIDAR has stopped detecting. */
 	test_send_lidar_data(1, -1, SENSOR_ROTATION_270, 2100);
@@ -272,7 +268,7 @@ static void test_case_top_middle_lidar_not_working_one_animal(TestOutput& oracle
 	oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 
 	/*
-	 * Start detection from top-left LIDAR and (other!) middle-right PIR:
+	 * Start detection from top-right LIDAR and (other!) middle-right PIR:
 	 * the animal has exited the network through the top-right quadrant.
 	 */
 	simulate_time(1);
@@ -347,7 +343,6 @@ static void test_case_both_middle_node_sensors_not_working_one_animal(TestOutput
 	 */
 	simulate_time(1);
 	test_send_lidar_data(-1, 0, SENSOR_ROTATION_90, 300);
-	oracle.logLedUpdate(0, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 
 	/*
 	 * Start detection from top-middle LIDAR:
@@ -444,11 +439,11 @@ static void test_case_both_top_right_node_sensors_not_working_one_animal(TestOut
 	 */
 	simulate_time(1);
 	test_send_pir_data(-1, 0, SENSOR_ROTATION_180, PIR_DETECTION_START);
-	test_send_lidar_data(-1, -1, SENSOR_ROTATION_0, 300);
+	test_send_lidar_data(-1, 0, SENSOR_ROTATION_0, 300);
 
 	/* After 2 seconds, the left-middle LIDAR stops detecting. */
 	simulate_time(1);
-	test_send_lidar_data(-1, 1, SENSOR_ROTATION_90, 2100);
+	test_send_lidar_data(-1, 0, SENSOR_ROTATION_90, 2100);
 
 	/* After 2 seconds, the bottom-left LIDAR stops detecting. */
 	simulate_time(1);
@@ -528,7 +523,6 @@ static void test_case_both_middle_left_node_sensors_not_working_one_animal(TestO
 	 */
 	simulate_time(2);
 	test_send_pir_data(0, 0, SENSOR_ROTATION_270, PIR_DETECTION_START);
-	oracle.logLedUpdate(1, 1, LED_FUNCTION_LEDS_BLINKING, LED_COLOURS_RED);
 
 	/* After 2 seconds, top-middle LIDAR stops detecting. */
 	test_send_lidar_data(0, 1, SENSOR_ROTATION_180, 2100);
