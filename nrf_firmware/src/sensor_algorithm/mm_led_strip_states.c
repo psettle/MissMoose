@@ -19,6 +19,7 @@
 #include "mm_led_control.h"
 #include "mm_position_config.h"
 #include "mm_av_transmission.h"
+#include "mm_led_transmission.h"
 
 /**********************************************************
                         CONSTANTS
@@ -91,6 +92,11 @@ static void update_current_output_states(void);
     Sends an signalling state update to an LED node.
 */
 static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t state);
+
+/**
+    Sends an signalling state update to the monitoring application.
+*/
+static void set_led_monitoring_state(int8_t x, int8_t y, led_signalling_state_t state);
 
 /**
     Updates the LED signalling states based on an output set.
@@ -229,6 +235,7 @@ void mm_led_signalling_states_on_position_update(void)
     for(int8_t i = 0; i < MAX_GRID_SIZE_X; ++i)
     {
         set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
+        set_led_monitoring_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
     }
 }
 
@@ -294,6 +301,7 @@ static void update_current_output_states(void)
 
             /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
             set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
+            set_led_monitoring_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
         }
         else if (led_signalling_state_records[i].current_av_state == led_signalling_state_records[i].current_output_state)
         {
@@ -321,6 +329,7 @@ static void update_current_output_states(void)
 
                 /* Hardcoded right now. Assumes that the roadside nodes have LEDs. */
                 set_led_output_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
+                set_led_monitoring_state(i - 1, 1, led_signalling_state_records[i].current_output_state);
             }
             else
             {
@@ -363,6 +372,49 @@ static void set_led_output_state(int8_t x, int8_t y, led_signalling_state_t stat
             case IDLE:
             default:
                 mm_led_control_update_node_leds
+                (
+                    node_position->node_id,
+                    LED_FUNCTION_LEDS_OFF,
+                    LED_COLOURS_RED
+                );
+                break;
+        }
+    }
+}
+
+/**
+    Updates the LED signalling states based on an output set.
+*/
+static void set_led_monitoring_state(int8_t x, int8_t y, led_signalling_state_t state)
+{
+    /* Get the position of the LED node. */
+    mm_node_position_t const * node_position = get_node_for_position(x, y);
+
+    /* Check to make sure that this node actually exists before sending anything!*/
+    if (node_position != NULL)
+    {
+        switch ( state )
+        {
+            case CONCERN:  
+                /* Tell the monitoring application that the LED has been updated */
+                mm_led_transmission_send_led_update
+                (
+                    node_position->node_id,
+                    LED_FUNCTION_LEDS_BLINKING,
+                    LED_COLOURS_YELLOW
+                );
+                break;
+            case ALARM:
+                mm_led_transmission_send_led_update
+                (
+                    node_position->node_id,
+                    LED_FUNCTION_LEDS_BLINKING,
+                    LED_COLOURS_RED
+                );
+                break;
+            case IDLE:
+            default:
+                mm_led_transmission_send_led_update
                 (
                     node_position->node_id,
                     LED_FUNCTION_LEDS_OFF,
