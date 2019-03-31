@@ -96,15 +96,6 @@ void translate_lidar_detection(sensor_evt_t const * sensor_evt)
         return;
     }
 
-    /* Send monitoring dispatch */
-    mm_monitoring_dispatch_send_lidar_data
-        (
-        evt->node_id,
-        evt->sensor_rotation,
-        evt->distance_measured,
-        detection.region
-        );
-
     /* Is the sensor hyperactive and detecting something? */
     if(mm_sensor_error_is_sensor_hyperactive(sensor_evt) &&
        detection.region != LIDAR_REGION_REGION_NONE)
@@ -121,6 +112,15 @@ void translate_lidar_detection(sensor_evt_t const * sensor_evt)
         /* It isn't a new detection because it's the same data, no need to apply it. */
         return;
     }
+
+    /* Send monitoring dispatch since the data has changed. */
+    mm_monitoring_dispatch_send_lidar_data
+        (
+        evt->node_id,
+        evt->sensor_rotation,
+        evt->distance_measured,
+        detection.region
+        );
 
     if(detection.region == LIDAR_REGION_REGION_NONE)
     {
