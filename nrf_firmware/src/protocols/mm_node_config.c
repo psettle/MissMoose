@@ -121,8 +121,8 @@ static mm_sensor_algorithm_config_t const sensor_algorithm_config_1551911794 =
     9.7837836894, /* possible_detection_threshold_nrs */
     41.3127704940, /* detection_threshold_rs */
     40.0230364488, /* detection_threshold_nrs */
-    1.00000000000, //36.9740456420, /* minimum_concern_signal_duration_s */
-    1.0000000000, /* minimum_alarm_signal_duration_s */
+    5.00000000000, //36.9740456420, /* minimum_concern_signal_duration_s */
+    5.0000000000, /* minimum_alarm_signal_duration_s */
 };
 #endif
 
