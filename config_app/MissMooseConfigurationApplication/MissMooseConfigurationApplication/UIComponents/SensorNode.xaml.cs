@@ -320,6 +320,12 @@ namespace MissMooseConfigurationApplication.UIComponents
 
         public bool SetLedFunction(LedFunction ledFunction)
         {
+            //it must have an led to respond to this event
+            if (configuration != HardwareConfiguration.PirLidarLed)
+            {
+                return false;
+            }
+
             if (this.ledFunction != ledFunction)
             {
                 this.ledFunction = ledFunction;
