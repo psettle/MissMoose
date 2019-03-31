@@ -254,6 +254,13 @@ static bool sensor_evt_to_lidar_detection(lidar_evt_data_t const * evt, abstract
         detection->region = LIDAR_REGION_REGION_NONE;    
     }
 
+    if( ( detection->xpos < -1 || detection->xpos > 1 ) ||
+        ( detection->ypos < -1 || detection->ypos > 1 ) )
+    {
+        /* Detection falls outside the network, so it isn't valid. */
+        return false;
+    }
+
     return true;
 }
 
