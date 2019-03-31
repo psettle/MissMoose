@@ -106,22 +106,22 @@ static mm_sensor_algorithm_config_t const sensor_algorithm_config_1551911794 =
     1.0000000000, /* common_sensor_weight_factor */
     1.0000000000, /* base_sensor_weight_factor_pir */
     1.0000000000, /* base_sensor_weight_factor_lidar */
-    5.4670607275, /* road_proximity_factor_0 */
-    6.3722118535, /* road_proximity_factor_1 */
-    6.7627315568, /* road_proximity_factor_2 */
+    1.7616432577, // = 5.4670607275^(1/3), /* road_proximity_factor_0 */
+    1.8539445277, // = 6.3722118535^(1/3), /* road_proximity_factor_1 */
+    1.8910690328, // = 6.7627315568^(1/3), /* road_proximity_factor_2 */
     1.0000000000, /* common_sensor_trickle_factor */
-    1.2259346369, /* base_sensor_trickle_factor_pir */
+    1.0702595338, // = 1.2259346369^(1/3), /* base_sensor_trickle_factor_pir */
     1.0000000000, /* base_sensor_trickle_factor_lidar */
     1.0000000000, /* road_trickle_proximity_factor_0 */
     1.0000000000, /* road_trickle_proximity_factor_1 */
     1.0000000000, /* road_trickle_proximity_factor_2 */
-    0.9535216014, /* activity_variable_decay_factor */
+    0.8669451242, // = 0.9535216014^3, /* activity_variable_decay_factor */
     1.0000000000, /* activity_decay_period_ms */
     9.7637955926, /* possible_detection_threshold_rs */
     9.7837836894, /* possible_detection_threshold_nrs */
     41.3127704940, /* detection_threshold_rs */
     40.0230364488, /* detection_threshold_nrs */
-    36.9740456420, /* minimum_concern_signal_duration_s */
+    1.00000000000, //36.9740456420, /* minimum_concern_signal_duration_s */
     1.0000000000, /* minimum_alarm_signal_duration_s */
 };
 #endif

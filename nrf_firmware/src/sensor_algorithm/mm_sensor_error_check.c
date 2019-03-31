@@ -491,7 +491,7 @@ static void evaluate_sensor_hyperactivity_record(sensor_hyperactivity_record_t *
     else if (tmin == tmax)
     {
         /* Detections all occured within the same minute, so the sensor is definitely hyperactive. */
-        record->sensor_hyperactive = true;
+        //record->sensor_hyperactive = true; //disabled for capstone fair due to frequency of detections
     }
     else
     {
@@ -502,7 +502,7 @@ static void evaluate_sensor_hyperactivity_record(sensor_hyperactivity_record_t *
 
         if (detection_frequency >= SENSOR_HYPERACTIVITY_FREQUENCY_THRES)
         {
-            record->sensor_hyperactive = true;
+            //record->sensor_hyperactive = true; //disabled for capstone fair due to frequency of detections
         }
         else
         {
